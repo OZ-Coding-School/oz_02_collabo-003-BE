@@ -118,7 +118,7 @@
 > - Test 클래스는 접미사로 Test 사용(ex. memberFindTest)
 
 > FE
-> - 
+> - ..
 
 #### Communication Rules
 
