@@ -6,10 +6,13 @@
     <br>
     <a>오늘의 힘이 되는 한마디, 띠별 운세, 별자리별 운세, MBTI별 운세를 제공해줍니다💫</a>
     <br><br>
-    <h2>🖼️Wire Frame🖼️</h2>
-    <img src="https://github.com/OZ-Coding-School/oz_02_collabo-003-BE/assets/155046238/27630e5d-6ade-4b59-9b31-03e15c5509e5">
-    <a>- (4/23) : 소셜 로그인 기능 삭제.</a>
-    <br><br>
+</div>
+<h2 href="https://www.figma.com/file/Tv9IEyBVxBX8UIqs5dP30K/%5BK%EC%B2%A0%ED%95%99%EA%B4%80-%ED%95%A9%EB%8F%99-%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8%5D-%EC%98%A4%EB%8A%98%EC%9D%98-%EC%9A%B4%EC%84%B8-%EC%99%80%EC%9D%B4%EC%96%B4%ED%94%84%EB%A0%88%EC%9E%84-%ED%85%9C%ED%94%8C%EB%A6%BF?type=design&node-id=0-1&mode=design&t=SlW3aSNPQZwMwqva-0">🖼️Wire Frame🖼️</h2>
+<img src="https://github.com/OZ-Coding-School/oz_02_collabo-003-BE/assets/155046238/27630e5d-6ade-4b59-9b31-03e15c5509e5">
+<a>- (4/16) : OZ 2기 3조 합동 프로젝트 시작.</a>
+<a>- (4/23) : 소셜 로그인 기능 삭제.</a>
+<br><br>
+<div align="center">
     <h2>🧑🏻‍🧑🏻‍🧒🏻팀원 소개</h2>
     <table>
         <tbody>
@@ -30,16 +33,13 @@
     </table>
     <br><br>
     <h2>⚙️기술 스택</h2>
-    <br>
     <h4>✅Frond-end</h4>
-    <br>
     <img src="https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=React&logoColor=black">
     <img src="https://img.shields.io/badge/HTML-E34F26?style=for-the-badge&logo=html5&logoColor=white">
     <img src="https://img.shields.io/badge/CSS-1572B6?style=for-the-badge&logo=css3&logoColor=white">
     <img src="https://img.shields.io/badge/Javascript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black">
     <br>
     <h4>✅Back-end</h4>
-    <br>
     <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white">
     <img src="https://img.shields.io/badge/Django-092E20?style=for-the-badge&logo=django&logoColor=white">
     <img src="https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white">
@@ -47,16 +47,94 @@
     <img src="https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black">
     <br>
     <h4>💬Communication Tools</h4>
-    <br>
     <img src="https://img.shields.io/badge/Slack-4A154B?style=for-the-badge&logo=slack&logoColor=white">
     <img src="https://img.shields.io/badge/Discord-000000?style=for-the-badge&logo=discord&logoColor=white">
     <img src="https://img.shields.io/badge/Notion-000000?style=for-the-badge&logo=notion&logoColor=white">
     <img src="https://img.shields.io/badge/Figma-F24E1E?style=for-the-badge&logo=figma&logoColor=white">
     <br>
-    <h4>🫱🏻‍🫲🏻Video Conference Tools</h4>
-    <br>
+    <h4>📹Video Conference Tools</h4>
     <img src="https://img.shields.io/badge/ZEP-03C75A?style=for-the-badge&logo=naver&logoColor=black">
     <img src="https://img.shields.io/badge/Discord-000000?style=for-the-badge&logo=discord&logoColor=white">
     <img src="https://img.shields.io/badge/Slack-4A154B?style=for-the-badge&logo=slack&logoColor=white">
     <br>
 </div>
+
+## 🖥️ 프로젝트 규칙
+### Branch Strategy
+> - main / dev 브랜치 기본 생성
+> - main과 dev로 직접 push 제한
+> - PR 전 최소 1인 이상 승인 필수
+
+### Git Convention
+> 1. 적절한 커밋 접두사 작성
+> 2. 커밋 메시지 내용 작성
+> 3. 내용 뒤에 이슈 (#이슈 번호)와 같이 작성하여 이슈 연결
+|접두사|설명|
+|------|---|
+|Feat :|새로운 기능 구현|	
+|Add :|에셋 파일 추가|	
+|Fix :|버그 수정|
+|Docs :|문서 추가 및 수정|
+|Style :|스타일링 작업|
+|Refactor :|코드 리팩토링 (동작 변경 없음)|
+|Test :|테스트|
+|Deploy :|배포|
+|Conf :|빌드, 환경 설정|
+|Chore :|기타 작업|
+
+### Pull Request
+
+> #### Title
+> - 제목은 '[Feat] 홈 페이지 구현'과 같이 작성합니다.
+<br>
+
+> #### PR Type
+> FEAT: 새로운 기능 구현
+> ADD : 에셋 파일 추가
+> FIX: 버그 수정
+> DOCS: 문서 추가 및 수정
+> STYLE: 포맷팅 변경
+> REFACTOR: 코드 리팩토링
+> TEST: 테스트 관련
+> DEPLOY: 배포 관련
+> CONF: 빌드, 환경 설정
+> CHORE: 기타 작업
+<br>
+
+> #### Description
+> - 구체적인 작업 내용을 작성해주세요.
+> - 이미지를 별도로 첨부하면 더 좋습니다 👍
+
+> #### Discussion
+> - 추후 논의할 점에 대해 작성해주세요.
+
+#### Code Convention
+
+> BE
+> - 패키지명 전체 소문자
+> - 클래스명, 인터페이스명 CamelCase
+> - 클래스 이름 명사 사용
+> - 상수명 SNAKE_CASE
+> - Controller, Service, Dto, Repository, mapper 앞에 접미사로 통일(ex. MemberController)
+> - service 계층 메서드명 create, update, find, delete로 CRUD 통일(ex. createMember)
+> - Test 클래스는 접미사로 Test 사용(ex. memberFindTest)
+<br>
+
+> FE
+> - 
+
+#### Communication Rules
+
+> - 정기 회의 : 화, 목 오전 11시 팀장 회의
+> - 팀 회의 : 각 팀별 별도 진행
+> - 전체 회의 : 기업 관리자와 회의 (Slack 이용)
+
+### 🗂️Documents
+
+> [📜Notion K철학관](https://legend-palm-1f1.notion.site/K-b38f27ba8b9f434bab2d97556c866c12)
+> [📜팀 규칙](https://legend-palm-1f1.notion.site/05cf338213a445f68403476e7ba5361b)
+> [📜사용자 요구사항 정의서](https://docs.google.com/spreadsheets/d/12Bzab6Lbh8CIwqjfQgjEyl8PS-XTUWhw23FmXwRfLjg/edit?usp=drive_link)
+> [📜테이블 명세서](https://docs.google.com/spreadsheets/d/1m1Mv8VmqWDDD8h-ZCHdMsQ5OLmvlOCi2RUtECOVmr6o/edit?usp=drive_link)
+> [📜ERD](https://drive.google.com/file/d/1lOoA36vNL-PsBh5SOcPZFPF7I7fQvoz1/view?usp=drive_link)
+> [📜API 명세서](https://docs.google.com/spreadsheets/d/1kXghH9fdeh-A6L741uCBuQUTURFZYazqFjnpFcsYQyE/edit?usp=drive_link)
+> [📜화면 정의서](https://docs.google.com/spreadsheets/d/1wtw5xl6Qscc63BUljIvZheICW_R2e-BK/edit?usp=drive_link&ouid=100316069214269352598&rtpof=true&sd=true)
