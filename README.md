@@ -6,7 +6,7 @@
     <br>
     <a>오늘의 힘이 되는 한마디, 띠별 운세, 별자리별 운세, MBTI별 운세를 제공해줍니다💫</a>
     <br><br>
-    <h2><<Wire Frame>></h2>
+    <h2>🖼️Wire Frame🖼️</h2>
     <img src="https://github.com/OZ-Coding-School/oz_02_collabo-003-BE/assets/155046238/27630e5d-6ade-4b59-9b31-03e15c5509e5">
     <a>- (4/23) : 소셜 로그인 기능 삭제.</a>
     <br><br>
@@ -29,5 +29,33 @@
         </tbody>
     </table>
     <br><br>
-    
+    <h2>⚙️기술 스택</h2>
+    <br>
+    ### ✅Frond-end
+    <br>
+    <img src="https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=React&logoColor=black">
+    <img src="https://img.shields.io/badge/HTML-E34F26?style=for-the-badge&logo=html5&logoColor=white">
+    <img src="https://img.shields.io/badge/CSS-1572B6?style=for-the-badge&logo=css3&logoColor=white">
+    <img src="https://img.shields.io/badge/Javascript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black">
+    <br>
+    ### ✅Back-end
+    <br>
+    <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white">
+    <img src="https://img.shields.io/badge/Django-092E20?style=for-the-badge&logo=django&logoColor=white">
+    <img src="https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white">
+    <img src="https://img.shields.io/badge/Amazon AWS-232F3E?style=for-the-badge&logo=amazonaws&logoColor=white">
+    <img src="https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black">
+    <br>
+    ### 💬Communication Tools
+    <br>
+    <img src="https://img.shields.io/badge/Slack-4A154B?style=for-the-badge&logo=slack&logoColor=white">
+    <img src="https://img.shields.io/badge/Discord-000000?style=for-the-badge&logo=discord&logoColor=white">
+    <img src="https://img.shields.io/badge/Notion-000000?style=for-the-badge&logo=notion&logoColor=white">
+    <img src="https://img.shields.io/badge/Figma-F24E1E?style=for-the-badge&logo=figma&logoColor=white">
+    <br>
+    ### 🫱🏻‍🫲🏻Video Conference Tools
+    <img src="https://img.shields.io/badge/ZEP-03C75A?style=for-the-badge&logo=naver&logoColor=black">
+    <img src="https://img.shields.io/badge/Discord-000000?style=for-the-badge&logo=discord&logoColor=white">
+    <img src="https://img.shields.io/badge/Slack-4A154B?style=for-the-badge&logo=slack&logoColor=white">
+    <br>
 </div>
