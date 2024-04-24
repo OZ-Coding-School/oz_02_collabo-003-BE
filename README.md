@@ -9,7 +9,7 @@
 </div>
 <h2 href="https://www.figma.com/file/Tv9IEyBVxBX8UIqs5dP30K/%5BK%EC%B2%A0%ED%95%99%EA%B4%80-%ED%95%A9%EB%8F%99-%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8%5D-%EC%98%A4%EB%8A%98%EC%9D%98-%EC%9A%B4%EC%84%B8-%EC%99%80%EC%9D%B4%EC%96%B4%ED%94%84%EB%A0%88%EC%9E%84-%ED%85%9C%ED%94%8C%EB%A6%BF?type=design&node-id=0-1&mode=design&t=SlW3aSNPQZwMwqva-0">🖼️Wire Frame🖼️</h2>
 <img src="https://github.com/OZ-Coding-School/oz_02_collabo-003-BE/assets/155046238/27630e5d-6ade-4b59-9b31-03e15c5509e5">
-<a>- (4/16) : OZ 2기 3조 합동 프로젝트 시작.</a>
+<a>- (4/16) : OZ 2기 3조 합동 프로젝트 시작.<br></a>
 <a>- (4/23) : 소셜 로그인 기능 삭제.</a>
 <br><br>
 <div align="center">
@@ -86,7 +86,6 @@
 
 > #### Title
 > - 제목은 '[Feat] 홈 페이지 구현'과 같이 작성합니다.
-<br>
 
 > #### PR Type
 > FEAT: 새로운 기능 구현
@@ -99,7 +98,6 @@
 > DEPLOY: 배포 관련
 > CONF: 빌드, 환경 설정
 > CHORE: 기타 작업
-<br>
 
 > #### Description
 > - 구체적인 작업 내용을 작성해주세요.
@@ -118,7 +116,6 @@
 > - Controller, Service, Dto, Repository, mapper 앞에 접미사로 통일(ex. MemberController)
 > - service 계층 메서드명 create, update, find, delete로 CRUD 통일(ex. createMember)
 > - Test 클래스는 접미사로 Test 사용(ex. memberFindTest)
-<br>
 
 > FE
 > - 
@@ -131,10 +128,10 @@
 
 ### 🗂️Documents
 
-> [📜Notion K철학관](https://legend-palm-1f1.notion.site/K-b38f27ba8b9f434bab2d97556c866c12)
-> [📜팀 규칙](https://legend-palm-1f1.notion.site/05cf338213a445f68403476e7ba5361b)
-> [📜사용자 요구사항 정의서](https://docs.google.com/spreadsheets/d/12Bzab6Lbh8CIwqjfQgjEyl8PS-XTUWhw23FmXwRfLjg/edit?usp=drive_link)
-> [📜테이블 명세서](https://docs.google.com/spreadsheets/d/1m1Mv8VmqWDDD8h-ZCHdMsQ5OLmvlOCi2RUtECOVmr6o/edit?usp=drive_link)
-> [📜ERD](https://drive.google.com/file/d/1lOoA36vNL-PsBh5SOcPZFPF7I7fQvoz1/view?usp=drive_link)
-> [📜API 명세서](https://docs.google.com/spreadsheets/d/1kXghH9fdeh-A6L741uCBuQUTURFZYazqFjnpFcsYQyE/edit?usp=drive_link)
-> [📜화면 정의서](https://docs.google.com/spreadsheets/d/1wtw5xl6Qscc63BUljIvZheICW_R2e-BK/edit?usp=drive_link&ouid=100316069214269352598&rtpof=true&sd=true)
+> [📜Notion K철학관](https://legend-palm-1f1.notion.site/K-b38f27ba8b9f434bab2d97556c866c12)<br>
+> [📜팀 규칙](https://legend-palm-1f1.notion.site/05cf338213a445f68403476e7ba5361b)<br>
+> [📜사용자 요구사항 정의서](https://docs.google.com/spreadsheets/d/12Bzab6Lbh8CIwqjfQgjEyl8PS-XTUWhw23FmXwRfLjg/edit?usp=drive_link)<br>
+> [📜테이블 명세서](https://docs.google.com/spreadsheets/d/1m1Mv8VmqWDDD8h-ZCHdMsQ5OLmvlOCi2RUtECOVmr6o/edit?usp=drive_link)<br>
+> [📜ERD](https://drive.google.com/file/d/1lOoA36vNL-PsBh5SOcPZFPF7I7fQvoz1/view?usp=drive_link)<br>
+> [📜API 명세서](https://docs.google.com/spreadsheets/d/1kXghH9fdeh-A6L741uCBuQUTURFZYazqFjnpFcsYQyE/edit?usp=drive_link)<br>
+> [📜화면 정의서](https://docs.google.com/spreadsheets/d/1wtw5xl6Qscc63BUljIvZheICW_R2e-BK/edit?usp=drive_link&ouid=100316069214269352598&rtpof=true&sd=true)<br>
