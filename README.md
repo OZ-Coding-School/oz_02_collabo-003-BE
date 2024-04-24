@@ -4,7 +4,7 @@
     <br>
     <img src="https://github.com/OZ-Coding-School/oz_02_collabo-003-BE/assets/155046238/9fced64d-0cac-4dfb-93b7-1ccc7c237bd8">
     <br>
-    <a>오늘의 힘이 되는 한마디, 띠별 운세, 별자리별 운세, MBTI별 운세를 제공해줍니다💫</a>
+    <a>💫오늘의 힘이 되는 한마디, 띠별 운세, 별자리별 운세, MBTI별 운세를 제공해줍니다💫</a>
     <br><br>
 </div>
 <h2 href="https://www.figma.com/file/Tv9IEyBVxBX8UIqs5dP30K/%5BK%EC%B2%A0%ED%95%99%EA%B4%80-%ED%95%A9%EB%8F%99-%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8%5D-%EC%98%A4%EB%8A%98%EC%9D%98-%EC%9A%B4%EC%84%B8-%EC%99%80%EC%9D%B4%EC%96%B4%ED%94%84%EB%A0%88%EC%9E%84-%ED%85%9C%ED%94%8C%EB%A6%BF?type=design&node-id=0-1&mode=design&t=SlW3aSNPQZwMwqva-0">🖼️Wire Frame🖼️</h2>
