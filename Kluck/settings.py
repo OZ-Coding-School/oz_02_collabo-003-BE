@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
+from kluck_env import env_settings as env
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,7 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-)5b4tubw56gwfy0hl8x5ilk%s2%&_5p5sqmk8fn*oe^=ehad_0'
+SECRET_KEY = env.Django_SECRET_KEY
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -84,11 +85,11 @@ WSGI_APPLICATION = 'Kluck.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'db_kluck',
-        'USER': 'root',
-        'PASSWORD': 'its_secret.',
-        'HOST': 'localhost',  # 또는 MySQL 서버의 IP 주소
-        'PORT': '3306',  # MySQL의 기본 포트 번호
+        'NAME': env.MYSQL_DBNAME,
+        'USER': env.MYSQL_USERNAME,
+        'PASSWORD': env.MYSQL_PASSWD,
+        'HOST': env.MYSQL_HOST,  # 또는 MySQL 서버의 IP 주소
+        'PORT': env.MYSQL_PORT,  # MySQL의 기본 포트 번호
     }
 }
 
