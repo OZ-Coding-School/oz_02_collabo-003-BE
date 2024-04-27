@@ -2,6 +2,8 @@
 # Edit at https://www.toptal.com/developers/gitignore?templates=django,pycharm
 
 kluck_env/
+.idea/
+
 ### Django ###
 *.log
 *.pot
