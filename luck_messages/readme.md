@@ -16,13 +16,16 @@ class LuckMessage(models.Model):
 ```
 ## BE-LUCK201
 - 오늘 날짜의 띠별 모든 년도 데이터 로드
-
+- RestAPI 방식으로 변경
 ### 필요데이터 
 - 오늘날짜
   ```
-  def findZodiacMessages(request, attribute1):
-    now = datetime.now()
-    date = now.strftime("%Y%m%d")
+  class findZodiacMessages(views.APIView):
+      serializer_class = zodiacSerializer
+      def get(self, request, attribute1):
+          now = datetime.now()
+          date = now.strftime("%Y%m%d")
+          reqCategory = "zodiac"
   ```
 ### 데이터 호출
 - 필터 사용
@@ -37,8 +40,12 @@ class LuckMessage(models.Model):
 ### 필요데이터 
 - 오늘날짜
   ```
-    now = datetime.now()
-    date = now.strftime("%Y%m%d")
+  class findStarMessages(views.APIView):
+      serializer_class = starSerializer
+      def get(self, request):
+          now = datetime.now()
+          date = now.strftime("%Y%m%d")
+          reqCategory = "star"
   ```
 ### 데이터 호출
 - 필터 사용
@@ -59,24 +66,40 @@ class LuckMessage(models.Model):
 
 ### JSON으로 반환
 ```
-    serializer = messagesSerializer(messages, many=True)
-    return HttpResponse(serializer.data)
+  serializer = zodiacSerializer(messages, many=True)
+  return Response(serializer.data, status=status.HTTP_200_OK)
 ```
 
 ### JSON 반환 결과
 ```
-  [{'msg_id': 427, 'luck_date': '20240429', 'category': 'MBTI', 'attribute1': 'ISTJ', 'attribute2': None, 'luck_msg': '20240429 ISTJ 운수', 'gpt_id': 1}, {'msg_id': 428, 
-'luck_date': '20240429', 'category': 'MBTI', 'attribute1': 'ISFJ', 'attribute2': None, 'luck_msg': '20240429 ISFJ 운수', 'gpt_id': 1}, {'msg_id': 429, 'luck_date': '202
-40429', 'category': 'MBTI', 'attribute1': 'INFJ', 'attribute2': None, 'luck_msg': '20240429 INFJ 운수', 'gpt_id': 1}, {'msg_id': 430, 'luck_date': '20240429', 'category
-': 'MBTI', 'attribute1': 'INTJ', 'attribute2': None, 'luck_msg': '20240429 INTJ 운수', 'gpt_id': 1}, {'msg_id': 431, 'luck_date': '20240429', 'category': 'MBTI', 'attri
-bute1': 'ISTP', 'attribute2': None, 'luck_msg': '20240429 ISTP 운수', 'gpt_id': 1}, {'msg_id': 432, 'luck_date': '20240429', 'category': 'MBTI', 'attribute1': 'ISFP', '
-attribute2': None, 'luck_msg': '20240429 ISFP 운수', 'gpt_id': 1}, {'msg_id': 433, 'luck_date': '20240429', 'category': 'MBTI', 'attribute1': 'INFP', 'attribute2': None
-, 'luck_msg': '20240429 INFP 운수', 'gpt_id': 1}, {'msg_id': 434, 'luck_date': '20240429', 'category': 'MBTI', 'attribute1': 'INTP', 'attribute2': None, 'luck_msg': '20
-240429 INTP 운수', 'gpt_id': 1}, {'msg_id': 435, 'luck_date': '20240429', 'category': 'MBTI', 'attribute1': 'ESTP', 'attribute2': None, 'luck_msg': '20240429 ESTP 운수'
-, 'gpt_id': 1}, {'msg_id': 436, 'luck_date': '20240429', 'category': 'MBTI', 'attribute1': 'ESFP', 'attribute2': None, 'luck_msg': '20240429 ESFP 운수', 'gpt_id': 1}, {
-'msg_id': 437, 'luck_date': '20240429', 'category': 'MBTI', 'attribute1': 'ENFP', 'attribute2': None, 'luck_msg': '20240429 ENFP 운수', 'gpt_id': 1}, {'msg_id': 438, 'l
-uck_date': '20240429', 'category': 'MBTI', 'attribute1': 'ENTP', 'attribute2': None, 'luck_msg': '20240429 ENTP 운수', 'gpt_id': 1}, {'msg_id': 439, 'luck_date': '20240
-429', 'category': 'MBTI', 'attribute1': 'ESTJ', 'attribute2': None, 'luck_msg': '20240429 ESTJ 운수', 'gpt_id': 1}, {'msg_id': 440, 'luck_date': '20240429', 'category':
- 'MBTI', 'attribute1': 'ESFJ', 'attribute2': None, 'luck_msg': '20240429 ESFJ 운수', 'gpt_id': 1}, {'msg_id': 441, 'luck_date': '20240429', 'category': 'MBTI', 'attribu
-te1': 'ENFJ', 'attribute2': None, 'luck_msg': '20240429 ENFJ 운수', 'gpt_id': 1}, {'msg_id': 442, 'luck_date': '20240429', 'category': 'MBTI', 'attribute1': 'ENTJ', 'attribute2': None, 'luck_msg': '20240429 ENTJ 운수', 'gpt_id': 1}]
+  [
+    {
+        "luck_date": "20240430",
+        "category": "zodiac",
+        "attribute1": "소",
+        "attribute2": "2009",
+        "luck_msg": "20240430 2009 운수"
+    },
+    {
+        "luck_date": "20240430",
+        "category": "zodiac",
+        "attribute1": "소",
+        "attribute2": "1997",
+        "luck_msg": "20240430 1997 운수"
+    },
+    {
+        "luck_date": "20240430",
+        "category": "zodiac",
+        "attribute1": "소",
+        "attribute2": "1985",
+        "luck_msg": "20240430 1985 운수"
+    },
+    {
+        "luck_date": "20240430",
+        "category": "zodiac",
+        "attribute1": "소",
+        "attribute2": "1973",
+        "luck_msg": "20240430 1973 운수"
+    }
+]
 ```
