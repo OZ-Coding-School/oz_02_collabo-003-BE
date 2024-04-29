@@ -45,6 +45,8 @@ CUSTOM_APPS = [
     'admins',
     'gpt_prompts',
     'luck_messages',
+    'rest_framework',
+    'drf_yasg',
 ]
 
 

@@ -180,30 +180,6 @@ offline = ["drf-spectacular-sidecar"]
 sidecar = ["drf-spectacular-sidecar"]
 
 [[package]]
-name = "drf-yasg"
-version = "1.21.7"
-description = "Automated generation of real Swagger/OpenAPI 2.0 schemas from Django Rest Framework code."
-optional = false
-python-versions = ">=3.6"
-files = [
-    {file = "drf-yasg-1.21.7.tar.gz", hash = "sha256:4c3b93068b3dfca6969ab111155e4dd6f7b2d680b98778de8fd460b7837bdb0d"},
-    {file = "drf_yasg-1.21.7-py3-none-any.whl", hash = "sha256:f85642072c35e684356475781b7ecf5d218fff2c6185c040664dd49f0a4be181"},
-]
-
-[package.dependencies]
-django = ">=2.2.16"
-djangorestframework = ">=3.10.3"
-inflection = ">=0.3.1"
-packaging = ">=21.0"
-pytz = ">=2021.1"
-pyyaml = ">=5.1"
-uritemplate = ">=3.0.0"
-
-[package.extras]
-coreapi = ["coreapi (>=2.3.3)", "coreschema (>=0.0.4)"]
-validation = ["swagger-spec-validator (>=2.1.0)"]
-
-[[package]]
 name = "flake8"
 version = "7.0.0"
 description = "the modular source code checker: pep8 pyflakes and co"
@@ -363,17 +339,6 @@ python-versions = ">=3.8"
 files = [
     {file = "pyflakes-3.2.0-py2.py3-none-any.whl", hash = "sha256:84b5be138a2dfbb40689ca07e2152deb896a65c3a3e24c251c5c62489568074a"},
     {file = "pyflakes-3.2.0.tar.gz", hash = "sha256:1c61603ff154621fb2a9172037d84dca3500def8c8b630657d1701f026f8af3f"},
-]
-
-[[package]]
-name = "pytz"
-version = "2024.1"
-description = "World timezone definitions, modern and historical"
-optional = false
-python-versions = "*"
-files = [
-    {file = "pytz-2024.1-py2.py3-none-any.whl", hash = "sha256:328171f4e3623139da4983451950b28e95ac706e13f3f2630a879749e7a8b319"},
-    {file = "pytz-2024.1.tar.gz", hash = "sha256:2a29735ea9c18baf14b448846bde5a48030ed267578472d8955cd0e7443a9812"},
 ]
 
 [[package]]
@@ -615,4 +580,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "55bc6d2f114ca16ac0eaa079b62357f03a478135bfd5afa811d947f30b938849"
+content-hash = "51098cf8d50ae52e09fb84b4ca4c08dbe765640655060ef9daae36d141137430"
