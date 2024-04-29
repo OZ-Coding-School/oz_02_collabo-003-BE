@@ -46,7 +46,7 @@ CUSTOM_APPS = [
     'gpt_prompts',
     'luck_messages',
     'rest_framework',
-    'drf_yasg',
+    'drf_spectacular',
 ]
 
 
@@ -115,6 +115,10 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
+# Swagger settings
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
 
 
 # Internationalization
