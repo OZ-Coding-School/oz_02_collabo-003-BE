@@ -1,9 +1,5 @@
 [tool.poetry]
-<<<<<<< HEAD
-name = "kluck"
-=======
 name = "kluckdev"
->>>>>>> f0f9b72e9f002559ba5a67d98864a3cbe396d455
 version = "0.1.0"
 description = ""
 authors = ["Hyunminmax <hyunmin.shin81@gmail.com>"]
@@ -14,13 +10,8 @@ python = "^3.12"
 django = "^5.0.4"
 mysqlclient = "^2.2.4"
 flake8 = "^7.0.0"
-<<<<<<< HEAD
-black = "^24.4.0"
-django-allauth = "^0.62.0"
-=======
 black = "^24.4.2"
 django-allauth = "^0.62.1"
->>>>>>> f0f9b72e9f002559ba5a67d98864a3cbe396d455
 djangorestframework = "^3.15.1"
 drf-spectacular = "^0.27.2"
 drf-yasg = "^1.21.7"

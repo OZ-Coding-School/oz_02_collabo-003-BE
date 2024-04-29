@@ -6,11 +6,7 @@ import sys
 
 def main():
     """Run administrative tasks."""
-<<<<<<< HEAD
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'Kluck.settings')
-=======
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "Kluck_config.settings")
->>>>>>> f0f9b72e9f002559ba5a67d98864a3cbe396d455
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:
@@ -22,9 +18,5 @@ def main():
     execute_from_command_line(sys.argv)
 
 
-<<<<<<< HEAD
-if __name__ == '__main__':
-=======
 if __name__ == "__main__":
->>>>>>> f0f9b72e9f002559ba5a67d98864a3cbe396d455
     main()
