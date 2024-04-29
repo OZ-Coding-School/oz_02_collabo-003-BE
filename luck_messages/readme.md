@@ -3,7 +3,7 @@
 - BE-LUCK301 별자리
 - BE-LUCK401 MBTI
 
-모델
+### 모델(models.py)
 ```
 class LuckMessage(models.Model):
     msg_id = models.AutoField(primary_key=True)
@@ -54,7 +54,7 @@ class LuckMessage(models.Model):
   class messagesSerializer(ModelSerializer):
     class Meta:
         model = LuckMessage
-        fields = '__all__'  # 모든 필드 포함
+        fields = ('luck_date', 'category', 'attribute1', 'attribute2', 'luck_msg')
 ```
 
 ### JSON으로 반환
