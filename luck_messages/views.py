@@ -1,5 +1,4 @@
 from django.shortcuts import render
-from django.http import HttpResponse
 from datetime import datetime
 import random
 from rest_framework import status
@@ -10,13 +9,14 @@ from .models import LuckMessage
 
 # Create your views here.
 class TodayLuck(APIView):
-    def get(self, request):
+    serializer_class = TodayLuckSerializer
+    def get(self, request, user_birth, user_MBTI):
         try:
             # 오늘 날짜 가져오기, 입력 받은 사용자의 데이터를 변수로 저장.
             now = datetime.now()
             today = now.strftime("%Y%m%d")
-            user_birth = request.GET.get('user_birth')
-            user_MBTI = request.GET.get('user_MBTI')
+            # user_birth = request.GET.get('user_birth')
+            # user_MBTI = request.GET.get('user_MBTI')
 
             # 오늘의 한마디 사용자에게 제공.
             # 3가지의 오늘의 한마디에서 랜덤하게 제공.
@@ -63,7 +63,7 @@ class TodayLuck(APIView):
             star_serializer = TodayLuckSerializer(star_msg[0]).data
             mbti_serializer = TodayLuckSerializer(mbti_msg[0]).data
 
-            serializer = {
+            serializer= {
                 'today_msg' : today_serializer,
                 'zodiac_msg' : zodiac_serializer,
                 'star_msg' : star_serializer,
