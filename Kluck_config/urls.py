@@ -27,5 +27,5 @@ urlpatterns = [
     # Optional UI:
     path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
     path('api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
-    path('api/v1/msg/', include('luck_messages.urls'))
+    path('api/v1/admin/', include('luck_messages.urls'))
 ]
