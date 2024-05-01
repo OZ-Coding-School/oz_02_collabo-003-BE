@@ -6,7 +6,7 @@ authors = ["Hyunminmax <hyunmin.shin81@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "^3.11, <3.12"
 django = "^5.0.4"
 mysqlclient = "^2.2.4"
 flake8 = "^7.0.0"
