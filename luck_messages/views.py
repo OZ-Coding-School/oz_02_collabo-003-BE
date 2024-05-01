@@ -5,8 +5,8 @@ from .serializers import *
 
 class findSomedayZodiacMessages(views.APIView):
     serializer_class = zodiacSerializer
-    def get(self, request, attribute1, luck_date):
+    def get(self, request, luck_date):
         reqCategory = "zodiac"
-        messages = LuckMessage.objects.filter(luck_date=luck_date, category=reqCategory, attribute1=attribute1)
+        messages = LuckMessage.objects.filter(luck_date=luck_date, category=reqCategory)
         serializer = zodiacSerializer(messages, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
