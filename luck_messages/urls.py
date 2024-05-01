@@ -5,6 +5,6 @@ from .views import findSomedayStarMessages
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 
 urlpatterns = [
-    path('star_all/<str:luck_date>', findSomedayStarMessages.as_view(), name='findSomedayStarMessages'),
+    path('star/<str:luck_date>', findSomedayStarMessages.as_view(), name='findSomedayStarMessages'),
 
 ]
