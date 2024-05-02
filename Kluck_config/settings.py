@@ -47,8 +47,6 @@ CUSTOM_APPS = [
     'luck_messages',
     'rest_framework',
     'drf_spectacular',
-    #405 Error: Method Not Allowed를 해결하기 위해 설치해봄.
-    'corsheaders',
 ]
 
 
@@ -62,14 +60,8 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    #405 Error: Method Not Allowed를 해결하기 위해 설치해봄.
-    "corsheaders.middleware.CorsMiddleware",
+
 ]
-
-# 2024-05-02 오전까지 동작하던 post가 동작하지 않음.
-#405 Error: Method Not Allowed를 해결하기 위해 설치해봄.
-CORS_ALLOW_ALL_ORIGINS = True
-
 
 
 ROOT_URLCONF = "Kluck_config.urls"
