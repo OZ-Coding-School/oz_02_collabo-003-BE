@@ -1,11 +1,12 @@
-from rest_framework import views, status
+from rest_framework import status
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from .serializers import *
 from luck_messages.models import LuckMessage
 
 
 # api/v1/admin/today/<int:msg_id>/
-class TodayMessage(views.APIView):
+class TodayMessage(APIView):
     '''
     프론트에서 msg_id를 받아 luck_messages의 모델에서 해당 id를 찾아 내용 수정
     수정 내용을 따로 다시 반환하지는 않는다.
