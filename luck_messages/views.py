@@ -9,6 +9,7 @@ from .serializers import TodayLuckSerializer
 from .models import LuckMessage
 
 # Create your views here.
+# api/v1/main/
 class TodayLuck(APIView):
     def get(self, request):
         try:
