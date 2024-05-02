@@ -6,6 +6,17 @@ from .serializers import *
 import random
 from .models import LuckMessage
 
+#/api/v1/admin/star/<str:luck_date>
+class findSomedayStarMessages(APIView):
+    #특정일자의 별자리 메세지 조회
+    serializer_class = starSerializer
+    def get(self, request, luck_date):
+        reqCategory = "star"
+        messages = LuckMessage.objects.filter(luck_date=luck_date, category=reqCategory)
+        serializer = starSerializer(messages, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 #/api/v1/msg/zodiac/<str:luck_date>
 class findSomedayZodiacMessages(APIView):
     #특정일자의 띠 메세지 조회

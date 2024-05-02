@@ -25,10 +25,11 @@ class zodiacSerializer(ModelSerializer):
 
         
 class starSerializer(ModelSerializer):
+  #특정 일자의 별자리 메세지 조회
     class Meta:
         model = LuckMessage
         # fields = '__all__'  # 모든 필드 포함
-        fields = ('luck_date', 'category', 'attribute1', 'luck_msg')
+        fields = ('msg_id', 'luck_date', 'category', 'attribute1', 'luck_msg')
 
 
 class TodayLuckSerializer(ModelSerializer):
