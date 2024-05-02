@@ -28,6 +28,6 @@ urlpatterns = [
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),  
     # YOUR PATTERNS
     path("api/v1/msg/", include('luck_messages.urls')),
-    path('api/v1/admin/', include('luck_messages.urls')),
+    path('api/v1/admin/', include('luck_messages.urls_admin')),
     path('api/v1/admin/', include('admins.urls')),
 ]
