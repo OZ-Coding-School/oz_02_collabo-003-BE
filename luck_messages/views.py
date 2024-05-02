@@ -7,7 +7,7 @@ import random
 from .models import LuckMessage
 
 #/api/v1/msg/zodiac/<str:luck_date>
-class findSomedayZodiacMessages(views.APIView):
+class findSomedayZodiacMessages(APIView):
     #특정일자의 띠 메세지 조회
     serializer_class = zodiacSerializer
     def get(self, request, luck_date):
