@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .serializers import PromptTodaySerializer # PromptTodayHistorySerializer, PromptZodiacSerializer, PromptZodiacHistorySerializer, PromptStarSerializer, PromptStarHistorySerializer, PromptMbtiSerializer, PromptMbtiHistorySerializer
+from .serializers import PromptTodaySerializer, PromptTodayHistorySerializer #PromptZodiacSerializer, PromptZodiacHistorySerializer, PromptStarSerializer, PromptStarHistorySerializer, PromptMbtiSerializer, PromptMbtiHistorySerializer
 from .models import GptPrompt
 
 # Create your views here.
@@ -41,14 +41,14 @@ class PromptToday(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
 
-# class PromptTodayHistory(APIView):
-#     # 프롬프트 메세지 전체 로드
-#     # api/v1/prompt/today/history
-#     def get(self, request):
-#         try:
-#             pass
-#         except:
-#             pass
+class PromptTodayHistory(APIView):
+    # 프롬프트 메세지 전체 로드
+    # api/v1/prompt/today/history
+    def get(self, request):
+        try:
+            pass
+        except:
+            pass
 
 
 # # 띠별 운세 프롬프트

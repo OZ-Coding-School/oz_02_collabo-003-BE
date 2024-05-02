@@ -1,9 +1,9 @@
 from django.urls import path
-from .views import PromptToday #PromptTodayHistory, PromptZodiac, PromptZodiacHistory, PromptStar, PromptStarHistory, PromptMbti, PromptMbtiHistory
+from .views import PromptToday, PromptTodayHistory #PromptZodiac, PromptZodiacHistory, PromptStar, PromptStarHistory, PromptMbti, PromptMbtiHistory
 
 urlpatterns = [
     path('today/', PromptToday.as_view(), name='PromptToday'),
-    # path('today/history/', PromptTodayHistory.as_view, name='PromptTodayHistory'),
+    path('today/history/', PromptTodayHistory.as_view, name='PromptTodayHistory'),
     # path('zodiac/', PromptZodiac.as_view(), name='PromptZodiac'),
     # path('zodiac/history/', PromptZodiacHistory.as_view, name='PromptZodiacHistory'),
     # path('star/', PromptStar.as_view(), name='PromptStar'),
