@@ -10,13 +10,13 @@ from .models import LuckMessage
 # Create your views here.
 # api/v1/main/
 class TodayLuck(APIView):
-    def get(self, request):
+    def get(self, request, user_birth, user_MBTI):
         try:
             # 오늘 날짜 가져오기, 입력 받은 사용자의 데이터를 변수로 저장.
             now = datetime.now()
             today = now.strftime("%Y%m%d")
-            user_birth = request.GET.get('user_birth')
-            user_MBTI = request.GET.get('user_MBTI')
+            # user_birth = request.GET.get('user_birth')
+            # user_MBTI = request.GET.get('user_MBTI')
 
             # 오늘의 한마디 사용자에게 제공.
             # 3가지의 오늘의 한마디에서 랜덤하게 제공.
