@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from django.http import HttpResponse
 from datetime import datetime
 import random
@@ -75,3 +74,4 @@ class TodayLuck(APIView):
 
         except LuckMessage.DoesNotExist:
             raise Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
+
