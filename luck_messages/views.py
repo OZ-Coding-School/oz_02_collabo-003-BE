@@ -22,12 +22,24 @@ class TodayLuck(APIView):
 
             # 오늘의 한마디 사용자에게 제공.
             # 3가지의 오늘의 한마디에서 랜덤하게 제공.
+
+            today_msg = LuckMessage.objects.filter(luck_date=today, attribute2=random.randint(0,4))
+            if today_msg:
+                today_serializer = TodayLuckSerializer(today_msg[0]).data
+            else:
+                today_serializer = {}
+
             ran_num = random.randint(0, 4)
             today_msg = LuckMessage.objects.filter(luck_date=today, attribute2=ran_num)
+
 
             # 사용자 출생연도에 맞는 띠별 오늘의 운세 제공.
             user_zodiac = user_birth[:4]
             zodiac_msg = LuckMessage.objects.filter(luck_date=today, attribute2=user_zodiac)
+            if zodiac_msg:
+                zodiac_serializer = TodayLuckSerializer(zodiac_msg[0]).data
+            else:
+                zodiac_serializer = {}
 
             # 사용자 출생월일에 맞는 별자리별 오늘의 운세 제공.
             user_star = int(user_birth[4:])
@@ -56,14 +68,14 @@ class TodayLuck(APIView):
             else:
                 star = "염소자리"
             star_msg = LuckMessage.objects.filter(luck_date=today, attribute1=star)
+            star_serializer = TodayLuckSerializer(star_msg[0]).data
 
             # 사용자 MBTI에 맞는 MBTI별 오늘의 운세 제공.
             mbti_msg = LuckMessage.objects.filter(luck_date=today, attribute1=user_MBTI)
-
-            today_serializer = TodayLuckSerializer(today_msg[0]).data
-            zodiac_serializer = TodayLuckSerializer(zodiac_msg[0]).data
-            star_serializer = TodayLuckSerializer(star_msg[0]).data
-            mbti_serializer = TodayLuckSerializer(mbti_msg[0]).data
+            if mbti_msg:
+                mbti_serializer = TodayLuckSerializer(mbti_msg[0]).data
+            else:
+                mbti_serializer = {}
 
             serializer = {
                 'today_msg': today_serializer,
@@ -76,8 +88,8 @@ class TodayLuck(APIView):
 
         except LuckMessage.DoesNotExist:
             raise Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
-
-
+            
+            
 #api/v1/msg/zodiac_all/{띠이름}
 class findTodayZodiacMessages(APIView):
     serializer_class = zodiacSerializer
