@@ -1,4 +1,3 @@
-
 from datetime import datetime
 from rest_framework import status
 from rest_framework.views import APIView
@@ -6,6 +5,18 @@ from rest_framework.response import Response
 from .serializers import *
 import random
 from .models import LuckMessage
+
+
+class findTodayMbtiMessages(APIView):
+    serializer_class = mbtiSerializer
+    def get(self, request):
+        now = datetime.now()
+        date = now.strftime("%Y%m%d")
+        reqCategory = 'mbti'
+        messages = LuckMessage.objects.filter(luck_date=date, category=reqCategory)
+        serializer = mbtiSerializer(messages, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 class findTodayZodiacMessages(APIView):
     serializer_class = zodiacSerializer
@@ -95,4 +106,3 @@ class TodayLuck(APIView):
 
         except LuckMessage.DoesNotExist:
             raise Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
-
