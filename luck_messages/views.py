@@ -7,7 +7,7 @@ import random
 from .models import LuckMessage
 
 #/api/v1/msg/today/<str:luck_date>
-class findSomedayTodayMessages(views.APIView):
+class findSomedayTodayMessages(APIView):
   #특정일자의 Today메세지 조회
     serializer_class = todaySerializer
     def get(self, request, luck_date):
@@ -52,6 +52,8 @@ class findTodayStarMessages(APIView):
     
 # api/v1/msg/main/
 class TodayLuck(APIView):
+    #오늘 날짜의 Today, 띠, 별, MBTI 메세지 조회
+    serializer_class = TodayLuckSerializer
     def get(self, request, user_birth, user_MBTI):
         try:
             # 오늘 날짜 가져오기, 입력 받은 사용자의 데이터를 변수로 저장.
