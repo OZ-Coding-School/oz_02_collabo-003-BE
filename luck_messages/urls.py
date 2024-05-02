@@ -9,5 +9,6 @@ urlpatterns = [
     path('star_all/', findTodayStarMessages.as_view(), name='findTodayStarMessages'),
     path('star/<str:luck_date>', findSomedayStarMessages.as_view(), name='findSomedayStarMessages'),  
     path('mbti_all/', findTodayMbtiMessages.as_view(), name="findTodayMbtiMessages"),
+    path('mbti/<str:luck_date>', findSomedayMbtiMessages.as_view(), name="findTodayMbtiMessages"),
     path('main/<str:user_birth>&<str:user_MBTI>', TodayLuck.as_view(), name='TodayLuck'),
 ]

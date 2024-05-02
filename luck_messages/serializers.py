@@ -11,10 +11,11 @@ class todaySerializer(ModelSerializer):
 
         
 class mbtiSerializer(ModelSerializer):
+  #특정 일자의 MBTI메세지 조회
     class Meta:
         model = LuckMessage
         # fields = '__all__'  # 모든 필드 포함
-        fields = ('luck_date', 'category', 'attribute1', 'luck_msg')
+        fields = ('msg_id', 'luck_date', 'category', 'attribute1', 'luck_msg')
 
         
 class zodiacSerializer(ModelSerializer):
