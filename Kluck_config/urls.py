@@ -29,4 +29,5 @@ urlpatterns = [
     # YOUR PATTERNS
     path("api/v1/msg/", include('luck_messages.urls')),
     path('api/v1/admin/', include('luck_messages.urls')),
+    path('api/v1/admin/', include('admins.urls'))
 ]
