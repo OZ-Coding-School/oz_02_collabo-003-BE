@@ -1,6 +1,5 @@
 from rest_framework.serializers import ModelSerializer
 from .models import LuckMessage
-from rest_framework import serializers
 
 
 class zodiacSerializer(ModelSerializer):
@@ -17,8 +16,7 @@ class starSerializer(ModelSerializer):
         fields = ('luck_date', 'category', 'attribute1', 'luck_msg')
 
 
-class TodayLuckSerializer(serializers.ModelSerializer):
-
+class TodayLuckSerializer(ModelSerializer):
     class Meta:
         model = LuckMessage
         fields = ('luck_date', 'category', 'attribute1', 'attribute2', 'luck_msg')
