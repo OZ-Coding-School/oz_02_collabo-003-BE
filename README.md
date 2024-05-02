@@ -17,7 +17,7 @@
     <table>
         <tbody>
             <tr>
-            <td align="center"><a href="https://github.com/Hyunminmax"><img src="https://github.com/OZ-Coding-School/oz_02_collabo-003-BE/assets/155046238/864e5317-6133-4aaf-b757-2a6e99494e42" width="100px;" alt="신현민 프로필"/><br /><sub><b>팀장 / BE 팀장 : 신현민</b></sub></a><br /></td>
+            <td align="center"><a href="https://github.com/Hyunminmax"><img src="https://github.com/OZ-Coding-School/oz_02_collabo-003-BE/assets/155046238/4d67c793-1b98-4e3f-9c92-60bf59f8fc05" width="100px;" alt="신현민 프로필"/><br /><sub><b>팀장 / BE 팀장 : 신현민</b></sub></a><br /></td>
             <td align="center"><a href="https://github.com/BE-02-KMJ"><img src="https://github.com/OZ-Coding-School/oz_02_collabo-003-BE/assets/155046238/f7ed554d-cb77-45b2-b8b7-7831ec3006a3" width="100px;" alt="김민정 프로필"/><br /><sub><b>BE 팀원 : 김민정</b></sub></a><br /></td>
             <td align="center"><a href="https://github.com/Bongguo"><img src="https://github.com/OZ-Coding-School/oz_02_collabo-003-BE/assets/155046238/162edbf6-86ee-4537-867e-d913992ff887" width="100px;" alt="오유진 프로필"/><br /><sub><b>BE 팀원 : 오유진</b></sub></a><br /></td>
             <tr/>
@@ -142,3 +142,4 @@
 > [📜ERD](https://drive.google.com/file/d/1lOoA36vNL-PsBh5SOcPZFPF7I7fQvoz1/view?usp=drive_link)<br>
 > [📜API 명세서](https://docs.google.com/spreadsheets/d/1kXghH9fdeh-A6L741uCBuQUTURFZYazqFjnpFcsYQyE/edit?usp=drive_link)<br>
 > [📜화면 정의서](https://docs.google.com/spreadsheets/d/1wtw5xl6Qscc63BUljIvZheICW_R2e-BK/edit?usp=drive_link&ouid=100316069214269352598&rtpof=true&sd=true)<br>
+
