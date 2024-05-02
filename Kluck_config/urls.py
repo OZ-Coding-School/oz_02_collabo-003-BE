@@ -27,5 +27,6 @@ urlpatterns = [
     path('api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),  
     # YOUR PATTERNS
-    path("api/v1/msg/", include('luck_messages.urls'))
+    path("api/v1/msg/", include('luck_messages.urls')),
+    path('api/v1/admin/', include('luck_messages.urls')),
 ]
