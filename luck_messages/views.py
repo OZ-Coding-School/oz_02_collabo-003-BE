@@ -1,13 +1,35 @@
-from django.http import HttpResponse
+
 from datetime import datetime
-import random
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .serializers import TodayLuckSerializer
+from .serializers import *
+from django.http import HttpResponse
+import random
 from .models import LuckMessage
 
-# Create your views here.
+class findTodayZodiacMessages(APIView):
+    serializer_class = zodiacSerializer
+    def get(self, request, attribute1):
+        now = datetime.now()
+        date = now.strftime("%Y%m%d")
+        reqCategory = "zodiac"
+        messages = LuckMessage.objects.filter(luck_date=date, category=reqCategory, attribute1=attribute1)
+        serializer = zodiacSerializer(messages, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class findTodayStarMessages(APIView):
+    serializer_class = starSerializer
+    def get(self, request):
+        now = datetime.now()
+        date = now.strftime("%Y%m%d")
+        reqCategory = "star"
+        messages = LuckMessage.objects.filter(luck_date=date, category=reqCategory)
+        serializer = starSerializer(messages, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+      
 # api/v1/main/
 class TodayLuck(APIView):
     def get(self, request, user_birth, user_MBTI):
