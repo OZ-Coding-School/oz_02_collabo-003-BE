@@ -1,8 +1,8 @@
-from rest_framework.serializers import ModelSerializer
+from rest_framework import serializers
 from .models import LuckMessage
 
-class zodiacSerializer(ModelSerializer):
+class TodayLuckSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = LuckMessage
-        # fields = '__all__'  # 모든 필드 포함
         fields = ('luck_date', 'category', 'attribute1', 'attribute2', 'luck_msg')
