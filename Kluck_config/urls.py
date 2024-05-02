@@ -30,4 +30,5 @@ urlpatterns = [
     path('api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
     # REST API
     path("api/v1/main/", include('luck_messages.urls')),
+    path("api/v1/prompt/", include('gpt_prompts.urls')),
 ]
