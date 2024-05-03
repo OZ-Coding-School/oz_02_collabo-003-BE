@@ -12,7 +12,7 @@ class AdminSignupSerializer(ModelSerializer):
         model = Admin
         # fields = '__all__'  # 모든 필드 포함
         # fields = ('msg_id', 'luck_date', 'category', 'attribute2', 'luck_msg')
-        fields = ('admin_id', 'admin_user', 'cell_num', 'email', 'user_pw', 'adms_id')
+        fields = ('admin_id', 'admin_user', 'cell_num', 'email', 'user_pw')
 
 
 #/api/v1/admin/msg/

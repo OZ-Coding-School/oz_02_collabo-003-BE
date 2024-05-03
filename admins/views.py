@@ -10,6 +10,10 @@ from django.contrib.auth.hashers import make_password
 
 # api/v1/admin/signup/
 class AdminUsers(APIView):
+    '''
+    프론트에서 admin_id(ID), admin_user(사용자명), cell_num(폰 번호), email, user_pw(패스워드)를 받아
+    관리자 등록 수정 내용을 따로 다시 반환하지는 않는다.
+    '''
     serializer_class = AdminSignupSerializer
     def post(self, request):
 
