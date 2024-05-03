@@ -3,7 +3,8 @@ from datetime import datetime, timedelta
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .serializers import PromptTodaySerializer, PromptTodayHistorySerializer #PromptZodiacSerializer, PromptZodiacHistorySerializer, PromptStarSerializer, PromptStarHistorySerializer, PromptMbtiSerializer, PromptMbtiHistorySerializer
+from rest_framework.generics import GenericAPIView
+from .serializers import *
 from .models import GptPrompt
 
 # Create your views here.
@@ -41,14 +42,17 @@ class PromptToday(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
 
-class PromptTodayHistory(APIView):
+class PromptHistory(GenericAPIView):
     # 프롬프트 메세지 전체 로드
-    # api/v1/prompt/today/history
-    def get(self, request):
+    # api/v1/prompt/<str:category>/history
+    serializer_class = PromptHistorySerializer
+    def get(self, request, category):
         try:
-            pass
-        except:
-            pass
+            prompt_msgs = GptPrompt.objects.filter(category=category)
+            serializer = self.get_serializer(prompt_msgs, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except GptPrompt.DoesNotExist:
+            return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
 
 
 # # 띠별 운세 프롬프트
@@ -63,14 +67,6 @@ class PromptTodayHistory(APIView):
 
 #     # 프롬프트 메세지 수정 - 추가하는 방식
 #     def post(self, request, prompt_msg, admins_id):
-#         try:
-#             pass
-#         except:
-#             pass
-
-# class PromptZodiacHistory(APIView):
-#     # 프롬프트 메세지 전체 로드
-#     def get(self, request):
 #         try:
 #             pass
 #         except:
@@ -94,14 +90,6 @@ class PromptTodayHistory(APIView):
 #         except:
 #             pass
 
-# class PromptStarHistory(APIView):
-#     # 프롬프트 메세지 전체 로드
-#     def get(self, request):
-#         try:
-#             pass
-#         except:
-#             pass
-
 
 # # MBTI별 운세 프롬프트
 # class PromptMbti(APIView):
@@ -115,14 +103,6 @@ class PromptTodayHistory(APIView):
 
 #     # 프롬프트 메세지 수정 - 추가하는 방식
 #     def post(self, request, prompt_msg, admins_id):
-#         try:
-#             pass
-#         except:
-#             pass
-
-# class PromptMbtiHistory(APIView):
-#     # 프롬프트 메세지 전체 로드
-#     def get(self, request):
 #         try:
 #             pass
 #         except:

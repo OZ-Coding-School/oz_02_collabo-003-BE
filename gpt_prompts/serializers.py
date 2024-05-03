@@ -17,7 +17,7 @@ class PromptTodaySerializer(serializers.ModelSerializer):
         model = GptPrompt
         fields = '__all__'
 
-class PromptTodayHistorySerializer(serializers.ModelSerializer):
+class PromptHistorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model= GptPrompt
