@@ -5,7 +5,7 @@ class PromptTodaySerializer(serializers.ModelSerializer):
     # 임의로 관리자 id가 1인 자료 생성.
     admins_id = serializers.SerializerMethodField()
 
-    def get_admins_id(self, obj):
+    def get_admins_id(self, obj) -> int:
         return 1
 
     def create(self, validated_data):
@@ -21,7 +21,7 @@ class PromptZodiacSerializer(serializers.ModelSerializer):
     # 임의로 관리자 id가 1인 자료 생성.
     admins_id = serializers.SerializerMethodField()
 
-    def get_admins_id(self, obj):
+    def get_admins_id(self, obj) -> int:
         return 1
 
     def create(self, validated_data):
@@ -37,7 +37,7 @@ class PromptStarSerializer(serializers.ModelSerializer):
     # 임의로 관리자 id가 1인 자료 생성.
     admins_id = serializers.SerializerMethodField()
 
-    def get_admins_id(self, obj):
+    def get_admins_id(self, obj) -> int:
         return 1
 
     def create(self, validated_data):
@@ -53,7 +53,7 @@ class PromptMbtiSerializer(serializers.ModelSerializer):
     # 임의로 관리자 id가 1인 자료 생성.
     admins_id = serializers.SerializerMethodField()
 
-    def get_admins_id(self, obj):
+    def get_admins_id(self, obj) -> int:
         return 1
 
     def create(self, validated_data):
