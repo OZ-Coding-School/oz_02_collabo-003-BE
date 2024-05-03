@@ -5,6 +5,7 @@ from .serializers import *
 from luck_messages.models import LuckMessage
 from django.contrib.auth.password_validation import validate_password
 from rest_framework.exceptions import ParseError
+from django.contrib.auth.hashers import make_password
 
 
 # api/v1/admin/signup/
@@ -22,7 +23,7 @@ class AdminUsers(APIView):
 
         if serializer.is_valid():
             user = serializer.save()
-            user.set_password(password)
+            user.user_pw = make_password(password)
             user.save()
             return Response(status=status.HTTP_204_NO_CONTENT)
         else:
