@@ -1,15 +1,15 @@
-from django.contrib.auth import authenticate, login
-from django.contrib.auth.hashers import check_password
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from django.contrib.auth.password_validation import validate_password
 from rest_framework.exceptions import ParseError
-from django.contrib.auth.hashers import make_password
+from django.contrib.auth.password_validation import validate_password
+from django.contrib.auth.hashers import make_password, check_password
+from django.contrib.auth import authenticate, login
 from django.utils import timezone
 from luck_messages.models import LuckMessage
-from .models import Admin
+from admins.models import Admin
 from .serializers import *
+
 
 # api/v1/admin/login/
 class AdminLogin(APIView):
@@ -34,10 +34,23 @@ class AdminLogin(APIView):
         except Admin.DoesNotExist:
             return Response({'message': '존재하지 않는 관리자 ID입니다.'}, status=status.HTTP_404_NOT_FOUND)
 
-# api/v1/admin/signup/
+          
+# api/vi/admin/
 class AdminUsers(APIView):
     '''
-    프론트에서 admin_id(ID), admin_user(사용자명), cell_num(폰 번호), email, admin_pw(패스워드)를 받아
+    프론트에서 admins_id(PK), email, admin_user(사용자명), cell_num(폰 번호), create_date(등록일)를 로드
+    '''
+    serializer_class = AdminSerializer
+    def get(self, request):
+        admins = Admin.objects.all()
+        serializer = AdminSerializer(admins, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+# api/v1/admin/signup/
+class AdminUsersSignup(APIView):
+    '''
+    프론트에서 admin_id(ID), admin_user(사용자명), cell_num(폰 번호), email, user_pw(패스워드)를 받아
     관리자 등록 수정 내용을 따로 다시 반환하지는 않는다.
     '''
     serializer_class = AdminSignupSerializer
