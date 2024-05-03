@@ -15,7 +15,7 @@ from drf_spectacular.utils import extend_schema
 # api/v1/admin/login/
 class AdminLogin(APIView):
     '''
-    프론트에서 admin_id(ID), admin_pw(패스워드)를 받아 로그인,
+    BE-ADM001: 프론트에서 admin_id(ID), admin_pw(패스워드)를 받아 로그인\n
     관리자 로그인 후 최종 접속 날짜(last_date)를 오늘 날짜로 업데이트
     '''
     serializer_class = AdminLoginSerializer
@@ -40,7 +40,7 @@ class AdminLogin(APIView):
 # api/vi/admin/
 class AdminUsers(APIView):
     '''
-    프론트에서 admins_id(PK), email, admin_user(사용자명), cell_num(폰 번호), create_date(등록일)를 로드
+    BE-ADM003: 프론트에서 admins_id(PK), email, admin_user(사용자명), cell_num(폰 번호), create_date(등록일)를 로드
     '''
     serializer_class = AdminSerializer
     @extend_schema(tags=['Admin'])
@@ -53,8 +53,8 @@ class AdminUsers(APIView):
 # api/v1/admin/signup/
 class AdminUsersSignup(APIView):
     '''
-    프론트에서 admin_id(ID), admin_user(사용자명), cell_num(폰 번호), email, user_pw(패스워드)를 받아
-    관리자 등록 수정 내용을 따로 다시 반환하지는 않는다.
+    BE-ADM002(화면없음): 프론트에서 admin_id(ID), admin_user(사용자명), cell_num(폰 번호), email, user_pw(패스워드)를 받아 관리자 등록\n
+    수정 내용을 따로 다시 반환 하지는 않는다.
     '''
     serializer_class = AdminSignupSerializer
     @extend_schema(tags=['Admin'])
@@ -80,7 +80,7 @@ class AdminUsersSignup(APIView):
 # api/v1/admin/msg/
 class EditLuckMessage(APIView):
     '''
-    프론트에서 msg_id를 받아 luck_messages의 모델에서 해당 id를 찾아 내용 수정
+    BE-GPT105(205, 305, 405): 프론트에서 msg_id를 받아 luck_messages의 모델에서 해당 id를 찾아 내용 수정\n
     수정 내용을 따로 다시 반환하지는 않는다.
     '''  
     serializer_class = LuckMessageSerializer
