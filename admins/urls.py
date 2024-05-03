@@ -1,7 +1,8 @@
 from django.urls import path
-from .views import EditLuckMessage, AdminUsers
+from .views import *
 
 urlpatterns = [
-    path('msg/', EditLuckMessage.as_view(), name='EditLuckMessage'),
+    path('login/', AdminLogin.as_view(), name='AdminLogin'),
     path('signup/', AdminUsers.as_view(), name='AdminUsers'),
+    path('msg/', EditLuckMessage.as_view(), name='EditLuckMessage'),
 ]

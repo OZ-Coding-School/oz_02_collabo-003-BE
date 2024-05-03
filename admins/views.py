@@ -1,23 +1,49 @@
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.hashers import check_password
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .serializers import *
-from luck_messages.models import LuckMessage
 from django.contrib.auth.password_validation import validate_password
 from rest_framework.exceptions import ParseError
 from django.contrib.auth.hashers import make_password
+from django.utils import timezone
+from luck_messages.models import LuckMessage
+from .models import Admin
+from .serializers import *
 
+# api/v1/admin/login/
+class AdminLogin(APIView):
+    '''
+    프론트에서 admin_id(ID), admin_pw(패스워드)를 받아 로그인,
+    관리자 로그인 후 최종 접속 날짜(last_date)를 오늘 날짜로 업데이트
+    '''
+    serializer_class = AdminLoginSerializer
+    def post(self, request):
+        admin_id = request.data.get('admin_id')
+        admin_pw = request.data.get('admin_pw')
+
+        try:
+            admin = Admin.objects.get(admin_id=admin_id)
+            if check_password(admin_pw, admin.admin_pw):
+                # 비밀번호 확인 후 로그인 처리
+                admin.last_date = timezone.now()
+                admin.save()
+                return Response({'message': '로그인 성공'}, status=status.HTTP_200_OK)
+            else:
+                return Response({'message': '비밀번호가 일치하지 않습니다.'}, status=status.HTTP_401_UNAUTHORIZED)
+        except Admin.DoesNotExist:
+            return Response({'message': '존재하지 않는 관리자 ID입니다.'}, status=status.HTTP_404_NOT_FOUND)
 
 # api/v1/admin/signup/
 class AdminUsers(APIView):
     '''
-    프론트에서 admin_id(ID), admin_user(사용자명), cell_num(폰 번호), email, user_pw(패스워드)를 받아
+    프론트에서 admin_id(ID), admin_user(사용자명), cell_num(폰 번호), email, admin_pw(패스워드)를 받아
     관리자 등록 수정 내용을 따로 다시 반환하지는 않는다.
     '''
     serializer_class = AdminSignupSerializer
     def post(self, request):
 
-        password = request.data.get('user_pw')
+        password = request.data.get('admin_pw')
         serializer = AdminSignupSerializer(data=request.data)
 
         try:
@@ -27,7 +53,7 @@ class AdminUsers(APIView):
 
         if serializer.is_valid():
             user = serializer.save()
-            user.user_pw = make_password(password)
+            user.admin_pw = make_password(password)
             user.save()
             return Response(status=status.HTTP_204_NO_CONTENT)
         else:
