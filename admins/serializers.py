@@ -10,13 +10,13 @@ class AdminLoginSerializer(ModelSerializer):
     '''
     class Meta:
         model = Admin
-        fields = ('admin_id', 'admin_pw', 'last_date')
+        fields = ('admin_id', 'admin_pw')
 
 #/api/v1/admin/
 class AdminSerializer(ModelSerializer):
     class Meta:
         model = Admin
-        fields = ('admins_id', 'admin_user', 'cell_num', 'email', 'create_date')
+        fields = ('admins_id', 'admin_user', 'cell_num', 'email', 'create_date', 'last_date')
 
 #/api/v1/admin/signup/
 class AdminSignupSerializer(ModelSerializer):
