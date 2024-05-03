@@ -3,6 +3,12 @@ from luck_messages.models import LuckMessage
 from .models import Admin
 
 
+#/api/v1/admin/
+class AdminSerializer(ModelSerializer):
+    class Meta:
+        model = Admin
+        fields = ('admins_id', 'admin_user', 'cell_num', 'email', 'create_date')
+
 #/api/v1/admin/signup/
 class AdminSignupSerializer(ModelSerializer):
     '''
@@ -12,7 +18,7 @@ class AdminSignupSerializer(ModelSerializer):
         model = Admin
         # fields = '__all__'  # 모든 필드 포함
         # fields = ('msg_id', 'luck_date', 'category', 'attribute2', 'luck_msg')
-        fields = ('admin_id', 'admin_user', 'cell_num', 'email', 'user_pw')
+        fields = ('admin_id', 'admin_user', 'cell_num', 'email', 'admin_pw')
 
 
 #/api/v1/admin/msg/

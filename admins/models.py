@@ -9,5 +9,5 @@ class Admin(models.Model):
     create_date = models.DateTimeField(auto_now_add=True)
     permission = models.CharField(max_length=30, blank=True, null=True)
     last_date = models.DateTimeField(null=True)
-    user_pw = models.CharField(max_length=100, blank=True, null=True)
+    admin_pw = models.CharField(max_length=100, blank=True, null=True)
     adms_id = models.IntegerField(null=True)
