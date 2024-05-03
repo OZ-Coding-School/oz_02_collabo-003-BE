@@ -26,12 +26,10 @@ SECRET_KEY = env.Django_SECRET_KEY
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-
 #온라인 서버에 배포 할때만 사용
 # ALLOWED_HOSTS = ['43.201.60.229']
 #개발 중에는 아래 내용을 사용
 ALLOWED_HOSTS = []
-
 
 # Application definition
 
