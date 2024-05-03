@@ -1,14 +1,40 @@
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .serializers import *
+from rest_framework.exceptions import ParseError
+from django.contrib.auth.password_validation import validate_password
+from django.contrib.auth.hashers import make_password, check_password
+from django.contrib.auth import authenticate, login
+from django.utils import timezone
 from luck_messages.models import LuckMessage
 from admins.models import Admin
-from django.contrib.auth.password_validation import validate_password
-from rest_framework.exceptions import ParseError
-from django.contrib.auth.hashers import make_password
+from .serializers import *
 
 
+# api/v1/admin/login/
+class AdminLogin(APIView):
+    '''
+    프론트에서 admin_id(ID), admin_pw(패스워드)를 받아 로그인,
+    관리자 로그인 후 최종 접속 날짜(last_date)를 오늘 날짜로 업데이트
+    '''
+    serializer_class = AdminLoginSerializer
+    def post(self, request):
+        admin_id = request.data.get('admin_id')
+        admin_pw = request.data.get('admin_pw')
+
+        try:
+            admin = Admin.objects.get(admin_id=admin_id)
+            if check_password(admin_pw, admin.admin_pw):
+                # 비밀번호 확인 후 로그인 처리
+                admin.last_date = timezone.now()
+                admin.save()
+                return Response({'message': '로그인 성공'}, status=status.HTTP_200_OK)
+            else:
+                return Response({'message': '비밀번호가 일치하지 않습니다.'}, status=status.HTTP_401_UNAUTHORIZED)
+        except Admin.DoesNotExist:
+            return Response({'message': '존재하지 않는 관리자 ID입니다.'}, status=status.HTTP_404_NOT_FOUND)
+
+          
 # api/vi/admin/
 class AdminUsers(APIView):
     '''
