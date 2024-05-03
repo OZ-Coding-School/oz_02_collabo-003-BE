@@ -6,7 +6,6 @@ from datetime import datetime, timedelta
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.generics import GenericAPIView
 from .serializers import *
 from .models import GptPrompt
 
@@ -16,6 +15,7 @@ from .models import GptPrompt
 # api/v1/prompt/today
 class PromptToday(APIView):
     # 프롬프트 최신 메세지 로드 - 가장 마지막 gpt_id 보여주기
+    serializer_class = PromptTodaySerializer
     def get(self, request):
         # 업데이트하는 방식 X, 프롬프트 메세지 이름 사용 X
         try:
@@ -49,6 +49,7 @@ class PromptToday(APIView):
 # api/v1/prompt/zodiac
 class PromptZodiac(APIView):
     # 프롬프트 최신 메세지 로드 - 가장 마지막 gpt_id 보여주기
+    serializer_class = PromptZodiacSerializer
     def get(self, request):
     # 업데이트하는 방식 X, 프롬프트 메세지 이름 사용 X
         try:
@@ -83,6 +84,7 @@ class PromptZodiac(APIView):
 # api/v1/prompt/star
 class PromptStar(APIView):
     # 프롬프트 최신 메세지 로드 - 가장 마지막 gpt_id 보여주기
+    serializer_class = PromptStarSerializer
     def get(self, request):
         # 업데이트하는 방식 X, 프롬프트 메세지 이름 사용 X
         # api/v1/prompt/star
@@ -117,6 +119,7 @@ class PromptStar(APIView):
 # api/v1/prompt/mbti
 class PromptMbti(APIView):
     # 프롬프트 최신 메세지 로드 - 가장 마지막 gpt_id 보여주기
+    serializer_class = PromptMbtiSerializer
     def get(self, request):
         # 업데이트하는 방식 X, 프롬프트 메세지 이름 사용 X
         try:
@@ -147,7 +150,7 @@ class PromptMbti(APIView):
 
 
 # 카테고리별 프롬프트 메세지 전체 로드
-class PromptHistory(GenericAPIView):
+class PromptHistory(APIView):
     # api/v1/prompt/<str:category>/history
     serializer_class = PromptHistorySerializer
     def get(self, request, category):
