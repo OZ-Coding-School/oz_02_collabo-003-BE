@@ -11,7 +11,8 @@ class EditLuckMessage(APIView):
     수정 내용을 따로 다시 반환하지는 않는다.
     '''  
     serializer_class = LuckMessageSerializer
-    def post(self, request, msg_id):
+    def post(self, request):
+        msg_id = request.data['msg_id']
         try:
             msg_id = LuckMessage.objects.get(pk=msg_id)
         except LuckMessage.DoesNotExist:
