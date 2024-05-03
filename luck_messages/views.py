@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from .serializers import *
 import random
 from .models import LuckMessage
+from drf_spectacular.utils import extend_schema
 
 
 # api/v1/msg/main/
@@ -12,6 +13,7 @@ class TodayLuck(APIView):
     # 오늘 날짜의 Today, 띠, 별, MBTI 메세지 조회
     serializer_class = TodayLuckSerializer
 
+    @extend_schema(tags=['Msg'])
     def get(self, request, user_birth, user_MBTI):
         try:
             # 오늘 날짜 가져오기, 입력 받은 사용자의 데이터를 변수로 저장.
@@ -93,6 +95,8 @@ class TodayLuck(APIView):
 #api/v1/msg/zodiac_all/{띠이름}
 class findTodayZodiacMessages(APIView):
     serializer_class = zodiacSerializer
+
+    @extend_schema(tags=['Msg'])
     def get(self, request, attribute1):
         now = datetime.now()
         date = now.strftime("%Y%m%d")
@@ -105,6 +109,8 @@ class findTodayZodiacMessages(APIView):
 #api/v1/msg/star_all
 class findTodayStarMessages(APIView):
     serializer_class = starSerializer
+
+    @extend_schema(tags=['Msg'])
     def get(self, request):
         now = datetime.now()
         date = now.strftime("%Y%m%d")
@@ -117,6 +123,8 @@ class findTodayStarMessages(APIView):
 #api/v1/msg/mbti_all
 class findTodayMbtiMessages(APIView):
     serializer_class = mbtiSerializer
+
+    @extend_schema(tags=['Msg'])
     def get(self, request):
         now = datetime.now()
         date = now.strftime("%Y%m%d")
@@ -137,6 +145,8 @@ class findTodayMbtiMessages(APIView):
 class findSomedayTodayMessages(APIView):
     #특정일자의 Today메세지 조회
     serializer_class = todaySerializer
+
+    @extend_schema(tags=['AdminMsg'])
     def get(self, request, luck_date):
         reqCategory = "today"
         messages = LuckMessage.objects.filter(luck_date=luck_date, category=reqCategory)
@@ -148,6 +158,8 @@ class findSomedayTodayMessages(APIView):
 class findSomedayZodiacMessages(APIView):
     #특정일자의 띠 메세지 조회
     serializer_class = zodiacSerializer
+
+    @extend_schema(tags=['AdminMsg'])
     def get(self, request, luck_date):
         reqCategory = "zodiac"
         messages = LuckMessage.objects.filter(luck_date=luck_date, category=reqCategory)
@@ -159,6 +171,8 @@ class findSomedayZodiacMessages(APIView):
 class findSomedayStarMessages(APIView):
     #특정일자의 별자리 메세지 조회
     serializer_class = starSerializer
+
+    @extend_schema(tags=['AdminMsg'])
     def get(self, request, luck_date):
         reqCategory = "star"
         messages = LuckMessage.objects.filter(luck_date=luck_date, category=reqCategory)
@@ -170,6 +184,8 @@ class findSomedayStarMessages(APIView):
 class findSomedayMbtiMessages(APIView):
     #특정일자의 MBTI 메세지 조회
     serializer_class = mbtiSerializer
+
+    @extend_schema(tags=['AdminMsg'])
     def get(self, request, luck_date):
         reqCategory = 'mbti'
         messages = LuckMessage.objects.filter(luck_date=luck_date, category=reqCategory)

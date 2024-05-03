@@ -9,6 +9,7 @@ from django.utils import timezone
 from luck_messages.models import LuckMessage
 from admins.models import Admin
 from .serializers import *
+from drf_spectacular.utils import extend_schema
 
 
 # api/v1/admin/login/
@@ -18,6 +19,7 @@ class AdminLogin(APIView):
     관리자 로그인 후 최종 접속 날짜(last_date)를 오늘 날짜로 업데이트
     '''
     serializer_class = AdminLoginSerializer
+    @extend_schema(tags=['Admin'])
     def post(self, request):
         admin_id = request.data.get('admin_id')
         admin_pw = request.data.get('admin_pw')
@@ -41,6 +43,7 @@ class AdminUsers(APIView):
     프론트에서 admins_id(PK), email, admin_user(사용자명), cell_num(폰 번호), create_date(등록일)를 로드
     '''
     serializer_class = AdminSerializer
+    @extend_schema(tags=['Admin'])
     def get(self, request):
         admins = Admin.objects.all()
         serializer = AdminSerializer(admins, many=True)
@@ -54,6 +57,7 @@ class AdminUsersSignup(APIView):
     관리자 등록 수정 내용을 따로 다시 반환하지는 않는다.
     '''
     serializer_class = AdminSignupSerializer
+    @extend_schema(tags=['Admin'])
     def post(self, request):
 
         password = request.data.get('admin_pw')
@@ -80,6 +84,7 @@ class EditLuckMessage(APIView):
     수정 내용을 따로 다시 반환하지는 않는다.
     '''  
     serializer_class = LuckMessageSerializer
+    @extend_schema(tags=['AdminMsg'])
     def post(self, request):
         msg_id = request.data.get('msg_id')
         try:
