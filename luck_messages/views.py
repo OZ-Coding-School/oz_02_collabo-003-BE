@@ -10,7 +10,6 @@ from .models import LuckMessage
 
 # api/v1/msg/main/
 class TodayLuck(APIView):
-serializer_class = TodayLuckSerializer
 
     # 오늘 날짜의 Today, 띠, 별, MBTI 메세지 조회
     serializer_class = TodayLuckSerializer
