@@ -43,8 +43,6 @@ SYSTEM_APPS = [
 ]
 
 CUSTOM_APPS = [
-    'rest_framework',
-    'drf_spectacular',
     'admin_settings',
     'admins',
     'gpt_prompts',
@@ -146,9 +144,3 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
-# SPECTACULAR_SETTINGS = {
-#     'TITLE': 'K-Luck Test',
-#     'DESCRIPTION': '오늘의 힘이 되는 한마디, 오늘의 띠별/별자리별/MBTI별 운세에 관련된 질문, 운세들을 관리할 수 있다.',
-#     'VERSION': '1.0.0',
-# }
