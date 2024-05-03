@@ -8,6 +8,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from .serializers import *
 from .models import GptPrompt
+from drf_spectacular.utils import extend_schema
 
 # Create your views here.
 
@@ -16,6 +17,8 @@ from .models import GptPrompt
 class PromptToday(APIView):
     # 프롬프트 최신 메세지 로드 - 가장 마지막 gpt_id 보여주기
     serializer_class = PromptTodaySerializer
+
+    @extend_schema(tags=['PromptMsg'])
     def get(self, request):
         # 업데이트하는 방식 X, 프롬프트 메세지 이름 사용 X
         try:
@@ -27,6 +30,7 @@ class PromptToday(APIView):
             return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
 
     # 프롬프트 메세지 수정 - 추가하는 방식
+    @extend_schema(tags=['PromptMsg'])
     def post(self, request):
         now = datetime.now()
         today = now.strftime('%Y%m%d')
@@ -50,6 +54,8 @@ class PromptToday(APIView):
 class PromptZodiac(APIView):
     # 프롬프트 최신 메세지 로드 - 가장 마지막 gpt_id 보여주기
     serializer_class = PromptZodiacSerializer
+
+    @extend_schema(tags=['PromptMsg'])
     def get(self, request):
     # 업데이트하는 방식 X, 프롬프트 메세지 이름 사용 X
         try:
@@ -61,6 +67,7 @@ class PromptZodiac(APIView):
             return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
 
     # 프롬프트 메세지 수정 - 추가하는 방식
+    @extend_schema(tags=['PromptMsg'])
     def post(self, request):
         now = datetime.now()
         today = now.strftime('%Y%m%d')
@@ -85,6 +92,8 @@ class PromptZodiac(APIView):
 class PromptStar(APIView):
     # 프롬프트 최신 메세지 로드 - 가장 마지막 gpt_id 보여주기
     serializer_class = PromptStarSerializer
+
+    @extend_schema(tags=['PromptMsg'])
     def get(self, request):
         # 업데이트하는 방식 X, 프롬프트 메세지 이름 사용 X
         # api/v1/prompt/star
@@ -97,6 +106,7 @@ class PromptStar(APIView):
             return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
 
     # 프롬프트 메세지 수정 - 추가하는 방식
+    @extend_schema(tags=['PromptMsg'])
     def post(self, request):
         now = datetime.now()
         today = now.strftime('%Y%m%d')
@@ -120,6 +130,8 @@ class PromptStar(APIView):
 class PromptMbti(APIView):
     # 프롬프트 최신 메세지 로드 - 가장 마지막 gpt_id 보여주기
     serializer_class = PromptMbtiSerializer
+
+    @extend_schema(tags=['PromptMsg'])
     def get(self, request):
         # 업데이트하는 방식 X, 프롬프트 메세지 이름 사용 X
         try:
@@ -131,6 +143,7 @@ class PromptMbti(APIView):
             return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
 
     # 프롬프트 메세지 수정 - 추가하는 방식
+    @extend_schema(tags=['PromptMsg'])
     def post(self, request):
         now = datetime.now()
         today = now.strftime('%Y%m%d')
@@ -153,6 +166,8 @@ class PromptMbti(APIView):
 class PromptHistory(APIView):
     # api/v1/prompt/<str:category>/history
     serializer_class = PromptHistorySerializer
+
+    @extend_schema(tags=['PromptMsg'])
     def get(self, request, category):
         try:
             prompt_msgs = GptPrompt.objects.filter(category=category)
