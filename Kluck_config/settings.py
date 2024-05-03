@@ -26,7 +26,7 @@ SECRET_KEY = env.Django_SECRET_KEY
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['43.201.60.229']
+ALLOWED_HOSTS = []
 
 
 # Application definition
