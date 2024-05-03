@@ -1,6 +1,7 @@
 from rest_framework.serializers import ModelSerializer
 from .models import LuckMessage
 
+
 class todaySerializer(ModelSerializer):
   #특정 일자의 Today메세지 조회
     class Meta:
@@ -36,4 +37,4 @@ class TodayLuckSerializer(ModelSerializer):
   #오늘 날짜의 Today, 띠, 별, MBTI 메세지 조회
     class Meta:
         model = LuckMessage
-        fields = ('msg_id', 'luck_date', 'category', 'attribute1', 'attribute2', 'luck_msg')
+        fields = ('luck_date', 'category', 'attribute1', 'attribute2', 'luck_msg')
