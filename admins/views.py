@@ -3,13 +3,26 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from .serializers import *
 from luck_messages.models import LuckMessage
+from admins.models import Admin
 from django.contrib.auth.password_validation import validate_password
 from rest_framework.exceptions import ParseError
 from django.contrib.auth.hashers import make_password
 
 
-# api/v1/admin/signup/
+# api/vi/admin/
 class AdminUsers(APIView):
+    '''
+    프론트에서 admins_id(PK), email, admin_user(사용자명), cell_num(폰 번호), create_date(등록일)를 로드
+    '''
+    serializer_class = AdminSerializer
+    def get(self, request):
+        admins = Admin.objects.all()
+        serializer = AdminSerializer(admins, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+# api/v1/admin/signup/
+class AdminUsersSignup(APIView):
     '''
     프론트에서 admin_id(ID), admin_user(사용자명), cell_num(폰 번호), email, user_pw(패스워드)를 받아
     관리자 등록 수정 내용을 따로 다시 반환하지는 않는다.
@@ -17,7 +30,7 @@ class AdminUsers(APIView):
     serializer_class = AdminSignupSerializer
     def post(self, request):
 
-        password = request.data.get('user_pw')
+        password = request.data.get('admin_pw')
         serializer = AdminSignupSerializer(data=request.data)
 
         try:
@@ -27,7 +40,7 @@ class AdminUsers(APIView):
 
         if serializer.is_valid():
             user = serializer.save()
-            user.user_pw = make_password(password)
+            user.admin_pw = make_password(password)
             user.save()
             return Response(status=status.HTTP_204_NO_CONTENT)
         else:
