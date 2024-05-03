@@ -10,6 +10,9 @@ from drf_spectacular.utils import extend_schema
 
 # api/v1/msg/main/
 class TodayLuck(APIView):
+    '''
+        BE-LUCK101(202, 302, 402): 사용자 정보에 맞는 오늘날짜의 한마디, 띠, 별, MBTI 운세 로드
+    '''
     # 오늘 날짜의 Today, 띠, 별, MBTI 메세지 조회
     serializer_class = TodayLuckSerializer
 
@@ -94,6 +97,9 @@ class TodayLuck(APIView):
             
 #api/v1/msg/zodiac_all/{띠이름}
 class findTodayZodiacMessages(APIView):
+    '''
+        BE-LUCK201: 오늘날짜의 띠 메세지 로드
+    '''
     serializer_class = zodiacSerializer
 
     @extend_schema(tags=['Msg'])
@@ -108,6 +114,9 @@ class findTodayZodiacMessages(APIView):
 
 #api/v1/msg/star_all
 class findTodayStarMessages(APIView):
+    '''
+        BE-LUCK301: 오늘날짜의 별자리 메세지 로드
+    '''
     serializer_class = starSerializer
 
     @extend_schema(tags=['Msg'])
@@ -122,6 +131,9 @@ class findTodayStarMessages(APIView):
 
 #api/v1/msg/mbti_all
 class findTodayMbtiMessages(APIView):
+    '''
+        BE-LUCK401: 오늘날짜의 MBTI 메세지 로드
+    '''
     serializer_class = mbtiSerializer
 
     @extend_schema(tags=['Msg'])
@@ -143,7 +155,9 @@ class findTodayMbtiMessages(APIView):
 
 #/api/v1/msg/today/<str:luck_date>
 class findSomedayTodayMessages(APIView):
-    #특정일자의 Today메세지 조회
+    '''
+        BE-GPT104: 특정 날짜별 한마디 메세지 로드
+    '''
     serializer_class = todaySerializer
 
     @extend_schema(tags=['AdminMsg'])
@@ -156,7 +170,9 @@ class findSomedayTodayMessages(APIView):
 
 #/api/v1/msg/zodiac/<str:luck_date>
 class findSomedayZodiacMessages(APIView):
-    #특정일자의 띠 메세지 조회
+    '''
+        BE-GPT204: 특정 날짜별 띠 메세지 로드
+    '''
     serializer_class = zodiacSerializer
 
     @extend_schema(tags=['AdminMsg'])
@@ -169,7 +185,9 @@ class findSomedayZodiacMessages(APIView):
 
 #/api/v1/admin/star/<str:luck_date>
 class findSomedayStarMessages(APIView):
-    #특정일자의 별자리 메세지 조회
+    '''
+        BE-GPT304: 특정 날짜별 별자리 메세지 로드
+    '''
     serializer_class = starSerializer
 
     @extend_schema(tags=['AdminMsg'])
@@ -182,7 +200,9 @@ class findSomedayStarMessages(APIView):
 
 #/api/v1/admin/mbti/<str:luck_date>
 class findSomedayMbtiMessages(APIView):
-    #특정일자의 MBTI 메세지 조회
+    '''
+    BE-GPT404: 특정 날짜별 MBTI 메세지 로드
+    '''
     serializer_class = mbtiSerializer
 
     @extend_schema(tags=['AdminMsg'])

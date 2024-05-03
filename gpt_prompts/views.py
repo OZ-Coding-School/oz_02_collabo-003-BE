@@ -15,7 +15,10 @@ from drf_spectacular.utils import extend_schema
 # 오늘의 한마디 프롬프트
 # api/v1/prompt/today
 class PromptToday(APIView):
-    # 프롬프트 최신 메세지 로드 - 가장 마지막 gpt_id 보여주기
+    '''
+    BE-GPT101(GET): 오늘의 한마디에 사용되는 최신(마지막 gpt_id) 프롬프트 메세지 로드\n
+    BE-GPT102(POST): 오늘의 한마디에 사용되는 최신(마지막 gpt_id) 프롬프트 메세지 저장
+    '''
     serializer_class = PromptTodaySerializer
 
     @extend_schema(tags=['PromptMsg'])
@@ -52,7 +55,10 @@ class PromptToday(APIView):
 # 띠별 운세 프롬프트
 # api/v1/prompt/zodiac
 class PromptZodiac(APIView):
-    # 프롬프트 최신 메세지 로드 - 가장 마지막 gpt_id 보여주기
+    '''
+    BE-GPT201(GET): 띠별 운세에 사용되는 최신(마지막 gpt_id) 프롬프트 메세지 로드\n
+    BE-GPT202(POST): 띠별 운세에 사용되는 최신(마지막 gpt_id) 프롬프트 메세지 저장
+    '''
     serializer_class = PromptZodiacSerializer
 
     @extend_schema(tags=['PromptMsg'])
@@ -90,7 +96,10 @@ class PromptZodiac(APIView):
 # 별자리별 운세 프롬프트
 # api/v1/prompt/star
 class PromptStar(APIView):
-    # 프롬프트 최신 메세지 로드 - 가장 마지막 gpt_id 보여주기
+    '''
+    BE-GPT301(GET): 별자리별 운세에 사용되는 최신(마지막 gpt_id) 프롬프트 메세지 로드\n
+    BE-GPT302(POST): 별자리별 운세에 사용되는 최신(마지막 gpt_id) 프롬프트 메세지 저장
+    '''
     serializer_class = PromptStarSerializer
 
     @extend_schema(tags=['PromptMsg'])
@@ -128,7 +137,10 @@ class PromptStar(APIView):
 # MBTI별 운세 프롬프트
 # api/v1/prompt/mbti
 class PromptMbti(APIView):
-    # 프롬프트 최신 메세지 로드 - 가장 마지막 gpt_id 보여주기
+    '''
+    BE-GPT401(GET): MBTI별 운세에 사용되는 최신(마지막 gpt_id) 프롬프트 메세지 로드\n
+    BE-GPT402(POST): MBTI별 운세에 사용되는 최신(마지막 gpt_id) 프롬프트 메세지 저장
+    '''
     serializer_class = PromptMbtiSerializer
 
     @extend_schema(tags=['PromptMsg'])
@@ -162,9 +174,11 @@ class PromptMbti(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-# 카테고리별 프롬프트 메세지 전체 로드
+# api/v1/prompt/<str:category>/history
 class PromptHistory(APIView):
-    # api/v1/prompt/<str:category>/history
+    '''
+    BE-GPT103(203, 303, 403): 입력받는 카테고리에 해당하는 프롬프트 메세지 전체 로드
+    '''
     serializer_class = PromptHistorySerializer
 
     @extend_schema(tags=['PromptMsg'])
