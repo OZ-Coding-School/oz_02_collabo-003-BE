@@ -33,5 +33,5 @@ urlpatterns = [
     #특정일자 메세지조회 관련
     path('api/v1/admin/', include('admins.urls')),
     #특정 메세지 수정 관련
-    path('api/v1/prompt/', include('gpt_prompts.urls')),
+    # path('api/v1/prompt/', include('gpt_prompts.urls')),
 ]

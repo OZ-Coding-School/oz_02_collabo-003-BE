@@ -43,6 +43,8 @@ SYSTEM_APPS = [
 ]
 
 CUSTOM_APPS = [
+    'rest_framework',
+    'drf_spectacular',
     'admin_settings',
     'admins',
     'gpt_prompts',
