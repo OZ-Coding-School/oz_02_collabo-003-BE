@@ -1,18 +1,9 @@
-<<<<<<< HEAD
-kluck_env/
-.idea/
-
-# Created by https://www.toptal.com/developers/gitignore/api/pycharm,django,venv
-# Edit at https://www.toptal.com/developers/gitignore?templates=pycharm,django,venv
-
-=======
 # Created by https://www.toptal.com/developers/gitignore/api/django,pycharm
 # Edit at https://www.toptal.com/developers/gitignore?templates=django,pycharm
 
 kluck_env/
 .idea/
 
->>>>>>> f0f9b72e9f002559ba5a67d98864a3cbe396d455
 ### Django ###
 *.log
 *.pot
@@ -296,20 +287,4 @@ fabric.properties
 # https://plugins.jetbrains.com/plugin/8053-azure-toolkit-for-intellij
 .idea/**/azureSettings.xml
 
-<<<<<<< HEAD
-### venv ###
-# Virtualenv
-# http://iamzed.com/2009/05/07/a-primer-on-virtualenv/
-[Bb]in
-[Ii]nclude
-[Ll]ib
-[Ll]ib64
-[Ll]ocal
-[Ss]cripts
-pyvenv.cfg
-pip-selfcheck.json
-
-# End of https://www.toptal.com/developers/gitignore/api/pycharm,django,venv
-=======
 # End of https://www.toptal.com/developers/gitignore/api/django,pycharm
->>>>>>> f0f9b72e9f002559ba5a67d98864a3cbe396d455

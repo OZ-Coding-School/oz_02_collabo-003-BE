@@ -26,8 +26,10 @@ SECRET_KEY = env.Django_SECRET_KEY
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+#온라인 서버에 배포 할때만 사용
+# ALLOWED_HOSTS = ['43.201.60.229']
+#개발 중에는 아래 내용을 사용
 ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -47,6 +49,8 @@ CUSTOM_APPS = [
     'admins',
     'gpt_prompts',
     'luck_messages',
+    'rest_framework',
+    'drf_spectacular',
 ]
 
 
@@ -60,7 +64,9 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+
 ]
+
 
 ROOT_URLCONF = "Kluck_config.urls"
 
@@ -115,6 +121,10 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
+# Swagger settings
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
 
 
 # Internationalization

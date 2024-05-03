@@ -20,15 +20,16 @@ from django.urls import path, include
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
-    # YOUR PATTERNS
-    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
-    # Optional UI:
-    # Swagger-UI - 개발자가 개발할 때 사용
+    path("admin/", admin.site.urls),  
+    # Optional UI:  
     path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
-    # Redoc - 기획자나 비개발자분들이 결과물 확인시 사용
     path('api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
-    # REST API
-    path("api/v1/main/", include('luck_messages.urls')),
-    path("api/v1/prompt/", include('gpt_prompts.urls')),
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),  
+    # YOUR PATTERNS
+    path("api/v1/msg/", include('luck_messages.urls')),
+    #오늘의 메세지조회 관련
+    path('api/v1/admin/', include('luck_messages.urls_admin')),
+    #특정일자 메세지조회 관련
+    path('api/v1/admin/', include('admins.urls')),
+    #특정 메세지 수정 관련
 ]
