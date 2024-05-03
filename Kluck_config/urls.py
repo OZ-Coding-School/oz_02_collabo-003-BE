@@ -31,7 +31,8 @@ urlpatterns = [
     path("api/v1/msg/", include('luck_messages.urls')),
     #특정일자 메세지조회 관련
     path('api/v1/admin/', include('luck_messages.urls_admin')),
-    #특정 메세지 수정 관련
+    #특정 관리자 관련 & 메세지 수정 관련
     path('api/v1/admin/', include('admins.urls')),
-
+    # 프롬프트 gpt 질문 관련
+    path('api/v1/prompt/', include('gpt_prompts.urls')),
 ]
