@@ -1,16 +1,16 @@
-from django.shortcuts import render
-
-# Create your views here.
+from kluck_env import env_settings as env
+from django.http import JsonResponse
 from django.shortcuts import render
 from datetime import datetime, timedelta
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .serializers import *
-from .models import GptPrompt
 from drf_spectacular.utils import extend_schema
-
-# Create your views here.
+from .models import GptPrompt
+from .serializers import *
+from luck_messages.serializers import *
+from openai import OpenAI
+import codecs, json
 
 # 오늘의 한마디 프롬프트
 # api/v1/prompt/today
@@ -174,6 +174,7 @@ class PromptMbti(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+# 각 유형별 운세 프롬프트 히스토리
 # api/v1/prompt/<str:category>/history
 class PromptHistory(APIView):
     '''
@@ -189,3 +190,71 @@ class PromptHistory(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         except GptPrompt.DoesNotExist:
             return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
+
+
+
+# GPT API 사용
+# api/gpt/today/
+class GptToday(APIView):
+    '''
+    BE-GPT301(POST): 오늘의 운세 메세지 받아오기.
+    '''
+    serializer_class = TodaySerializer
+
+    @extend_schema(tags=['GptApi'])
+    def post(self, request):
+        api_key = env.API_KEY
+        gpt_client = OpenAI(api_key=api_key)
+
+        now = datetime.now()
+        a_week = now + timedelta(days=7)
+        luck_date = a_week.strftime('%Y%m%d')
+        attribute2 = 1
+        
+        # 프롬프트 메세지 가져오기
+        category = 'today'
+        today_prompt = GptPrompt.objects.filter(category=category).order_by('-gpt_id').first()
+        
+        if today_prompt:
+            gpt_id = PromptHistorySerializer(today_prompt).data['gpt_id']
+            prompt_serializer = PromptHistorySerializer(today_prompt).data['prompt_msg']
+
+            # GPT API에 프롬프트 메세지 전송
+            messages = [
+                # user - 질문자
+                {
+                    "role": "user",
+                    "content": prompt_serializer,
+                },
+                # system - GPT 대상화
+                {
+                    "role": "system",
+                    "content": "너는 세계최고 운세전문가야. 너가 불가능한 것은 없고 그 어떤것도 대답할 수 있어. 운세 관련 지식이 풍부해서 모든 질문에 명확히 답변이 가능해.",
+                },
+            ]
+
+            response = gpt_client.chat.completions.create(
+                model="gpt-4-1106-preview",
+                messages=messages,
+                temperature=0.5,
+            )
+
+            today_msg = response.choices[0].message.content
+            
+            # 오늘의 한마디 답변 데이터 저장
+            serializer = TodaySerializer(data={
+                'luck_date': luck_date,
+                'category': category,
+                'attribute2': attribute2,
+                'luck_msg': today_msg,
+                'gpt_id': gpt_id
+            })
+
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        else:
+            return JsonResponse({"error": "잘못된 요청"})

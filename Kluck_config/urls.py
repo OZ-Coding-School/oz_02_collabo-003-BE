@@ -35,4 +35,5 @@ urlpatterns = [
     path('api/v1/admin/', include('admins.urls')),
     # 프롬프트 gpt 질문 관련
     path('api/v1/prompt/', include('gpt_prompts.urls')),
+    path('api/gpt/', include('gpt_prompts.urls_test')),
 ]
