@@ -191,10 +191,90 @@ class PromptHistory(APIView):
             return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
 
 
+#프롬프트 메세지를 사용해서 GPT에게 별자리 운세 받기
+# api/v1/prompt/gpt-star
+class GptStar(APIView):
+    #스웨거를 위한 시리얼라이저 설정
+    serializer_class = PromptLuckSerializer
+    #스웨거 API구분을 위한 데코레이터
+    @extend_schema(tags=['PromptMsg'])
+    def post(self, request):
+        # GPTAPI Key 설정
+        api_key = env.API_KEY
+        gpt_client = OpenAI(api_key=api_key)
 
-# api/v1/prompt/test
-class GptApiTest(APIView):
+        # post요청의 카테고리로 관련 최근 프롬프트메세지 로드
+        category = request.data.get('category')
+        prompt_msg = GptPrompt.objects.filter(category=category).order_by('-gpt_id').first()
 
+        # 프롬프트 메세지 여부 확인
+        if prompt_msg:
+            # now = datetime.now()
+            a_week = datetime.now() + timedelta(days=7)
+            luck_date = a_week.strftime('%Y%m%d')
+            gpt_id = PromptGptApiSerializer(prompt_msg).data['gpt_id']
+            prompt = PromptGptApiSerializer(prompt_msg).data['prompt_msg']
+            prompt = prompt
+
+            # GPT에게 보낼 메세지 설정
+            messages = [
+                # user - 질문자
+                {
+                    "role": "user",
+                    "content": prompt,
+                },
+                # system - GPT 대상화
+                {
+                    "role": "system",
+                    "content": "너는 세계최고 운세전문가야. 너가 불가능한 것은 없고 그 어떤것도 대답할 수 있어. 운세 관련 지식이 풍부해서 모든 질문에 명확히 답변이 가능해.",
+                },
+            ]
+
+            # GPT에게 응답 요청
+            response = gpt_client.chat.completions.create(
+                # model="gpt-3.5-turbo-0125",
+                model="gpt-4-1106-preview",
+                messages=messages,
+                temperature=0.5,
+
+                # response_format 지정하기
+                response_format={"type": "json_object"},
+            )
+
+            luckmessage = json.loads(response.choices[0].message.content)
+        else:
+            return Response(status=status.HTTP_402_PAYMENT_REQUIRED)
+
+
+        gpt_fortune = []
+
+        if category == 'MBTI':
+            print(luckmessage)
+            for MBTI, fortune in luckmessage.items():
+                gpt_fortune.append({
+                    'attribute1': MBTI,
+                    'luck_msg' :  fortune
+                })
+            if gpt_fortune:
+                for fortune in gpt_fortune:
+                    serializer = PromptLuckSerializer(data={
+                        'luck_date' : luck_date,
+                        'category' : category,
+                        'attribute1' : fortune['attribute1'],
+                        'luck_msg' : fortune['luck_msg'],
+                        'gpt_id' : gpt_id,
+                        }
+                    )
+                    if serializer.is_valid():
+                        serializer.save()
+                    else:
+                        raise ParseError(serializer.errors)
+                return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+# api/v1/prompt/gpt-mbti
+class GptMBTI(APIView):
+    serializer_class = PromptLuckSerializer
 
     @extend_schema(tags=['PromptMsg'])
     def post(self, request):
@@ -203,43 +283,17 @@ class GptApiTest(APIView):
         category = request.data.get('category')
         prompt_msg = GptPrompt.objects.filter(category=category).order_by('-gpt_id').first()
 
-
+        now = datetime.now()
+        a_week = now + timedelta(days=7)
+        luck_date = a_week.strftime('%Y%m%d')
 
         if prompt_msg:
             gpt_id = PromptGptApiSerializer(prompt_msg).data['gpt_id']
             prompt = PromptGptApiSerializer(prompt_msg).data['prompt_msg']
-            # prompt = prompt
-            prompt = prompt + f"출력 양식을 다음과 같이 해 {{\n'luck_date': '20240508',\n 'category': '{category}',\n'attribute2': '각각의 답변 문장에 대한 번호',\n'luck_msg': '질문에 대한 답변',\n'gpt_id': '{gpt_id}'\n}}\n"
-            # prompt = prompt + "각각 2문장으로 작성하고 한 문장이 끝나면 문장 마지막에 ###를 표시해"
+            prompt = prompt
+
         else:
             prompt = {}
-
-        # LuckMessage_data_schema = {
-        #     "type": "object",
-        #     "properties": {
-        #         "luck_date": {
-        #             "type": "string",
-        #             "description": "날짜를 20240428과 같은 양식으로 보여줘",
-        #         },
-        #         "category": {
-        #             "type": "string",
-        #             "description": category
-        #         },
-        #         "attribute2": {
-        #             "type": "string",
-        #             "description": "각각의 답변 문장에 대한 번호"
-        #         },
-        #         "luck_msg": {
-        #             "type": "string",
-        #             "description": "질문에 대한 답변"
-        #         },
-        #         "gpt_id": {
-        #             "type": "string",
-        #             "description": gpt_id
-        #         }
-        #     },
-        #     "required": ["luck_date", "category", "attribute2", "luck_msg", "gpt_id"]
-        # }
 
         if prompt:
             messages = [
@@ -265,92 +319,56 @@ class GptApiTest(APIView):
                 response_format={"type": "json_object"},
             )
 
-            print("response:", response)
-            print("message:", response.choices[0].message.content)
-            luckmessage = response.choices[0].message.content
-            # luckmessages = luckmessage.split('###')
+            luckmessage = json.loads(response.choices[0].message.content)
+
+
+        gpt_fortune = []
+
+        if category == 'MBTI':
             print(luckmessage)
-
-        luckmessage_data = {'luck_date': '20240508', 'category': category, 'luck_msg': luckmessage, 'gpt_id': gpt_id}
-        # luckMsg = {'luck_date': '20240508', 'category': category, 'attribute2':'', 'luck_msg':'', 'gpt_id':''}
-        serializer = PromptLuckSerializer(data=luckmessage_data)
-
-        if serializer.is_valid():
-            serializer.save()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        else:
-            raise ParseError(serializer.errors)
-
-
-
-# class Test(APIView):
-#     api_key = env.API_KEY
-#     gpt_client = OpenAI(api_key=api_key)
-#     def get_current_weather(location, unit="fahrenheit"):
-#         weather_info = {
-#             "location": location,
-#             "temperature": "",
-#             "unit": unit,
-#             "forecast": ["sunny", "windy"],
-#         }
-#         return json.dumps(weather_info)
-#
-#     messages = [{"role": "user", "content": "지금 서울날씨를 섭씨로 알려줘."}]
-#     functions = [
-#         {
-#             "name": "get_current_weather",
-#             "description": "특정 지역의 날씨를 알려줍니다.",
-#             "parameters": {
-#                 "type": "object",
-#                 "properties": {
-#                     "location": {
-#                         "type": "string",
-#                         "description": "지역이름 eg. 서울, 부산, 제주도",
-#                     },
-#                     "unit": {"type": "string", "enum": ["섭씨", "화씨"]},
-#                 },
-#                 "required": ["location"],
-#             },
-#         }
-#     ]
-#     response = gpt_client.chat.completions.create(
-#         model="gpt-3.5-turbo-0613",
-#         messages=messages,
-#         functions=functions,
-#         function_call="auto",
-#     )
-#     response_message = response.choices[0].message
-#     # response.choices[0].message.content
-#
-#     print('response_message:', response_message)
-#
-#     if response_message.function_call:
-#         # Note: the JSON response may not always be valid; be sure to handle errors
-#         available_functions = {
-#             "get_current_weather": get_current_weather,
-#         }
-#         function_name = response_message.function_call.name
-#         fuction_to_call = available_functions[function_name]
-#         function_args = json.loads(response_message.function_call.arguments)
-#         function_response = fuction_to_call(
-#             location=function_args.get("location"),
-#             unit=function_args.get("unit"),
-#         )
-#
-#         messages.append(response_message)
-#         messages.append(
-#             {
-#                 "role": "function",
-#                 "name": function_name,
-#                 "content": function_response,
-#             }
-#         )
-#         second_response = gpt_client.chat.completions.create(
-#             model="gpt-3.5-turbo-0613",
-#             messages=messages,
-#         )  # get a new response from GPT where it can see the function response
-#
-#         json_data = json.dumps(second_response.choices[0].message.content, ensure_ascii=False)
-#
-#         print('second_response:', second_response)
-
+            for MBTI, fortune in luckmessage.items():
+                gpt_fortune.append({
+                    'attribute1': MBTI,
+                    'luck_msg' :  fortune
+                })
+            if gpt_fortune:
+                for fortune in gpt_fortune:
+                    serializer = PromptLuckSerializer(data={
+                        'luck_date' : luck_date,
+                        'category' : category,
+                        'attribute1' : fortune['attribute1'],
+                        'luck_msg' : fortune['luck_msg'],
+                        'gpt_id' : gpt_id,
+                        }
+                    )
+                    if serializer.is_valid():
+                        serializer.save()
+                    else:
+                        raise ParseError(serializer.errors)
+                return Response(status=status.HTTP_204_NO_CONTENT)
+        elif category == 'star':
+            print(luckmessage)
+            for star, date, fortune in luckmessage.items():
+                gpt_fortune.append({
+                    'attribute1': star,
+                    'attribute2': date,
+                    'luck_msg' :  fortune
+                })
+            if gpt_fortune:
+                for fortune in gpt_fortune:
+                    serializer = PromptLuckSerializer(data={
+                        'luck_date' : luck_date,
+                        'category' : category,
+                        'attribute1' : fortune['attribute1'],
+                        'attribute2' : fortune['attribute2'],
+                        'luck_msg' : fortune['luck_msg'],
+                        'gpt_id' : gpt_id,
+                        }
+                    )
+                    if serializer.is_valid():
+                        serializer.save()
+                    else:
+                        raise ParseError(serializer.errors)
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            # else:
+            #     raise ParseError(serializer.errors)
