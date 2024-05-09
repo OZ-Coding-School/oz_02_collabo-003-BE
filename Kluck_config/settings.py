@@ -98,6 +98,9 @@ DATABASES = {
         'PASSWORD': env.MYSQL_PASSWD,
         'HOST': env.MYSQL_HOST,  # 또는 MySQL 서버의 IP 주소
         'PORT': env.MYSQL_PORT,  # MySQL의 기본 포트 번호
+        'OPTIONS':{
+            'charset': 'utf8mb4'
+        }
     }
 }
 

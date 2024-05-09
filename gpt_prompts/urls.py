@@ -7,4 +7,6 @@ urlpatterns = [
     path('star/', PromptStar.as_view(), name='PromptStar'),
     path('mbti/', PromptMbti.as_view(), name='PromptMbti'),
     path('<str:category>/history', PromptHistory.as_view(), name='PromptHistory'),
+    path('test/', GptApiTest.as_view(), name='GptApiTest'),
+    # path('test/', Test.as_view(), name='GptApiTest'),
 ]
