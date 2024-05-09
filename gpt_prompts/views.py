@@ -194,10 +194,11 @@ class PromptHistory(APIView):
 
 
 # GPT API 사용
+# 1. 오늘의 한마디 받기.
 # api/gpt/today/
 class GptToday(APIView):
     '''
-    BE-GPT301(POST): 오늘의 운세 메세지 받아오기.
+    BE-GPT103(POST): 오늘의 운세 메세지 받아오기.
     '''
     serializer_class = TodaySerializer
 
@@ -257,4 +258,75 @@ class GptToday(APIView):
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
         else:
-            return JsonResponse({"error": "잘못된 요청"})
+            return JsonResponse({"error": "Wrong Request"})
+
+
+# 2. 띠별 운세 받기.
+# api/gpt/zodiac/
+class GptZodiac(APIView):
+    '''
+    BE-GPT203(POST): 띠별 운세 메세지 받아오기.
+    '''
+    serializer_class = ZodiacSerializer
+
+    @extend_schema(tags=['GptApi'])
+    def post(self, request):
+        api_key = env.API_KEY
+        gpt_client = OpenAI(api_key=api_key)
+
+        now = datetime.now()
+        a_week = now + timedelta(days=7)
+        luck_date = a_week.strftime('%Y%m%d')
+
+        # 프롬프트 메세지 가져오기
+        category = 'zodiac'
+        zodiac_prompt = GptPrompt.objects.filter(category=category).order_by('-gpt_id').first()
+        
+        if zodiac_prompt:
+            gpt_id = PromptHistorySerializer(zodiac_prompt).data['gpt_id']
+            prompt_serializer = PromptHistorySerializer(zodiac_prompt).data['prompt_msg']
+
+            # GPT API에 프롬프트 메세지 전송
+            messages = [
+                # user - 질문자
+                {
+                    "role": "user",
+                    "content": prompt_serializer,
+                },
+                # system - GPT 대상화
+                {
+                    "role": "system",
+                    "content": "너는 세계최고 운세전문가야. 너가 불가능한 것은 없고 그 어떤것도 대답할 수 있어. 운세 관련 지식이 풍부해서 모든 질문에 명확히 답변이 가능해.",
+                },
+            ]
+
+            response = gpt_client.chat.completions.create(
+                model="gpt-3.5-turbo-0125",
+                messages=messages,
+                temperature=0.5,
+                
+                # response_format 지정하기
+                response_format = {"type":"json_object"},
+            )
+
+            zodiac_msg = response.choices[0].message.content
+            # luck_msg = json.loads(zodiac_msg)["쥐띠"]
+
+            # 띠별 운세 답변 데이터 저장
+            serializer = ZodiacSerializer(data={
+                'luck_date': luck_date,
+                'category': category,
+                # 'attribute1' : attribute1,
+                # 'attribute2' : zodiac_msg[1],
+                'luck_msg': zodiac_msg,
+                'gpt_id': gpt_id
+            })
+
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+        else:
+            return JsonResponse({"error": "Wrong Request"})
