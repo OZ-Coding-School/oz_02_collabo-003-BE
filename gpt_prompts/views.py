@@ -284,7 +284,7 @@ class GptZodiac(APIView):
         
         if zodiac_prompt:
             gpt_id = PromptHistorySerializer(zodiac_prompt).data['gpt_id']
-            prompt_serializer = PromptHistorySerializer(zodiac_prompt).data['prompt_msg'] + f"출력 양식을 다음과 같이 해 {'띠별운세':{'attribute1':{'attribute2':'운세',\n'attribute2':'운세',\n'attribute2':'운세',\n'attribute2':'운세'}\n'},\n}"
+            prompt_serializer = PromptHistorySerializer(zodiac_prompt).data['prompt_msg'] #f"출력 양식을 다음과 같이 해 {'띠별운세':{'attribute1':{'attribute2':'운세',\n'attribute2':'운세',\n'attribute2':'운세',\n'attribute2':'운세'}\n'},\n}"
 
             # GPT API에 프롬프트 메세지 전송
             messages = [
@@ -334,7 +334,8 @@ class GptZodiac(APIView):
                     'luck_msg': fortune['luck_msg'],
                     'gpt_id': gpt_id
                 })
-                serializer.save()
+                if serializer.is_valid():
+                    serializer.save()
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         
