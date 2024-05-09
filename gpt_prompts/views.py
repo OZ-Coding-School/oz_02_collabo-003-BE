@@ -284,7 +284,7 @@ class GptZodiac(APIView):
         
         if zodiac_prompt:
             gpt_id = PromptHistorySerializer(zodiac_prompt).data['gpt_id']
-            prompt_serializer = PromptHistorySerializer(zodiac_prompt).data['prompt_msg']
+            prompt_serializer = PromptHistorySerializer(zodiac_prompt).data['prompt_msg'] + f"출력 양식을 다음과 같이 해 {'띠별운세':{'attribute1':{'attribute2':'운세',\n'attribute2':'운세',\n'attribute2':'운세',\n'attribute2':'운세'}\n'},\n}"
 
             # GPT API에 프롬프트 메세지 전송
             messages = [
@@ -301,7 +301,7 @@ class GptZodiac(APIView):
             ]
 
             response = gpt_client.chat.completions.create(
-                model="gpt-3.5-turbo-0125",
+                model="gpt-4-1106-preview",
                 messages=messages,
                 temperature=0.5,
                 
@@ -310,23 +310,33 @@ class GptZodiac(APIView):
             )
 
             zodiac_msg = response.choices[0].message.content
-            # luck_msg = json.loads(zodiac_msg)["쥐띠"]
+            # JSON 데이터 파싱
+            zodiac_data = json.loads(zodiac_msg)
+
+            # 띠별 운세 정보 추출 및 저장
+            zodiac_fortune = []
+
+            for zodiac, fortunes in zodiac_data["띠별운세"].items():
+                for year, fortune in fortunes.items():
+                    zodiac_fortune.append({
+                        'attribute1': zodiac,
+                        'attribute2': year,
+                        'luck_msg': fortune
+                    })
 
             # 띠별 운세 답변 데이터 저장
-            serializer = ZodiacSerializer(data={
-                'luck_date': luck_date,
-                'category': category,
-                # 'attribute1' : attribute1,
-                # 'attribute2' : zodiac_msg[1],
-                'luck_msg': zodiac_msg,
-                'gpt_id': gpt_id
-            })
-
-            if serializer.is_valid():
+            for fortune in zodiac_fortune:
+                serializer = ZodiacSerializer(data={
+                    'luck_date': luck_date,
+                    'category': category,
+                    'attribute1' : fortune['attribute1'][:-1],
+                    'attribute2' : fortune['attribute2'][:-2],
+                    'luck_msg': fortune['luck_msg'],
+                    'gpt_id': gpt_id
+                })
                 serializer.save()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            else:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-            
+
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
         else:
-            return JsonResponse({"error": "Wrong Request"})
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
