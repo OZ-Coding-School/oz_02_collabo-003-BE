@@ -245,23 +245,48 @@ class GptStar(APIView):
         else:
             return Response(status=status.HTTP_402_PAYMENT_REQUIRED)
 
+        # luckmessage예시
+        # luckmessage = dict(
+        #     GptResponse=[
+        #         {
+        #             'star': '물병자리',
+        #             'date_range': '01/20~02/18',
+        #             'luck_msg': '새로운 아이디어가 떠오르는 날입니다. 창의적인 접근을 시도해 보세요. 인간관계에서도 긍정적인 에너지가 흐릅니다.'
+        #         },
+        #         {
+        #             'star': '물고기자리',
+        #             'date_range': '02/19~03/20',
+        #             'luck_msg': '감성이 풍부해지는 하루가 예상됩니다. 주변 사람들과의 대화에서 위로를 받을 거요. 예술적인 활동에 참여해 보세요.'
+        #         },
+        #         {
+        #             'star': '양자리',
+        #             'date_range': '03/21~04/19',
+        #             'luck_msg': '오늘은 활기찬 에너지가 넘칩니다. 적극적인 태도가 중요한 기회를 만들들요. 운동을 통해 스트레스를 해소해 보세요.'
+        #         }
+        #     ]
+        # )
 
-        gpt_fortune = []
+        if luckmessage:
+            # 메세지 처리용 리스트
+            gpt_msg = []
 
-        if category == 'MBTI':
-            print(luckmessage)
-            for MBTI, fortune in luckmessage.items():
-                gpt_fortune.append({
-                    'attribute1': MBTI,
-                    'luck_msg' :  fortune
+            # DB컬럼에 맞게 dict로 변경
+            for msg in luckmessage['GptResponse']:
+                gpt_msg.append({
+                    'attribute1': msg['star'],
+                    'attribute2': msg['date_range'],
+                    'luck_msg' :  msg['luck_msg']
                 })
-            if gpt_fortune:
-                for fortune in gpt_fortune:
+
+
+            if gpt_msg:
+                for msg in gpt_msg:
                     serializer = PromptLuckSerializer(data={
                         'luck_date' : luck_date,
                         'category' : category,
-                        'attribute1' : fortune['attribute1'],
-                        'luck_msg' : fortune['luck_msg'],
+                        'attribute1' : msg['attribute1'],
+                        'attribute2' : msg['attribute2'],
+                        'luck_msg' : msg['luck_msg'],
                         'gpt_id' : gpt_id,
                         }
                     )
@@ -269,33 +294,37 @@ class GptStar(APIView):
                         serializer.save()
                     else:
                         raise ParseError(serializer.errors)
-                return Response(status=status.HTTP_204_NO_CONTENT)
+                return Response(status=status.HTTP_200_OK)
+            else:
+                return Response({'detail': '데이터가 없습니다.'},status=status.HTTP_400_BAD_REQUEST)
 
 
+#프롬프트 메세지를 사용해서 GPT에게 별자리 운세 받기
 # api/v1/prompt/gpt-mbti
 class GptMBTI(APIView):
+    #스웨거를 위한 시리얼라이저 설정
     serializer_class = PromptLuckSerializer
-
+    #스웨거 API구분을 위한 데코레이터
     @extend_schema(tags=['PromptMsg'])
     def post(self, request):
+        # GPTAPI Key 설정
         api_key = env.API_KEY
         gpt_client = OpenAI(api_key=api_key)
+
+        # post요청의 카테고리로 관련 최근 프롬프트메세지 로드
         category = request.data.get('category')
         prompt_msg = GptPrompt.objects.filter(category=category).order_by('-gpt_id').first()
 
-        now = datetime.now()
-        a_week = now + timedelta(days=7)
-        luck_date = a_week.strftime('%Y%m%d')
-
+        # 프롬프트 메세지 여부 확인
         if prompt_msg:
+            # now = datetime.now()
+            a_week = datetime.now() + timedelta(days=7)
+            luck_date = a_week.strftime('%Y%m%d')
             gpt_id = PromptGptApiSerializer(prompt_msg).data['gpt_id']
             prompt = PromptGptApiSerializer(prompt_msg).data['prompt_msg']
             prompt = prompt
 
-        else:
-            prompt = {}
-
-        if prompt:
+            # GPT에게 보낼 메세지 설정
             messages = [
                 # user - 질문자
                 {
@@ -309,35 +338,53 @@ class GptMBTI(APIView):
                 },
             ]
 
+            # GPT에게 응답 요청
             response = gpt_client.chat.completions.create(
                 # model="gpt-3.5-turbo-0125",
                 model="gpt-4-1106-preview",
                 messages=messages,
                 temperature=0.5,
 
-                # # response_format 지정하기
+                # response_format 지정하기
                 response_format={"type": "json_object"},
             )
 
             luckmessage = json.loads(response.choices[0].message.content)
+        else:
+            return Response(status=status.HTTP_402_PAYMENT_REQUIRED)
+        # luckmessage예시
+        # luckmessage = dict(
+        #     GptResponse=[
+        #         {
+        #             'MBTI': 'ENTP',
+        #             'luck_msg': '감성이 풍부해지는 하루가 예상됩니다. 주변 사람들과의 대화에서 위로를 받을 거요. 예술적인 활동에 참여해 보세요.'
+        #         },
+        #         {
+        #             'MBTI': 'INFJ',
+        #             'luck_msg': '오늘은 활기찬 에너지가 넘칩니다. 적극적인 태도가 중요한 기회를 만들들요. 운동을 통해 스트레스를 해소해 보세요.'
+        #         }
+        #     ]
+        # )
 
+        if luckmessage:
+            # 메세지 처리용 리스트
+            gpt_msg = []
 
-        gpt_fortune = []
-
-        if category == 'MBTI':
-            print(luckmessage)
-            for MBTI, fortune in luckmessage.items():
-                gpt_fortune.append({
-                    'attribute1': MBTI,
-                    'luck_msg' :  fortune
+            # DB컬럼에 맞게 dict로 변경
+            for msg in luckmessage['GptResponse']:
+                gpt_msg.append({
+                    'attribute1': msg['MBTI'],
+                    'luck_msg' :  msg['luck_msg']
                 })
-            if gpt_fortune:
-                for fortune in gpt_fortune:
+
+
+            if gpt_msg:
+                for msg in gpt_msg:
                     serializer = PromptLuckSerializer(data={
                         'luck_date' : luck_date,
                         'category' : category,
-                        'attribute1' : fortune['attribute1'],
-                        'luck_msg' : fortune['luck_msg'],
+                        'attribute1' : msg['attribute1'],
+                        'luck_msg' : msg['luck_msg'],
                         'gpt_id' : gpt_id,
                         }
                     )
@@ -345,30 +392,6 @@ class GptMBTI(APIView):
                         serializer.save()
                     else:
                         raise ParseError(serializer.errors)
-                return Response(status=status.HTTP_204_NO_CONTENT)
-        elif category == 'star':
-            print(luckmessage)
-            for star, date, fortune in luckmessage.items():
-                gpt_fortune.append({
-                    'attribute1': star,
-                    'attribute2': date,
-                    'luck_msg' :  fortune
-                })
-            if gpt_fortune:
-                for fortune in gpt_fortune:
-                    serializer = PromptLuckSerializer(data={
-                        'luck_date' : luck_date,
-                        'category' : category,
-                        'attribute1' : fortune['attribute1'],
-                        'attribute2' : fortune['attribute2'],
-                        'luck_msg' : fortune['luck_msg'],
-                        'gpt_id' : gpt_id,
-                        }
-                    )
-                    if serializer.is_valid():
-                        serializer.save()
-                    else:
-                        raise ParseError(serializer.errors)
-                return Response(status=status.HTTP_204_NO_CONTENT)
-            # else:
-            #     raise ParseError(serializer.errors)
+                return Response(status=status.HTTP_200_OK)
+            else:
+                return Response({'detail': '데이터가 없습니다.'},status=status.HTTP_400_BAD_REQUEST)
