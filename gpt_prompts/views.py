@@ -218,10 +218,10 @@ class GptToday(APIView):
             a_week = datetime.now() + timedelta(days=7)
             luck_date = a_week.strftime('%Y%m%d')
             gpt_id = PromptGptApiSerializer(prompt_msg).data['gpt_id']
-            pre_prompt = '{"GptResponse":[{"message_num": "1", "luck_msg": "메세지"}, ...]}예시와 같은 json 형식으로 작성해줘.'
+            prefix_prompt = '{"GptResponse":[{"message_num": "1", "luck_msg": "메세지"}, ...]}예시와 같은 json 형식으로 작성해줘.'
             prompt_date = luck_date[:4] +'년'+ luck_date[4:6] + '월' + luck_date[6:] + '일 '
             prompt = PromptGptApiSerializer(prompt_msg).data['prompt_msg']
-            prompt = pre_prompt + prompt_date + prompt
+            prompt = prefix_prompt + prompt_date + prompt
 
             # GPT에게 보낼 메세지 설정
             messages = [
@@ -380,94 +380,104 @@ class GptZodiac(APIView):
         category = request.data.get('category')
         prompt_msg = GptPrompt.objects.filter(category=category).order_by('-gpt_id').first()
 
+
         # 프롬프트 메세지 여부 확인
         if prompt_msg:
             # now = datetime.now()
             a_week = datetime.now() + timedelta(days=7)
             luck_date = a_week.strftime('%Y%m%d')
-            gpt_id = PromptGptApiSerializer(prompt_msg).data['gpt_id']
-            pre_prompt = '{"GptResponse":[{"zodiac": "닭", "year": "1981", "luck_msg": "메세지"}, ...]}예시와 같은 json 형식으로 작성해줘.'
+            # gpt_id = PromptGptApiSerializer(prompt_msg).data['gpt_id']
+            gpt_id = 104
+            prefix_prompt = '{"GptResponse":[{"zodiac": "닭", "year": "1981", "luck_msg": "메세지"}, ...]}예시와 같은 json 형식으로 작성해줘.'
             prompt_date = luck_date[:4] +'년'+ luck_date[4:6] + '월' + luck_date[6:] + '일 '
+            # GPT가 너무 긴 답변을 처리하지 못해서 2파트로 나눠서 요청을 보냄.
+            suffix_prompt1 = '12간지 중에서 쥐, 소, 호랑이, 토끼, 용, 뱀을 작성해줘'
+            suffix_prompt2 = '12간지 중에서 말, 양, 원숭이, 닭, 개, 돼지을 작성해줘'
             prompt = PromptGptApiSerializer(prompt_msg).data['prompt_msg']
-            prompt = pre_prompt + prompt_date + prompt
 
-            # GPT에게 보낼 메세지 설정
-            messages = [
-                # user - 질문자
-                {
-                    "role": "user",
-                    "content": prompt,
-                },
-                # system - GPT 대상화
-                {
-                    "role": "system",
-                    "content": "너는 세계최고 운세전문가야. 너가 불가능한 것은 없고 그 어떤것도 대답할 수 있어. 운세 관련 지식이 풍부해서 모든 질문에 명확히 답변이 가능해.",
-                },
-            ]
+            # GPT에게 보낼 질문 메세지
+            prompts = []
+            prompts.append(prefix_prompt + prompt_date + prompt + suffix_prompt1)
+            prompts.append(prefix_prompt + prompt_date + prompt + suffix_prompt2)
 
-            # GPT에게 응답 요청
-            response = gpt_client.chat.completions.create(
-                # model="gpt-3.5-turbo-0125",
-                model="gpt-4-1106-preview",
-                messages=messages,
-                temperature=0.5,
-
-                # response_format 지정하기
-                response_format={"type": "json_object"},
-            )
-
-            luckmessage = json.loads(response.choices[0].message.content)
-            print(luckmessage)
-        else:
-            return Response(status=status.HTTP_402_PAYMENT_REQUIRED)
-
-        # luckmessage예시
-        # luckmessage = dict(
-        #     GptResponse=[
-        #         {
-        #             "zodiac": "닭",
-        #             "year": "1981",
-        #             'luck_msg': '감성이 풍부해지는 하루가 예상됩니다. 주변 사람들과의 대화에서 위로를 받을 거요. 예술적인 활동에 참여해 보세요.'
-        #         },
-        #         {
-        #             "zodiac": "개",
-        #             "year": "1982",
-        #             'luck_msg': '오늘은 활기찬 에너지가 넘칩니다. 적극적인 태도가 중요한 기회를 만들들요. 운동을 통해 스트레스를 해소해 보세요.'
-        #         }
-        #     ]
-        # )
-
-        if luckmessage:
             # 메세지 처리용 리스트
             gpt_msg = []
 
-            # DB컬럼에 맞게 dict로 변경
-            for msg in luckmessage['GptResponse']:
-                gpt_msg.append({
-                    'attribute1': msg['zodiac'],
-                    'attribute2': msg['year'],
-                    'luck_msg' :  msg['luck_msg']
-                })
+            for i in prompts:
+                # GPT에게 보낼 메세지 설정
+                messages = [
+                    # user - 질문자
+                    {
+                        "role": "user",
+                        "content": i,
+                    },
+                    # system - GPT 대상화
+                    {
+                        "role": "system",
+                        "content": "너는 세계최고 운세전문가야. 너가 불가능한 것은 없고 그 어떤것도 대답할 수 있어. 운세 관련 지식이 풍부해서 모든 질문에 명확히 답변이 가능해.",
+                    },
+                ]
 
+                # GPT에게 응답 요청
+                response = gpt_client.chat.completions.create(
+                    # model="gpt-3.5-turbo-0125",
+                    model="gpt-4-1106-preview",
+                    messages=messages,
+                    temperature=0.5,
 
-            if gpt_msg:
-                for msg in gpt_msg:
-                    serializer = PromptLuckSerializer(data={
-                        'luck_date' : luck_date,
-                        'category' : category,
-                        'attribute1' : msg['attribute1'],
-                        'attribute2' : msg['attribute2'],
-                        'luck_msg' : msg['luck_msg'],
-                        'gpt_id' : gpt_id,
-                        }
-                    )
-                    if serializer.is_valid():
-                        serializer.save()
-                    else:
-                        raise ParseError(serializer.errors)
-                return Response(status=status.HTTP_200_OK)
-            else:
-                return Response({'detail': '데이터가 없습니다.'},status=status.HTTP_400_BAD_REQUEST)
+                    # response_format 지정하기
+                    response_format={"type": "json_object"},
+                )
+
+                luckmessage = json.loads(response.choices[0].message.content)
+
+                # luckmessage예시
+                # luckmessage = dict(
+                #     GptResponse=[
+                #         {
+                #             "zodiac": "닭",
+                #             "year": "1981",
+                #             'luck_msg': '감성이 풍부해지는 하루가 예상됩니다. 주변 사람들과의 대화에서 위로를 받을 거요. 예술적인 활동에 참여해 보세요.'
+                #         },
+                #         {
+                #             "zodiac": "개",
+                #             "year": "1982",
+                #             'luck_msg': '오늘은 활기찬 에너지가 넘칩니다. 적극적인 태도가 중요한 기회를 만들들요. 운동을 통해 스트레스를 해소해 보세요.'
+                #         }
+                #     ]
+                # )
+
+                if luckmessage:
+                    # DB컬럼에 맞게 dict로 변경
+                    for msg in luckmessage['GptResponse']:
+                        gpt_msg.append({
+                            'attribute1': msg['zodiac'],
+                            'attribute2': msg['year'],
+                            'luck_msg' :  msg['luck_msg']
+                        })
+
+        else:
+            return Response(status=status.HTTP_402_PAYMENT_REQUIRED)
+
+        # GPT에 요청 결과를 DB에 넣기
+        if gpt_msg:
+            for msg in gpt_msg:
+                serializer = PromptLuckSerializer(data={
+                    'luck_date' : luck_date,
+                    'category' : category,
+                    'attribute1' : msg['attribute1'],
+                    'attribute2' : msg['attribute2'],
+                    'luck_msg' : msg['luck_msg'],
+                    'gpt_id' : gpt_id,
+                    }
+                )
+                if serializer.is_valid():
+                    serializer.save()
+                else:
+                    raise ParseError(serializer.errors)
+            return Response(status=status.HTTP_200_OK)
+        else:
+            return Response({'detail': '데이터가 없습니다.'},status=status.HTTP_400_BAD_REQUEST)
 
 # 2. 띠별 운세 받기.
 # api/gpt/zodiac/
