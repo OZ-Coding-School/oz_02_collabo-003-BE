@@ -4,12 +4,13 @@ from drf_spectacular.utils import extend_schema, OpenApiExample
 from openai import OpenAI
 from rest_framework import status
 from rest_framework.exceptions import ParseError
+from drf_spectacular.utils import extend_schema, OpenApiExample
+from luck_messages.serializers import *
+from .serializers import *
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from kluck_env import env_settings as env
 from .models import GptPrompt
-from .serializers import *
-from luck_messages.serializers import *
 
 
 # 오늘의 한마디 프롬프트
@@ -239,7 +240,6 @@ class PromptHistory(APIView):
             return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
 
 
-          
 # GPT API 사용
 # 1. 오늘의 한마디 받기.
 # /api/v1/gpt/today/
@@ -388,8 +388,7 @@ class GptZodiac(APIView):
             # now = datetime.now()
             a_week = datetime.now() + timedelta(days=7)
             luck_date = a_week.strftime('%Y%m%d')
-            # gpt_id = PromptGptApiSerializer(prompt_msg).data['gpt_id']
-            gpt_id = 104
+            gpt_id = PromptHistorySerializer(zodiac_prompt).data['gpt_id']
             prefix_prompt = '{"GptResponse":[{"zodiac": "닭", "year": "1981", "luck_msg": "메세지"}, ...]}예시와 같은 json 형식으로 작성해줘.'
             prompt_date = luck_date[:4] +'년'+ luck_date[4:6] + '월' + luck_date[6:] + '일 '
             # GPT가 너무 긴 답변을 처리하지 못해서 2파트로 나눠서 요청을 보냄.
@@ -547,7 +546,7 @@ class GptStar(APIView):
             )
 
             star_data = json.loads(response.choices[0].message.content)
-            print(star_data)
+
         else:
             return Response(status=status.HTTP_402_PAYMENT_REQUIRED)
 
