@@ -196,6 +196,21 @@ socialaccount = ["pyjwt[crypto] (>=1.7)", "requests (>=2.0.0)", "requests-oauthl
 steam = ["python3-openid (>=3.0.8)"]
 
 [[package]]
+name = "django-cors-headers"
+version = "4.3.1"
+description = "django-cors-headers is a Django application for handling the server headers required for Cross-Origin Resource Sharing (CORS)."
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "django-cors-headers-4.3.1.tar.gz", hash = "sha256:0bf65ef45e606aff1994d35503e6b677c0b26cafff6506f8fd7187f3be840207"},
+    {file = "django_cors_headers-4.3.1-py3-none-any.whl", hash = "sha256:0b1fd19297e37417fc9f835d39e45c8c642938ddba1acce0c1753d3edef04f36"},
+]
+
+[package.dependencies]
+asgiref = ">=3.6"
+Django = ">=3.2"
+
+[[package]]
 name = "djangorestframework"
 version = "3.15.1"
 description = "Web APIs for Django, made easy."
@@ -247,6 +262,27 @@ files = [
 mccabe = ">=0.7.0,<0.8.0"
 pycodestyle = ">=2.11.0,<2.12.0"
 pyflakes = ">=3.2.0,<3.3.0"
+
+[[package]]
+name = "gunicorn"
+version = "22.0.0"
+description = "WSGI HTTP Server for UNIX"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "gunicorn-22.0.0-py3-none-any.whl", hash = "sha256:350679f91b24062c86e386e198a15438d53a7a8207235a78ba1b53df4c4378d9"},
+    {file = "gunicorn-22.0.0.tar.gz", hash = "sha256:4a0b436239ff76fb33f11c07a16482c521a7e09c1ce3cc293c2330afe01bec63"},
+]
+
+[package.dependencies]
+packaging = "*"
+
+[package.extras]
+eventlet = ["eventlet (>=0.24.1,!=0.36.0)"]
+gevent = ["gevent (>=1.4.0)"]
+setproctitle = ["setproctitle"]
+testing = ["coverage", "eventlet", "gevent", "pytest", "pytest-cov"]
+tornado = ["tornado (>=0.2)"]
 
 [[package]]
 name = "h11"

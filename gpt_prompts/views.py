@@ -6,9 +6,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.exceptions import ParseError
 from drf_spectacular.utils import extend_schema
-from .models import GptPrompt
-from .serializers import *
 from luck_messages.serializers import *
+from .serializers import *
+from .models import GptPrompt
 from openai import OpenAI
 import json
 
@@ -192,13 +192,14 @@ class PromptHistory(APIView):
             return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
 
 
-
+          
 # GPT API 사용
 # 1. 오늘의 한마디 받기.
 # /api/v1/gpt/today/
 class GptToday(APIView):
     #스웨거를 위한 시리얼라이저 설정
     serializer_class = TodaySerializer
+    
     #스웨거 API구분을 위한 데코레이터
     @extend_schema(tags=['GPT'])
     def post(self, request):
@@ -206,7 +207,7 @@ class GptToday(APIView):
         api_key = env.API_KEY
         gpt_client = OpenAI(api_key=api_key)
 
-        # post요청의 카테고리로 관련 최근 프롬프트메세지 로드
+        # post 요청의 카테고리로 관련 최근 프롬프트메세지 로드
         category = 'today'
         today_prompt = GptPrompt.objects.filter(category=category).order_by('-gpt_id').first()
 
@@ -300,6 +301,7 @@ class GptToday(APIView):
 class GptZodiac(APIView):
     #스웨거를 위한 시리얼라이저 설정
     serializer_class = StarSerializer
+    
     #스웨거 API 구분을 위한 데코레이터
     @extend_schema(tags=['GPT'])
     def post(self, request):
@@ -307,7 +309,7 @@ class GptZodiac(APIView):
         api_key = env.API_KEY
         gpt_client = OpenAI(api_key=api_key)
 
-        # post요청의 카테고리로 관련 최근 프롬프트메세지 로드
+        # post 요청의 카테고리로 관련 최근 프롬프트메세지 로드
         category = 'zodiac'
         zodiac_prompt = GptPrompt.objects.filter(category=category).order_by('-gpt_id').first()
 
@@ -416,6 +418,7 @@ class GptZodiac(APIView):
 class GptStar(APIView):
     #스웨거를 위한 시리얼라이저 설정
     serializer_class = StarSerializer
+    
     #스웨거 API 구분을 위한 데코레이터
     @extend_schema(tags=['GPT'])
     def post(self, request):
@@ -423,7 +426,7 @@ class GptStar(APIView):
         api_key = env.API_KEY
         gpt_client = OpenAI(api_key=api_key)
 
-        # post요청의 카테고리로 관련 최근 프롬프트메세지 로드
+        # post 요청의 카테고리로 관련 최근 프롬프트메세지 로드
         category = 'star'
         star_prompt = GptPrompt.objects.filter(category=category).order_by('-gpt_id').first()
 
@@ -461,6 +464,7 @@ class GptStar(APIView):
             )
 
             star_data = json.loads(response.choices[0].message.content)
+            
         else:
             return Response(status=status.HTTP_402_PAYMENT_REQUIRED)
 
@@ -497,7 +501,6 @@ class GptStar(APIView):
                     'luck_msg' :  msg['luck_msg']
                 })
 
-
             if star_msg:
                 for msg in star_msg:
                     serializer = StarSerializer(data={
@@ -523,14 +526,15 @@ class GptStar(APIView):
 class GptMbti(APIView):
     #스웨거를 위한 시리얼라이저 설정
     serializer_class = MbtiSerializer
-    #스웨거 API구분을 위한 데코레이터
+    
+    #스웨거 API 구분을 위한 데코레이터
     @extend_schema(tags=['GPT'])
     def post(self, request):
         # GPT API Key 설정
         api_key = env.API_KEY
         gpt_client = OpenAI(api_key=api_key)
 
-        # post요청의 카테고리로 관련 최근 프롬프트메세지 로드
+        # post 요청의 카테고리로 관련 최근 프롬프트메세지 로드
         category = 'MBTI'
         mbti_prompt = GptPrompt.objects.filter(category=category).order_by('-gpt_id').first()
 
@@ -569,6 +573,7 @@ class GptMbti(APIView):
             )
 
             mbti_data = json.loads(response.choices[0].message.content)
+            
         else:
             return Response(status=status.HTTP_402_PAYMENT_REQUIRED)
         
@@ -596,7 +601,6 @@ class GptMbti(APIView):
                     'attribute1': msg['MBTI'],
                     'luck_msg' :  msg['luck_msg']
                 })
-
 
             if mbti_msg:
                 for msg in mbti_msg:
