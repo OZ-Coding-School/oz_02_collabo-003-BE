@@ -20,7 +20,7 @@ class ZodiacSerializer(serializers.ModelSerializer):
     class Meta:
         model = LuckMessage
         # fields = '__all__'  # 모든 필드 포함
-        fields = ('luck_date', 'category', 'attribute1', 'attribute2', 'luck_msg', 'gpt_id')
+        fields = ('msg_id', 'luck_date', 'category', 'attribute1', 'attribute2', 'luck_msg', 'gpt_id')
 
 
 class StarSerializer(serializers.ModelSerializer):
@@ -28,7 +28,7 @@ class StarSerializer(serializers.ModelSerializer):
     class Meta:
         model = LuckMessage
         # fields = '__all__'  # 모든 필드 포함
-        fields = ('msg_id', 'luck_date', 'category', 'attribute1', 'luck_msg', 'gpt_id')
+        fields = ('msg_id', 'luck_date', 'category', 'attribute1', 'attribute2', 'luck_msg', 'gpt_id')
 
 
 class MbtiSerializer(serializers.ModelSerializer):
