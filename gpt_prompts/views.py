@@ -1,15 +1,16 @@
-from kluck_env import env_settings as env
-from django.http import JsonResponse
-from datetime import datetime, timedelta
-from rest_framework import status
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.exceptions import ParseError
-from drf_spectacular.utils import extend_schema, OpenApiExample
-from .serializers import *
-from .models import GptPrompt
-from openai import OpenAI
 import json
+from datetime import datetime, timedelta
+from drf_spectacular.utils import extend_schema, OpenApiExample
+from openai import OpenAI
+from rest_framework import status
+from rest_framework.exceptions import ParseError
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from kluck_env import env_settings as env
+from .models import GptPrompt
+from .serializers import *
+from luck_messages.serializers import *
+
 
 # 오늘의 한마디 프롬프트
 # api/v1/prompt/today
@@ -402,6 +403,9 @@ class GptZodiac(APIView):
             prompts.append(prefix_prompt + prompt_date + prompt + suffix_prompt1)
             prompts.append(prefix_prompt + prompt_date + prompt + suffix_prompt2)
 
+            # 메세지 처리용 리스트
+            zodiac_msg = []
+
             for i in prompts:
                 # GPT에게 보낼 메세지 설정
                 messages = [
@@ -449,7 +453,7 @@ class GptZodiac(APIView):
                 if zodiac_data:
                     # DB컬럼에 맞게 dict로 변경
                     for msg in zodiac_data['GptResponse']:
-                        gpt_msg.append({
+                        zodiac_msg.append({
                             'attribute1': msg['zodiac'],
                             'attribute2': msg['year'],
                             'luck_msg' :  msg['luck_msg']
@@ -457,9 +461,6 @@ class GptZodiac(APIView):
 
         else:
             return Response(status=status.HTTP_402_PAYMENT_REQUIRED)
-        
-        # 메세지 처리용 리스트
-        zodiac_msg = []
 
         # GPT에 요청 결과를 DB에 넣기
         if zodiac_msg:
