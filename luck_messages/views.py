@@ -96,11 +96,11 @@ class TodayLuck(APIView):
             
             
 #api/v1/msg/zodiac_all/{띠이름}
-class findTodayZodiacMessages(APIView):
+class FindTodayZodiacMessages(APIView):
     '''
         BE-LUCK201: 오늘날짜의 띠 메세지 로드
     '''
-    serializer_class = zodiacSerializer
+    serializer_class = ZodiacSerializer
 
     @extend_schema(tags=['Msg'])
     def get(self, request, attribute1):
@@ -108,16 +108,16 @@ class findTodayZodiacMessages(APIView):
         date = now.strftime("%Y%m%d")
         reqCategory = "zodiac"
         messages = LuckMessage.objects.filter(luck_date=date, category=reqCategory, attribute1=attribute1)
-        serializer = zodiacSerializer(messages, many=True)
+        serializer = ZodiacSerializer(messages, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-      
+
 
 #api/v1/msg/star_all
-class findTodayStarMessages(APIView):
+class FindTodayStarMessages(APIView):
     '''
         BE-LUCK301: 오늘날짜의 별자리 메세지 로드
     '''
-    serializer_class = starSerializer
+    serializer_class = StarSerializer
 
     @extend_schema(tags=['Msg'])
     def get(self, request):
@@ -125,16 +125,16 @@ class findTodayStarMessages(APIView):
         date = now.strftime("%Y%m%d")
         reqCategory = "star"
         messages = LuckMessage.objects.filter(luck_date=date, category=reqCategory)
-        serializer = starSerializer(messages, many=True)
+        serializer = StarSerializer(messages, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 #api/v1/msg/mbti_all
-class findTodayMbtiMessages(APIView):
+class FindTodayMbtiMessages(APIView):
     '''
         BE-LUCK401: 오늘날짜의 MBTI 메세지 로드
     '''
-    serializer_class = mbtiSerializer
+    serializer_class = MbtiSerializer
 
     @extend_schema(tags=['Msg'])
     def get(self, request):
@@ -142,7 +142,7 @@ class findTodayMbtiMessages(APIView):
         date = now.strftime("%Y%m%d")
         reqCategory = 'mbti'
         messages = LuckMessage.objects.filter(luck_date=date, category=reqCategory)
-        serializer = mbtiSerializer(messages, many=True)
+        serializer = MbtiSerializer(messages, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -154,60 +154,60 @@ class findTodayMbtiMessages(APIView):
 
 
 #/api/v1/msg/today/<str:luck_date>
-class findSomedayTodayMessages(APIView):
+class FindSomedayTodayMessages(APIView):
     '''
         BE-GPT104: 특정 날짜별 한마디 메세지 로드
     '''
-    serializer_class = todaySerializer
+    serializer_class = TodaySerializer
 
     @extend_schema(tags=['AdminMsg'])
     def get(self, request, luck_date):
         reqCategory = "today"
         messages = LuckMessage.objects.filter(luck_date=luck_date, category=reqCategory)
-        serializer = todaySerializer(messages, many=True)
+        serializer = TodaySerializer(messages, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 #/api/v1/msg/zodiac/<str:luck_date>
-class findSomedayZodiacMessages(APIView):
+class FindSomedayZodiacMessages(APIView):
     '''
         BE-GPT204: 특정 날짜별 띠 메세지 로드
     '''
-    serializer_class = zodiacSerializer
+    serializer_class = ZodiacSerializer
 
     @extend_schema(tags=['AdminMsg'])
     def get(self, request, luck_date):
         reqCategory = "zodiac"
         messages = LuckMessage.objects.filter(luck_date=luck_date, category=reqCategory)
-        serializer = zodiacSerializer(messages, many=True)
+        serializer = ZodiacSerializer(messages, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 #/api/v1/admin/star/<str:luck_date>
-class findSomedayStarMessages(APIView):
+class FindSomedayStarMessages(APIView):
     '''
         BE-GPT304: 특정 날짜별 별자리 메세지 로드
     '''
-    serializer_class = starSerializer
+    serializer_class = StarSerializer
 
     @extend_schema(tags=['AdminMsg'])
     def get(self, request, luck_date):
         reqCategory = "star"
         messages = LuckMessage.objects.filter(luck_date=luck_date, category=reqCategory)
-        serializer = starSerializer(messages, many=True)
+        serializer = StarSerializer(messages, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 #/api/v1/admin/mbti/<str:luck_date>
-class findSomedayMbtiMessages(APIView):
+class FindSomedayMbtiMessages(APIView):
     '''
     BE-GPT404: 특정 날짜별 MBTI 메세지 로드
     '''
-    serializer_class = mbtiSerializer
+    serializer_class = MbtiSerializer
 
     @extend_schema(tags=['AdminMsg'])
     def get(self, request, luck_date):
         reqCategory = 'mbti'
         messages = LuckMessage.objects.filter(luck_date=luck_date, category=reqCategory)
-        serializer = mbtiSerializer(messages, many=True)
+        serializer = MbtiSerializer(messages, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)

@@ -1,115 +1,13 @@
-# 관련 요구사항 ID
-- BE-LUCK201 띠
-- BE-LUCK301 별자리
-- BE-LUCK401 MBTI
+# 1. 메인 화면 - 시작 페이지
+- 앱 실행 후 사용자가 설정한 정보에 맞춰 오늘의 운세 데이터 제공.
 
-### 모델(models.py)
-```
-class LuckMessage(models.Model):
-    msg_id = models.AutoField(primary_key=True)
-    luck_date = models.CharField(max_length=8, blank=True, null=True)
-    category = models.CharField(max_length=50, blank=True, null=True)
-    attribute1 = models.CharField(max_length=50, blank=True, null=True)
-    attribute2 = models.CharField(max_length=50, blank=True, null=True)
-    luck_msg = models.TextField(blank=True, null=True)
-    gpt_id = models.IntegerField(null=True)
-```
-## BE-LUCK201
-- 오늘 날짜의 띠별 모든 년도 데이터 로드
-- RestAPI 방식으로 변경
-### 필요데이터 
-- 오늘날짜
-  ```
-  class findZodiacMessages(views.APIView):
-      serializer_class = zodiacSerializer
-      def get(self, request, attribute1):
-          now = datetime.now()
-          date = now.strftime("%Y%m%d")
-          reqCategory = "zodiac"
-  ```
-### 데이터 호출
-- 필터 사용
-```
-    messages = LuckMessage.objects.filter(luck_date=date, category=reqCategory, attribute1=attribute1)
-```
-
-
-## BE-LUCK301, BE-LUCK401
-- 오늘 날짜의 MBTI 모든 종류별 데이터 로드
-
-### 필요데이터 
-- 오늘날짜
-  ```
-  class findStarMessages(views.APIView):
-      serializer_class = starSerializer
-      def get(self, request):
-          now = datetime.now()
-          date = now.strftime("%Y%m%d")
-          reqCategory = "star"
-  ```
-### 데이터 호출
-- 필터 사용
-```
-    messages = LuckMessage.objects.filter(luck_date=date, category=reqCategory)
-```
-
-### JSON으로 반환하기위한 Serializer
-```
-  from rest_framework.serializers import ModelSerializer
-  from .models import LuckMessage
-
-  class messagesSerializer(ModelSerializer):
-    class Meta:
-        model = LuckMessage
-        fields = ('luck_date', 'category', 'attribute1', 'attribute2', 'luck_msg')
-```
-
-### JSON으로 반환
-```
-  serializer = zodiacSerializer(messages, many=True)
-  return Response(serializer.data, status=status.HTTP_200_OK)
-```
-
-### JSON 반환 결과
-```
-  [
-    {
-        "luck_date": "20240430",
-        "category": "zodiac",
-        "attribute1": "소",
-        "attribute2": "2009",
-        "luck_msg": "20240430 2009 운수"
-    },
-    {
-        "luck_date": "20240430",
-        "category": "zodiac",
-        "attribute1": "소",
-        "attribute2": "1997",
-        "luck_msg": "20240430 1997 운수"
-    },
-    {
-        "luck_date": "20240430",
-        "category": "zodiac",
-        "attribute1": "소",
-        "attribute2": "1985",
-        "luck_msg": "20240430 1985 운수"
-    },
-    {
-        "luck_date": "20240430",
-        "category": "zodiac",
-        "attribute1": "소",
-        "attribute2": "1973",
-        "luck_msg": "20240430 1973 운수"
-    }
-]
-```
-## 관련 요구사항 ID
+## 1) 관련 요구사항 ID
 - BE-LUCK101 오늘의 한마디
 - BE-LUCK202 띠
 - BE-LUCK302 별자리
 - BE-LUCK402 MBTI
 
-## 모델(models.py)
+## 2) 모델(models.py)
 ```py
 class LuckMessage(models.Model):
     msg_id = models.AutoField(primary_key=True)
@@ -121,12 +19,12 @@ class LuckMessage(models.Model):
     gpt_id = models.IntegerField(null=True)
 ```
 
-## BE-LUCK101
+## 3)BE-LUCK101
 - 사용자에 맞는 해당 일자의 오늘의 한마디 데이터 로드
 - 사용자별 랜덤 오늘의 한마디 고정할 수 있는 방법 고안 필요
 - (4/30) 버전 관리를 위해 url 앞에 api/v1 추가.
 
-### 필요 데이터
+### (1) 필요 데이터
 - 서버상 오늘 날짜
     ```py
     # 오늘 날짜 가져오기, 입력 받은 사용자의 데이터를 변수로 저장.
@@ -138,7 +36,7 @@ class LuckMessage(models.Model):
     - (4/29) Postman에서 test 해볼 때는 입력되는 user_birth, user_MBTI가 있어서 request로 받았지만
     - (4/30) swagger-ui로 test 해볼 때는 입력되는 값이 필요하여 get에 인자로 추가
 
-### 데이터 호출
+### (2) 데이터 호출
 - 필터 사용
     ```py
     # 3가지의 오늘의 한마디에서 랜덤하게 제공.
@@ -146,31 +44,31 @@ class LuckMessage(models.Model):
     today_msg = LuckMessage.objects.filter(luck_date=today, attribute2=ran_num)
     ```
 
-## BE-LUCK202
+## 4) BE-LUCK202
 - 사용자에 맞는 해당 일자의 오늘의 "띠" 운세 데이터 로드
 
-### 필요 데이터
+### (1) 필요 데이터
 - 사용자 생년월일 데이터(8자리) 중 연도
     ```py
     user_zodiac = user_birth[:4]
     ```
 
-### 데이터 호출
+### (2) 데이터 호출
 - 필터 사용
     ```py
     zodiac_msg = LuckMessage.objects.filter(luck_date=today, attribute2=user_zodiac)
     ```
 
-## BE-LUCK302
+## 5) BE-LUCK302
 - 사용자에 맞는 해당 일자의 오늘의 "별자리" 운세 데이터 로드
 
-### 필요 데이터
+### (1) 필요 데이터
 - 사용자 생년월일 데이터(8자리) 중 월, 일 
     ```py
     user_star = int(user_birth[4:])
     ```
 
-### 데이터 호출
+### (2) 데이터 호출
 - 별자리 구분
     ```py
     if user_star>=120 and user_star<=218:
@@ -203,19 +101,19 @@ class LuckMessage(models.Model):
     star_msg = LuckMessage.objects.filter(luck_date=today, attribute1=star)
     ```
 
-## BE-LUCK402
+## 6) BE-LUCK402
 - 사용자에 맞는 해당 일자 오늘의 "MBTI" 운세 데이터 로드
 
-### 필요 데이터
+### (1) 필요 데이터
 - 사용자 mbti 입력 값
 
-### 데이터 호출
+### (2) 데이터 호출
 - 필터 사용
     ```py
     mbti_msg = LuckMessage.objects.filter(luck_date=today, attribute1=user_MBTI)
     ```
 
-## Serializer - JSON 반환 위함
+## 7) Serializer - JSON 반환 위함
 - serializers.py
     ```py
     from rest_framework import serializers
@@ -251,7 +149,7 @@ def get(self, request, user_birth, user_MBTI):
         raise Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
 ```
 
-## JSON 반환 결과
+### - JSON 반환 결과
 - 입력값 : {"user_birth" : "19810428", "user_MBTI" : "ESTP"}
 ```json
 {
@@ -284,4 +182,113 @@ def get(self, request, user_birth, user_MBTI):
         "luck_msg": "20240429 ESTP 운수"
     }
 }
+```
+# 2. 메인 화면 -  More 페이지
+
+## 1) 관련 요구사항 ID
+- BE-LUCK201 띠
+- BE-LUCK301 별자리
+- BE-LUCK401 MBTI
+
+## 2) 모델(models.py)
+```
+class LuckMessage(models.Model):
+    msg_id = models.AutoField(primary_key=True)
+    luck_date = models.CharField(max_length=8, blank=True, null=True)
+    category = models.CharField(max_length=50, blank=True, null=True)
+    attribute1 = models.CharField(max_length=50, blank=True, null=True)
+    attribute2 = models.CharField(max_length=50, blank=True, null=True)
+    luck_msg = models.TextField(blank=True, null=True)
+    gpt_id = models.IntegerField(null=True)
+```
+## 3) BE-LUCK201
+- 오늘 날짜의 띠별 모든 년도 데이터 로드
+- RestAPI 방식으로 변경
+
+### (1) 필요 데이터 
+- 오늘날짜
+  ```
+  class findZodiacMessages(views.APIView):
+      serializer_class = zodiacSerializer
+      def get(self, request, attribute1):
+          now = datetime.now()
+          date = now.strftime("%Y%m%d")
+          reqCategory = "zodiac"
+  ```
+### (2) 데이터 호출
+- 필터 사용
+```
+    messages = LuckMessage.objects.filter(luck_date=date, category=reqCategory, attribute1=attribute1)
+```
+
+
+## 4) BE-LUCK301, BE-LUCK401
+- 오늘 날짜의 MBTI 모든 종류별 데이터 로드
+
+### (1) 필요 데이터 
+- 오늘날짜
+  ```
+  class findStarMessages(views.APIView):
+      serializer_class = starSerializer
+      def get(self, request):
+          now = datetime.now()
+          date = now.strftime("%Y%m%d")
+          reqCategory = "star"
+  ```
+### (2) 데이터 호출
+- 필터 사용
+```
+    messages = LuckMessage.objects.filter(luck_date=date, category=reqCategory)
+```
+
+## 5) Serializer - JSON 반환 위함
+- serializers.py
+```
+  from rest_framework.serializers import ModelSerializer
+  from .models import LuckMessage
+
+  class messagesSerializer(ModelSerializer):
+    class Meta:
+        model = LuckMessage
+        fields = ('luck_date', 'category', 'attribute1', 'attribute2', 'luck_msg')
+```
+
+- 반환
+```
+  serializer = zodiacSerializer(messages, many=True)
+  return Response(serializer.data, status=status.HTTP_200_OK)
+```
+
+### - JSON 반환 결과
+```
+  [
+    {
+        "luck_date": "20240430",
+        "category": "zodiac",
+        "attribute1": "소",
+        "attribute2": "2009",
+        "luck_msg": "20240430 2009 운수"
+    },
+    {
+        "luck_date": "20240430",
+        "category": "zodiac",
+        "attribute1": "소",
+        "attribute2": "1997",
+        "luck_msg": "20240430 1997 운수"
+    },
+    {
+        "luck_date": "20240430",
+        "category": "zodiac",
+        "attribute1": "소",
+        "attribute2": "1985",
+        "luck_msg": "20240430 1985 운수"
+    },
+    {
+        "luck_date": "20240430",
+        "category": "zodiac",
+        "attribute1": "소",
+        "attribute2": "1973",
+        "luck_msg": "20240430 1973 운수"
+    }
+]
 ```
