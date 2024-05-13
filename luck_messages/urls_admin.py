@@ -8,8 +8,8 @@ urlpatterns = [
     # path('star_all/', findTodayStarMessages.as_view(), name='findTodayStarMessages'),
     # path('mbti_all/', findTodayMbtiMessages.as_view(), name="findTodayMbtiMessages"),
   
-    path('today/<str:luck_date>', FindSomedayTodayMessages.as_view(), name='FindSomedayTodayMessages'),
-    path('zodiac/<str:luck_date>', FindSomedayZodiacMessages.as_view(), name='FindSomedayZodiacMessages'),
-    path('star/<str:luck_date>', FindSomedayStarMessages.as_view(), name='FindSomedayStarMessages'),
-    path('mbti/<str:luck_date>', FindSomedayMbtiMessages.as_view(), name="FindTodayMbtiMessages"),
+    path('today/<str:luck_date>/', FindSomedayTodayMessages.as_view(), name='FindSomedayTodayMessages'),
+    path('zodiac/<str:luck_date>/', FindSomedayZodiacMessages.as_view(), name='FindSomedayZodiacMessages'),
+    path('star/<str:luck_date>/', FindSomedayStarMessages.as_view(), name='FindSomedayStarMessages'),
+    path('mbti/<str:luck_date>/', FindSomedayMbtiMessages.as_view(), name="FindTodayMbtiMessages"),
 ]
