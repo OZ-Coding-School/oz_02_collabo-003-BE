@@ -3,7 +3,7 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.exceptions import ParseError
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, OpenApiExample
 from .serializers import *
 from .models import GptPrompt
 from openai import OpenAI
@@ -21,7 +21,9 @@ class PromptToday(APIView):
     '''
     serializer_class = PromptTodaySerializer
 
-    @extend_schema(tags=['PromptMsg'])
+    @extend_schema(tags=['PromptMsg'],
+                   description="BE-GPT101(GET): 오늘의 한마디에 사용되는 최신(마지막 gpt_id) 프롬프트 메세지 로드"
+    )
     def get(self, request):
         # 업데이트하는 방식 X, 프롬프트 메세지 이름 사용 X
         try:
@@ -33,7 +35,17 @@ class PromptToday(APIView):
             return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
 
     # 프롬프트 메세지 수정 - 추가하는 방식
-    @extend_schema(tags=['PromptMsg'])
+    @extend_schema(tags=['PromptMsg'],
+        examples=[
+            OpenApiExample(
+                'Example',
+                value={'prompt_msg' : "GPT야 오늘의 한마디 알려줘"
+                },
+                request_only=True,  # 요청 본문에서만 예시 사용
+            )
+        ],
+        description="BE-GPT102(POST): 오늘의 한마디에 사용되는 최신(마지막 gpt_id) 프롬프트 메세지 저장"
+    )
     def post(self, request):
         now = datetime.now()
         today = now.strftime('%Y%m%d')
@@ -61,7 +73,9 @@ class PromptZodiac(APIView):
     '''
     serializer_class = PromptZodiacSerializer
 
-    @extend_schema(tags=['PromptMsg'])
+    @extend_schema(tags=['PromptMsg'],
+                   description="BE-GPT201(GET): 띠별 운세에 사용되는 최신(마지막 gpt_id) 프롬프트 메세지 로드"
+    )
     def get(self, request):
     # 업데이트하는 방식 X, 프롬프트 메세지 이름 사용 X
         try:
@@ -73,7 +87,17 @@ class PromptZodiac(APIView):
             return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
 
     # 프롬프트 메세지 수정 - 추가하는 방식
-    @extend_schema(tags=['PromptMsg'])
+    @extend_schema(tags=['PromptMsg'],
+        examples=[
+            OpenApiExample(
+                'Example',
+                value={'prompt_msg' : "GPT야 띠별 운세를 알려줘"
+                },
+                request_only=True,  # 요청 본문에서만 예시 사용
+            )
+        ],
+        description="BE-GPT202(POST): 띠별 운세에 사용되는 최신(마지막 gpt_id) 프롬프트 메세지 저장"
+    )
     def post(self, request):
         now = datetime.now()
         today = now.strftime('%Y%m%d')
@@ -102,7 +126,9 @@ class PromptStar(APIView):
     '''
     serializer_class = PromptStarSerializer
 
-    @extend_schema(tags=['PromptMsg'])
+    @extend_schema(tags=['PromptMsg'],
+        description="BE-GPT301(GET): 별자리별 운세에 사용되는 최신(마지막 gpt_id) 프롬프트 메세지 로드"
+    )
     def get(self, request):
         # 업데이트하는 방식 X, 프롬프트 메세지 이름 사용 X
         # api/v1/prompt/star
@@ -115,7 +141,17 @@ class PromptStar(APIView):
             return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
 
     # 프롬프트 메세지 수정 - 추가하는 방식
-    @extend_schema(tags=['PromptMsg'])
+    @extend_schema(tags=['PromptMsg'],
+        examples=[
+            OpenApiExample(
+                'Example',
+                value={'prompt_msg' : "GPT야 별자리별 운세 알려줘"
+                },
+                request_only=True,  # 요청 본문에서만 예시 사용
+            )
+        ],
+        description="BE-GPT302(POST): 별자리별 운세에 사용되는 최신(마지막 gpt_id) 프롬프트 메세지 저장"
+    )
     def post(self, request):
         now = datetime.now()
         today = now.strftime('%Y%m%d')
@@ -143,7 +179,9 @@ class PromptMbti(APIView):
     '''
     serializer_class = PromptMbtiSerializer
 
-    @extend_schema(tags=['PromptMsg'])
+    @extend_schema(tags=['PromptMsg'],
+                   description="BE-GPT401(GET): MBTI별 운세에 사용되는 최신(마지막 gpt_id) 프롬프트 메세지 로드"
+    )
     def get(self, request):
         # 업데이트하는 방식 X, 프롬프트 메세지 이름 사용 X
         try:
@@ -155,7 +193,17 @@ class PromptMbti(APIView):
             return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
 
     # 프롬프트 메세지 수정 - 추가하는 방식
-    @extend_schema(tags=['PromptMsg'])
+    @extend_schema(tags=['PromptMsg'],
+        examples=[
+            OpenApiExample(
+                'Example',
+                value={'prompt_msg' : "GPT야 MBTI별 운세 알려줘"
+                },
+                request_only=True,  # 요청 본문에서만 예시 사용
+            )
+        ],
+        description="BE-GPT402(POST): MBTI별 운세에 사용되는 최신(마지막 gpt_id) 프롬프트 메세지 저장"
+    )
     def post(self, request):
         now = datetime.now()
         today = now.strftime('%Y%m%d')
@@ -197,7 +245,17 @@ class GptStar(APIView):
     #스웨거를 위한 시리얼라이저 설정
     serializer_class = PromptLuckSerializer
     #스웨거 API구분을 위한 데코레이터
-    @extend_schema(tags=['PromptMsg'])
+    @extend_schema(tags=['GPT'],
+        examples=[
+            OpenApiExample(
+                'Example',
+                value={'category': "star"
+                },
+                request_only=True,  # 요청 본문에서만 예시 사용
+            )
+        ],
+        description="category가 star인 프롬프트중에서 가장 최근의 프롬프트메세지를 사용하여 GPT에 운세 생성요청하여 결과를 DB에 저장"
+    )
     def post(self, request):
         # GPTAPI Key 설정
         api_key = env.API_KEY
@@ -305,7 +363,17 @@ class GptMBTI(APIView):
     #스웨거를 위한 시리얼라이저 설정
     serializer_class = PromptLuckSerializer
     #스웨거 API구분을 위한 데코레이터
-    @extend_schema(tags=['PromptMsg'])
+    @extend_schema(tags=['GPT'],
+        examples=[
+            OpenApiExample(
+                'Example',
+                value={'category': "MBTI"
+                },
+                request_only=True,  # 요청 본문에서만 예시 사용
+            )
+        ],
+        description="category가 MBTI인 프롬프트중에서 가장 최근의 프롬프트메세지를 사용하여 GPT에 운세 생성요청하여 결과를 DB에 저장"
+    )
     def post(self, request):
         # GPTAPI Key 설정
         api_key = env.API_KEY
