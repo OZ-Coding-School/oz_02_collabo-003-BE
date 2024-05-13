@@ -5,7 +5,7 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.exceptions import ParseError
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, OpenApiExample
 from luck_messages.serializers import *
 from .serializers import *
 from .models import GptPrompt
@@ -192,7 +192,6 @@ class PromptHistory(APIView):
             return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
 
 
-          
 # GPT API 사용
 # 1. 오늘의 한마디 받기.
 # /api/v1/gpt/today/
@@ -201,7 +200,18 @@ class GptToday(APIView):
     serializer_class = TodaySerializer
     
     #스웨거 API구분을 위한 데코레이터
-    @extend_schema(tags=['GPT'])
+    @extend_schema(tags=['GPT !!BD팀, FE팀에서는 사용하지 말아주세요. BE전용입니다.!!'],
+        examples=[
+            OpenApiExample(
+                'Example',
+                value={'입력값 없음'
+                },
+                request_only=True,  # 요청 본문에서만 예시 사용
+            )
+        ],
+        description="category가 today인 프롬프트중에서 가장 최근의 프롬프트메세지를 사용하여 GPT에 운세 생성요청하여 결과를 DB에 저장"
+    )
+
     def post(self, request):
         # GPT API Key 설정
         api_key = env.API_KEY
@@ -300,10 +310,21 @@ class GptToday(APIView):
 # /api/v1/gpt/zodiac/
 class GptZodiac(APIView):
     #스웨거를 위한 시리얼라이저 설정
-    serializer_class = StarSerializer
+    serializer_class = ZodiacSerializer
     
     #스웨거 API 구분을 위한 데코레이터
-    @extend_schema(tags=['GPT'])
+    @extend_schema(tags=['GPT !!BD팀, FE팀에서는 사용하지 말아주세요. BE전용입니다.!!'],
+        examples=[
+            OpenApiExample(
+                'Example',
+                value={'입력값없음.'
+                },
+                request_only=True,  # 요청 본문에서만 예시 사용
+            )
+        ],
+        description="category가 zodiac인 프롬프트중에서 가장 최근의 프롬프트메세지를 사용하여 GPT에 운세 생성요청하여 결과를 DB에 저장"
+    )
+
     def post(self, request):
         # GPT API Key 설정
         api_key = env.API_KEY
@@ -319,8 +340,7 @@ class GptZodiac(APIView):
             # now = datetime.now()
             a_week = datetime.now() + timedelta(days=7)
             luck_date = a_week.strftime('%Y%m%d')
-            # gpt_id = PromptGptApiSerializer(prompt_msg).data['gpt_id']
-            gpt_id = 104
+            gpt_id = PromptHistorySerializer(zodiac_prompt).data['gpt_id']
             prefix_prompt = '{"GptResponse":[{"zodiac": "닭", "year": "1981", "luck_msg": "메세지"}, ...]}예시와 같은 json 형식으로 작성해줘.'
             prompt_date = luck_date[:4] +'년'+ luck_date[4:6] + '월' + luck_date[6:] + '일 '
             # GPT가 너무 긴 답변을 처리하지 못해서 2파트로 나눠서 요청을 보냄.
@@ -332,6 +352,9 @@ class GptZodiac(APIView):
             prompts = []
             prompts.append(prefix_prompt + prompt_date + prompt + suffix_prompt1)
             prompts.append(prefix_prompt + prompt_date + prompt + suffix_prompt2)
+
+            # 메세지 처리용 리스트
+            zodiac_msg = []
 
             for i in prompts:
                 # GPT에게 보낼 메세지 설정
@@ -380,7 +403,7 @@ class GptZodiac(APIView):
                 if zodiac_data:
                     # DB컬럼에 맞게 dict로 변경
                     for msg in zodiac_data['GptResponse']:
-                        gpt_msg.append({
+                        zodiac_msg.append({
                             'attribute1': msg['zodiac'],
                             'attribute2': msg['year'],
                             'luck_msg' :  msg['luck_msg']
@@ -388,9 +411,6 @@ class GptZodiac(APIView):
 
         else:
             return Response(status=status.HTTP_402_PAYMENT_REQUIRED)
-        
-        # 메세지 처리용 리스트
-        zodiac_msg = []
 
         # GPT에 요청 결과를 DB에 넣기
         if zodiac_msg:
@@ -420,7 +440,18 @@ class GptStar(APIView):
     serializer_class = StarSerializer
     
     #스웨거 API 구분을 위한 데코레이터
-    @extend_schema(tags=['GPT'])
+    @extend_schema(tags=['GPT !!BD팀, FE팀에서는 사용하지 말아주세요. BE전용입니다.!!'],
+        examples=[
+            OpenApiExample(
+                'Example',
+                value={'category': "star"
+                },
+                request_only=True,  # 요청 본문에서만 예시 사용
+            )
+        ],
+        description="category가 star인 프롬프트중에서 가장 최근의 프롬프트메세지를 사용하여 GPT에 운세 생성요청하여 결과를 DB에 저장"
+    )
+    
     def post(self, request):
         # GPT API Key 설정
         api_key = env.API_KEY
@@ -436,7 +467,10 @@ class GptStar(APIView):
             luck_date = a_week.strftime('%Y%m%d')
             gpt_id = PromptHistorySerializer(star_prompt).data['gpt_id']
             prompt = PromptHistorySerializer(star_prompt).data['prompt_msg']
-            prompt = prompt
+            prefix_prompt = '{"GptResponse":[{"star": "물병자리", "date_range": "01/20~02/18", "luck_msg": "메세지"}, ...]}예시와 같은 json 형식으로 작성해줘.'
+            prompt_date = luck_date[:4] +'년'+ luck_date[4:6] + '월' + luck_date[6:] + '일 '
+            prompt = PromptHistorySerializer(star_prompt).data['prompt_msg']
+            prompt = prefix_prompt + prompt_date + prompt
 
             # GPT에게 보낼 메세지 설정
             messages = [
@@ -464,7 +498,7 @@ class GptStar(APIView):
             )
 
             star_data = json.loads(response.choices[0].message.content)
-            
+
         else:
             return Response(status=status.HTTP_402_PAYMENT_REQUIRED)
 
@@ -527,8 +561,19 @@ class GptMbti(APIView):
     #스웨거를 위한 시리얼라이저 설정
     serializer_class = MbtiSerializer
     
-    #스웨거 API 구분을 위한 데코레이터
-    @extend_schema(tags=['GPT'])
+    #스웨거 API구분을 위한 데코레이터
+    @extend_schema(tags=['GPT !!BD팀, FE팀에서는 사용하지 말아주세요. BE전용입니다.!!'],
+        examples=[
+            OpenApiExample(
+                'Example',
+                value={'category': "MBTI"
+                },
+                request_only=True,  # 요청 본문에서만 예시 사용
+            )
+        ],
+        description="category가 MBTI인 프롬프트중에서 가장 최근의 프롬프트메세지를 사용하여 GPT에 운세 생성요청하여 결과를 DB에 저장"
+    )
+
     def post(self, request):
         # GPT API Key 설정
         api_key = env.API_KEY
@@ -545,7 +590,9 @@ class GptMbti(APIView):
             luck_date = a_week.strftime('%Y%m%d')
             gpt_id = PromptHistorySerializer(mbti_prompt).data['gpt_id']
             prompt = PromptHistorySerializer(mbti_prompt).data['prompt_msg']
-            prompt = prompt
+            prefix_prompt = '{"GptResponse":[{"MBTI": "ENTP", "luck_msg": "메세지"}, ...]}예시와 같은 json 형식으로 작성해줘.'
+            prompt_date = luck_date[:4] +'년'+ luck_date[4:6] + '월' + luck_date[6:] + '일 '
+            prompt = prefix_prompt + prompt_date + prompt
 
             # GPT에게 보낼 메세지 설정
             messages = [

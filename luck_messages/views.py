@@ -1,11 +1,14 @@
 from datetime import datetime
+from django.db.models import Prefetch
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from drf_spectacular.utils import extend_schema
 from .serializers import *
 import random
 from .models import LuckMessage
-from drf_spectacular.utils import extend_schema
+from collections import defaultdict
+from operator import itemgetter
 
 
 # api/v1/msg/main/
@@ -179,8 +182,20 @@ class FindSomedayZodiacMessages(APIView):
     def get(self, request, luck_date):
         reqCategory = "zodiac"
         messages = LuckMessage.objects.filter(luck_date=luck_date, category=reqCategory)
-        serializer = ZodiacSerializer(messages, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+
+        # 데이터를 attribute1로 그룹화하고 attribute2 기준 오름차순 정렬
+        result = defaultdict(list)
+        for message in messages:
+            attribute1 = message.attribute1
+            result[attribute1].append({
+                "attribute2": message.attribute2,
+                "luck_msg": message.luck_msg
+            })
+        
+        for attribute1, messages in result.items():
+            result[attribute1] = sorted(messages, key=itemgetter("attribute2"))
+        
+        return Response(result, status=status.HTTP_200_OK)
 
 
 #/api/v1/admin/star/<str:luck_date>
