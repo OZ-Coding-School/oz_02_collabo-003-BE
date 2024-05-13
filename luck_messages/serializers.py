@@ -28,7 +28,7 @@ class StarSerializer(ModelSerializer):
     class Meta:
         model = LuckMessage
         # fields = '__all__'  # 모든 필드 포함
-        fields = ('msg_id', 'luck_date', 'category', 'attribute1', 'luck_msg')
+        fields = ('msg_id', 'luck_date', 'category', 'attribute1', 'attribute2', 'luck_msg')
 
 
 class MbtiSerializer(ModelSerializer):
