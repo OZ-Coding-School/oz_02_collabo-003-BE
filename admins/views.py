@@ -9,17 +9,24 @@ from django.utils import timezone
 from luck_messages.models import LuckMessage
 from admins.models import Admin
 from .serializers import *
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, OpenApiExample
 
 
 # api/v1/admin/login/
 class AdminLogin(APIView):
-    '''
-    BE-ADM001: 프론트에서 admin_id(ID), admin_pw(패스워드)를 받아 로그인\n
-    관리자 로그인 후 최종 접속 날짜(last_date)를 오늘 날짜로 업데이트
-    '''
     serializer_class = AdminLoginSerializer
-    @extend_schema(tags=['Admin'])
+
+    # POST 메소드에 대한 스키마 정의 및 예시 포함
+    @extend_schema(tags=['Admin'],
+        examples=[
+            OpenApiExample(
+                'Example',
+                value={'admin_id': 'admin1', 'admin_pw': 'sodlfmadmsrhksflwk1'},
+                request_only=True,  # 요청 본문에서만 예시 사용
+            )
+        ],
+        description="BE-ADM001: 프론트에서 admin_id(ID), admin_pw(패스워드)를 받아 로그인\n관리자 로그인 후 최종 접속 날짜(last_date)를 오늘 날짜로 업데이트"
+    )
     def post(self, request):
         admin_id = request.data.get('admin_id')
         admin_pw = request.data.get('admin_pw')
@@ -52,12 +59,22 @@ class AdminUsers(APIView):
 
 # api/v1/admin/signup/
 class AdminUsersSignup(APIView):
-    '''
-    BE-ADM002(화면없음): 프론트에서 admin_id(ID), admin_user(사용자명), cell_num(폰 번호), email, user_pw(패스워드)를 받아 관리자 등록\n
-    수정 내용을 따로 다시 반환 하지는 않는다.
-    '''
     serializer_class = AdminSignupSerializer
-    @extend_schema(tags=['Admin'])
+    @extend_schema(tags=['Admin'],
+        examples=[
+            OpenApiExample(
+                'Example',
+                value={"admin_id": "admin99",
+                       "admin_user": "관리자99",
+                       "cell_num": "01000000000",
+                       "email": "admin99@admin99.com",
+                       "admin_pw": "sodlfmadmsrhksflwk99"
+                },
+                request_only=True,  # 요청 본문에서만 예시 사용
+            )
+        ],
+        description="BE-ADM002(화면없음): 프론트에서 admin_id(ID), admin_user(사용자명), cell_num(폰 번호), email, user_pw(패스워드)를 받아 관리자 등록\n수정 내용을 따로 다시 반환 하지는 않는다."
+    )
     def post(self, request):
 
         password = request.data.get('admin_pw')
@@ -79,12 +96,19 @@ class AdminUsersSignup(APIView):
 
 # api/v1/admin/msg/
 class EditLuckMessage(APIView):
-    '''
-    BE-GPT105(205, 305, 405): 프론트에서 msg_id를 받아 luck_messages의 모델에서 해당 id를 찾아 내용 수정\n
-    수정 내용을 따로 다시 반환하지는 않는다.
-    '''  
     serializer_class = LuckMessageSerializer
-    @extend_schema(tags=['AdminMsg'])
+    @extend_schema(tags=['AdminMsg'],
+        examples=[
+            OpenApiExample(
+                'Example',
+                value={"msg_id": "2694",
+                       "luck_msg": "오늘은 아이유 좋은날 들어요. 오늘은 좋은날이니까"
+                },
+                request_only=True,  # 요청 본문에서만 예시 사용
+            )
+        ],
+        description="BE-GPT105(205, 305, 405): 프론트에서 msg_id를 받아 luck_messages의 모델에서 해당 id를 찾아 내용 수정\n수정 내용을 따로 다시 반환하지는 않는다."
+    )
     def post(self, request):
         msg_id = request.data.get('msg_id')
         try:
