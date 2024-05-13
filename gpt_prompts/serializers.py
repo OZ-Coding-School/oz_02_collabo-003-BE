@@ -73,15 +73,15 @@ class PromptHistorySerializer(serializers.ModelSerializer):
         fields = ('gpt_id', 'category', 'prompt_msg_name', 'prompt_msg', 'create_date', 'last_date', 'admins_id')
 
 
-class PromptGptApiSerializer(serializers.ModelSerializer):
+# class PromptGptApiSerializer(serializers.ModelSerializer):
 
-    class Meta:
-        model= GptPrompt
-        fields = ('gpt_id', 'category', 'prompt_msg', 'create_date', 'last_date', 'admins_id')
+#     class Meta:
+#         model= GptPrompt
+#         fields = ('gpt_id', 'category', 'prompt_msg', 'create_date', 'last_date', 'admins_id')
 
 
-class PromptLuckSerializer(serializers.ModelSerializer):
+# class PromptLuckSerializer(serializers.ModelSerializer):
 
-    class Meta:
-        model= LuckMessage
-        fields = ('luck_date', 'category', 'attribute1', 'attribute2', 'luck_msg', 'gpt_id')
+#     class Meta:
+#         model= LuckMessage
+#         fields = ('luck_date', 'category', 'attribute1', 'attribute2', 'luck_msg', 'gpt_id')
