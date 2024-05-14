@@ -1,15 +1,16 @@
 import json
+from openai import OpenAI
 from datetime import datetime, timedelta
 from drf_spectacular.utils import extend_schema, OpenApiExample
-from openai import OpenAI
+from drf_spectacular.utils import extend_schema, OpenApiExample
 from rest_framework import status
 from rest_framework.exceptions import ParseError
-from drf_spectacular.utils import extend_schema, OpenApiExample
-from luck_messages.serializers import *
-from .serializers import *
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django.core.paginator import Paginator # pagination
 from kluck_env import env_settings as env
+from luck_messages.serializers import *
+from .serializers import *
 from .models import GptPrompt
 
 
@@ -234,8 +235,16 @@ class PromptHistory(APIView):
     def get(self, request, category):
         try:
             prompt_msgs = GptPrompt.objects.filter(category=category)
-            serializer = PromptHistorySerializer(prompt_msgs, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            paginator = Paginator(prompt_msgs, 4) # 페이지당 4개의 객체를 보여줍니다. 개수는 원하는대로 조정하세요.
+
+            page_number = request.GET.get('page')
+            page_obj = paginator.get_page(page_number)
+
+            serializer = PromptHistorySerializer(page_obj, many=True)
+            return Response({
+                'total': prompt_msgs.count(), # 총 데이터 개수
+                'prompt_msgs': serializer.data, # 페이지네이션된 데이터
+            }, status=status.HTTP_200_OK)
         except GptPrompt.DoesNotExist:
             return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
 
