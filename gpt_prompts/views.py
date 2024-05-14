@@ -525,7 +525,6 @@ class GptStar(APIView):
             prompt = PromptHistorySerializer(star_prompt).data['prompt_msg']
             prefix_prompt = '{"GptResponse":[{"star": "물병자리", "date_range": "01/20~02/18", "luck_msg": "메세지"}, ...]}예시와 같은 json 형식으로 작성해줘.'
             prompt_date = luck_date[:4] +'년'+ luck_date[4:6] + '월' + luck_date[6:] + '일 '
-            prompt = PromptHistorySerializer(star_prompt).data['prompt_msg']
             prompt = prefix_prompt + prompt_date + prompt
 
             # GPT에게 보낼 메세지 설정
