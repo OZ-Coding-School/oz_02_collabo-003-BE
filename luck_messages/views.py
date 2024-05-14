@@ -184,16 +184,26 @@ class FindSomedayZodiacMessages(APIView):
         messages = LuckMessage.objects.filter(luck_date=luck_date, category=reqCategory)
 
         # 데이터를 attribute1로 그룹화하고 attribute2 기준 오름차순 정렬
-        result = defaultdict(list)
+        result = []
         for message in messages:
             attribute1 = message.attribute1
-            result[attribute1].append({
-                "attribute2": message.attribute2,
-                "luck_msg": message.luck_msg
-            })
+            message_dict = next((item for item in result if item["attribute1"] == attribute1), None)
+            if message_dict:
+                message_dict["messages"].append({
+                    "attribute2": message.attribute2,
+                    "luck_msg": message.luck_msg
+                })
+            else:
+                result.append({
+                    "attribute1": attribute1,
+                    "messages": [{
+                        "attribute2": message.attribute2,
+                        "luck_msg": message.luck_msg
+                    }]
+                })
         
-        for attribute1, messages in result.items():
-            result[attribute1] = sorted(messages, key=itemgetter("attribute2"))
+        for item in result:
+            item["messages"] = sorted(item["messages"], key=itemgetter("attribute2"))
         
         return Response(result, status=status.HTTP_200_OK)
 
