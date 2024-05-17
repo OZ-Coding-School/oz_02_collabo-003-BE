@@ -37,7 +37,7 @@ class TodayLuck(APIView):
             else:
                 today_serializer = {}
 
-            ran_num = random.randint(0, 4)
+            ran_num = random.randint(1, 3)
             today_msg = LuckMessage.objects.filter(luck_date=today, attribute2=ran_num)
 
 
