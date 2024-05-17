@@ -234,7 +234,7 @@ class PromptHistory(APIView):
     @extend_schema(tags=['PromptMsg'])
     def get(self, request, category, page):
         try:
-            prompt_msgs = GptPrompt.objects.filter(category=category)
+            prompt_msgs = GptPrompt.objects.filter(category=category).order_by('-gpt_id')
             paginator = Paginator(prompt_msgs, 4) # 페이지당 4개의 객체를 보여줍니다. 개수는 원하는대로 조정하세요.
 
             page_obj = paginator.get_page(page)
