@@ -1,11 +1,14 @@
 from datetime import datetime
+from django.db.models import Prefetch
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from drf_spectacular.utils import extend_schema
 from .serializers import *
 import random
 from .models import LuckMessage
-from drf_spectacular.utils import extend_schema
+from collections import defaultdict
+from operator import itemgetter
 
 
 # api/v1/msg/main/
@@ -28,13 +31,13 @@ class TodayLuck(APIView):
             # 오늘의 한마디 사용자에게 제공.
             # 3가지의 오늘의 한마디에서 랜덤하게 제공.
 
-            today_msg = LuckMessage.objects.filter(luck_date=today, attribute2=random.randint(0,4))
+            today_msg = LuckMessage.objects.filter(luck_date=today, attribute2=random.randint(1,3))
             if today_msg:
                 today_serializer = TodayLuckSerializer(today_msg[0]).data
             else:
                 today_serializer = {}
 
-            ran_num = random.randint(0, 4)
+            ran_num = random.randint(1,3)
             today_msg = LuckMessage.objects.filter(luck_date=today, attribute2=ran_num)
 
 
@@ -180,8 +183,30 @@ class FindSomedayZodiacMessages(APIView):
     def get(self, request, luck_date):
         reqCategory = "zodiac"
         messages = LuckMessage.objects.filter(luck_date=luck_date, category=reqCategory)
-        serializer = ZodiacSerializer(messages, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+
+        # 데이터를 attribute1로 그룹화하고 attribute2 기준 오름차순 정렬
+        result = []
+        for message in messages:
+            attribute1 = message.attribute1
+            message_dict = next((item for item in result if item["attribute1"] == attribute1), None)
+            if message_dict:
+                message_dict["messages"].append({
+                    "attribute2": message.attribute2,
+                    "luck_msg": message.luck_msg
+                })
+            else:
+                result.append({
+                    "attribute1": attribute1,
+                    "messages": [{
+                        "attribute2": message.attribute2,
+                        "luck_msg": message.luck_msg
+                    }]
+                })
+        
+        for item in result:
+            item["messages"] = sorted(item["messages"], key=itemgetter("attribute2"))
+        
+        return Response(result, status=status.HTTP_200_OK)
 
 
 #/api/v1/admin/star/<str:luck_date>

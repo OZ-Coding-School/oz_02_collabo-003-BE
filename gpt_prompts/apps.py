@@ -11,16 +11,12 @@ class GptPromptConfig(AppConfig):
     verbose_name = "GPT API를 이용한 오늘의 한마디 데이터 자동 저장"
 
     def ready(self):
-        if settings.DEBUG:
-            # 개발 중에는 스케줄러를 실행하지 않음
-            return
-
         from .scheduler import gpt_today_job
 
         scheduler = BackgroundScheduler(timezone=pytz.timezone('Asia/Seoul'))
         scheduler.add_job(
             gpt_today_job,
-            trigger=CronTrigger(hour=00, minute=00),  # 매일 자정에 실행
+            trigger=CronTrigger(hour=18, minute=33),  # 매일 새벽 1시에 실행
         )
         
         logger = logging.getLogger(__name__)

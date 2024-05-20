@@ -26,9 +26,11 @@ SECRET_KEY = env.Django_SECRET_KEY
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-#온라인 서버에 배포 할때만 사용
+# 온라인 서버에 배포 할때만 사용
 # ALLOWED_HOSTS = ['43.201.60.229']
-#개발 중에는 아래 내용을 사용
+# 온라인 서버에서 Nginx, gunicorn 사용시에 사용
+# ALLOWED_HOSTS = ['127.0.0.1']
+# 개발 중에는 아래 내용을 사용
 ALLOWED_HOSTS = []
 
 # Application definition
@@ -40,7 +42,7 @@ SYSTEM_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    'django_apscheduler',
+    "corsheaders",
 ]
 
 CUSTOM_APPS = [
@@ -52,10 +54,10 @@ CUSTOM_APPS = [
     'luck_messages',
 ]
 
-
 INSTALLED_APPS = SYSTEM_APPS + CUSTOM_APPS
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -63,8 +65,14 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-
 ]
+
+CORS_ORIGIN_ALLOW_ALL = True
+
+CORS_ALLOW_METHODS = (
+    'GET',
+    'POST',
+)
 
 
 ROOT_URLCONF = "Kluck_config.urls"
@@ -151,9 +159,3 @@ STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# django-apscheduler settings
-APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a"
-
-APSCHEDULER_RUN_NOW_TIMEOUT = 300  # Seconds
-
-SCHEDULER_DEFAULT = True # apps.py 참고

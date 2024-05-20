@@ -3,8 +3,13 @@ from .views import *
 
 
 urlpatterns = [
+<<<<<<< HEAD
     path('main/<str:user_birth>&<str:user_MBTI>', TodayLuck.as_view(), name='TodayLuck'),
     path('zodiac_all', FindTodayZodiacMessages.as_view(), name='FindTodayZodiacMessages'),
+=======
+    path('main/<str:user_birth>&<str:user_MBTI>/', TodayLuck.as_view(), name='TodayLuck'),
+    path('zodiac_all/<str:attribute1>/', FindTodayZodiacMessages.as_view(), name='FindTodayZodiacMessages'),
+>>>>>>> 8adb63716226911fcae3b5b7bf4389e95f1c14d3
     path('star_all/', FindTodayStarMessages.as_view(), name='FindTodayStarMessages'),
     path('mbti_all/', FindTodayMbtiMessages.as_view(), name="FindTodayMbtiMessages"),
 

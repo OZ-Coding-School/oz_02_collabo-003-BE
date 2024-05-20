@@ -21,11 +21,11 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, Spec
 
 
 urlpatterns = [
-    path("admin/", admin.site.urls),  
+    path("admin/", admin.site.urls),
     # Optional UI:  
     path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
     path('api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
-    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),  
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     # YOUR PATTERNS
     #오늘의 메세지조회 관련
     path("api/v1/msg/", include('luck_messages.urls')),
@@ -35,5 +35,5 @@ urlpatterns = [
     path('api/v1/admin/', include('admins.urls')),
     # 프롬프트 gpt 질문 관련
     path('api/v1/prompt/', include('gpt_prompts.urls')),
-    path('api/gpt/', include('gpt_prompts.urls_test')),
+    path('api/v1/gpt/', include('gpt_prompts.urls_gpt')),
 ]
