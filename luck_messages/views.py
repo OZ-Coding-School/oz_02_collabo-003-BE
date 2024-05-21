@@ -31,13 +31,13 @@ class TodayLuck(APIView):
             # 오늘의 한마디 사용자에게 제공.
             # 3가지의 오늘의 한마디에서 랜덤하게 제공.
 
-            today_msg = LuckMessage.objects.filter(luck_date=today, attribute2=random.randint(0,4))
+            today_msg = LuckMessage.objects.filter(luck_date=today, attribute2=random.randint(1,3))
             if today_msg:
                 today_serializer = TodayLuckSerializer(today_msg[0]).data
             else:
                 today_serializer = {}
 
-            ran_num = random.randint(1, 3)
+            ran_num = random.randint(1,3)
             today_msg = LuckMessage.objects.filter(luck_date=today, attribute2=ran_num)
 
 

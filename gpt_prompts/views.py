@@ -24,7 +24,7 @@ class PromptToday(APIView):
     serializer_class = PromptTodaySerializer
 
     @extend_schema(tags=['PromptMsg'],
-                   description="BE-GPT101(GET): 오늘의 한마디에 사용되는 최신(마지막 gpt_id) 프롬프트 메세지 로드"
+                    description="BE-GPT101(GET): 오늘의 한마디에 사용되는 최신(마지막 gpt_id) 프롬프트 메세지 로드"
     )
     def get(self, request):
         # 업데이트하는 방식 X, 프롬프트 메세지 이름 사용 X
@@ -75,7 +75,7 @@ class PromptZodiac(APIView):
     serializer_class = PromptZodiacSerializer
 
     @extend_schema(tags=['PromptMsg'],
-                   description="BE-GPT201(GET): 띠별 운세에 사용되는 최신(마지막 gpt_id) 프롬프트 메세지 로드"
+                    description="BE-GPT201(GET): 띠별 운세에 사용되는 최신(마지막 gpt_id) 프롬프트 메세지 로드"
     )
     def get(self, request):
     # 업데이트하는 방식 X, 프롬프트 메세지 이름 사용 X
@@ -181,7 +181,7 @@ class PromptMbti(APIView):
     serializer_class = PromptMbtiSerializer
 
     @extend_schema(tags=['PromptMsg'],
-                   description="BE-GPT401(GET): MBTI별 운세에 사용되는 최신(마지막 gpt_id) 프롬프트 메세지 로드"
+                    description="BE-GPT401(GET): MBTI별 운세에 사용되는 최신(마지막 gpt_id) 프롬프트 메세지 로드"
     )
     def get(self, request):
         # 업데이트하는 방식 X, 프롬프트 메세지 이름 사용 X
