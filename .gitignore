@@ -1,7 +1,7 @@
 # Created by https://www.toptal.com/developers/gitignore/api/django,pycharm
 # Edit at https://www.toptal.com/developers/gitignore?templates=django,pycharm
 
-aws-elastic-beanstalk-cli-setup
+aws-elastic-beanstalk-cli-setup/
 
 kluck_env/
 .idea/
