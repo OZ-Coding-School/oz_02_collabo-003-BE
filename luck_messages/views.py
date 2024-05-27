@@ -188,6 +188,7 @@ class FindSomedayZodiacMessages(APIView):
             message_dict = next((item for item in result if item["attribute1"] == attribute1), None)
             if message_dict:
                 message_dict["messages"].append({
+                    "msg_id": message.msg_id, # msg_id
                     "attribute2": message.attribute2,
                     "luck_msg": message.luck_msg
                 })
@@ -195,6 +196,7 @@ class FindSomedayZodiacMessages(APIView):
                 result.append({
                     "attribute1": attribute1,
                     "messages": [{
+                        "msg_id": message.msg_id,
                         "attribute2": message.attribute2,
                         "luck_msg": message.luck_msg
                     }]
