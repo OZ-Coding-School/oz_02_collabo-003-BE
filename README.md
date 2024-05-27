@@ -19,6 +19,7 @@
             <tr>
             <td align="center"><a href="https://github.com/Hyunminmax"><img src="https://github.com/OZ-Coding-School/oz_02_collabo-003-BE/assets/155046238/4d67c793-1b98-4e3f-9c92-60bf59f8fc05" width="100px;" alt="신현민 프로필"/><br /><sub><b>팀장 / BE 팀장 : 신현민</b></sub></a><br /></td>
             <td align="center"><a href="https://github.com/BE-02-KMJ"><img src="https://github.com/OZ-Coding-School/oz_02_collabo-003-BE/assets/155046238/f7ed554d-cb77-45b2-b8b7-7831ec3006a3" width="100px;" alt="김민정 프로필"/><br /><sub><b>BE 팀원 : 김민정</b></sub></a><br /></td>
+            <td align="center"><a href="https://github.com/joowhi"><img src="https://github.com/OZ-Coding-School/oz_02_collabo-003-BE/assets/155046238/aa1a9e9d-2fb8-4cce-a7f2-57d0b2f8c712" width="100px;" alt="황주휘 프로필"/><br /><sub><b>BE 팀원 : 황주휘</b></sub></a><br /></td>
             <tr/>
             <td align="center"><a href="https://github.com/Devinix00"><img src="https://github.com/OZ-Coding-School/oz_02_collabo-003-BE/assets/155046238/62881aa4-3c68-4679-9ada-bfe070c020f6" width="100px;" alt="김범수 프로필"/><br /><sub><b>FE 팀장 : 김범수</b></sub></a><br /></td>
             <td align="center"><a href="https://github.com/Sprisun12"><img src="https://github.com/OZ-Coding-School/oz_02_collabo-003-BE/assets/155046238/f2eb9837-5283-4623-828d-09ce4e260262" width="100px;" alt="김선희 프로필"/><br /><sub><b>FE 팀원 : 김선희</b></sub></a><br /></td>
