@@ -10,31 +10,31 @@ def gpt_today_job():
     
     try:
         GptToday().post(request)
-        logging.info("GptToday 작업이 성공적으로 실행되었습니다.")
+        logging.info("GptToday 작업이 성공적으로 실행되었습니다. (기존 데이터가 있다가면 추가되지 않았습니다.)")
     except Exception as e:
         logging.error(f"Error occurred during GptToday job execution: {e}")
         return    # 현재 함수 실행을 중지합니다.
-    # time.sleep(120) # 2분 대기
+    time.sleep(60) # 1분 대기
 
     try:
         GptStar().post(request)
-        logging.info("GptStar 작업이 성공적으로 실행되었습니다.")
+        logging.info("GptStar 작업이 성공적으로 실행되었습니다. (기존 데이터가 있다가면 추가되지 않았습니다.)")
     except Exception as e:
         logging.error(f"Error occurred during GptToday job execution: {e}")
         return 
-    # time.sleep(300) # 5분 대기
+    time.sleep(120) # 2분 대기
 
     try:
         GptMbti().post(request)
-        logging.info("GptMbti 작업이 성공적으로 실행되었습니다.")
+        logging.info("GptMbti 작업이 성공적으로 실행되었습니다. (기존 데이터가 있다가면 추가되지 않았습니다.)")
     except Exception as e:
         logging.error(f"Error occurred during GptToday job execution: {e}")
         return 
-    # time.sleep(300) # 5분 대기
+    time.sleep(120) # 2분 대기
 
     try:
         GptZodiac().post(request)
-        logging.info("GptZodiac 작업이 성공적으로 실행되었습니다.")
+        logging.info("GptZodiac 작업이 성공적으로 실행되었습니다. (기존 데이터가 있다가면 추가되지 않았습니다.)")
     except Exception as e:
         logging.error(f"Error occurred during GptToday job execution: {e}")
         return
