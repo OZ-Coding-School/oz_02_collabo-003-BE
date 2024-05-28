@@ -275,8 +275,22 @@ class GptToday(APIView):
 
         # post 요청의 카테고리로 관련 최근 프롬프트메세지 로드
         category = 'today'
-        a_week = datetime.now() + timedelta(days=7)
-        luck_date = a_week.strftime('%Y%m%d')
+
+        # 요청에 일자 입력시 입력한 일자로 운세 받기.
+        request_date = request.data.get('date')  # POST 요청의 body에서 'date'를 추출
+        if request_date:
+            # 요청에 date가 포함시 이를 datetime 객체로 변환.
+            try:
+                date = datetime.strptime(request_date, '%Y%m%d')    # request date를 datetime 형태로 변환.
+            # 변환이 실패시 오류 변환.
+            except ValueError:
+                return Response({'error': '옳지 않은 날짜 형식입니다. ex) YYYYMMDD.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # 요청에 date 포함되지 않았다면 기본값인 현재 날짜로부터 일주일 뒤의 날짜로 설정.
+        else:
+            date = datetime.now() + timedelta(days=7)
+
+        luck_date = date.strftime('%Y%m%d')
         today_prompt = GptPrompt.objects.filter(category=category).order_by('-gpt_id').first()
 
         # 오늘의 운세 메세지가 DB에 존재하는지 확인
@@ -391,12 +405,26 @@ class GptZodiac(APIView):
 
         # post 요청의 카테고리로 관련 최근 프롬프트메세지 로드
         category = 'zodiac'
-        a_week = datetime.now() + timedelta(days=7)
-        luck_date = a_week.strftime('%Y%m%d')
+
+        # 요청에 일자 입력시 입력한 일자로 운세 받기.
+        request_date = request.data.get('date')  # POST 요청의 body에서 'date'를 추출
+        if request_date:
+            # 요청에 date가 포함시 이를 datetime 객체로 변환.
+            try:
+                date = datetime.strptime(request_date, '%Y%m%d')    # request date를 datetime 형태로 변환.
+            # 변환이 실패시 오류 변환.
+            except ValueError:
+                return Response({'error': '옳지 않은 날짜 형식입니다. ex) YYYYMMDD.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # 요청에 date 포함되지 않았다면 기본값인 현재 날짜로부터 일주일 뒤의 날짜로 설정.
+        else:
+            date = datetime.now() + timedelta(days=7)
+
+        luck_date = date.strftime('%Y%m%d')
         zodiac_prompt = GptPrompt.objects.filter(category=category).order_by('-gpt_id').first()
 
         # 오늘의 운세 메세지가 DB에 존재하는지 확인
-        find_luck_msg = LuckMessage.objects.filter(category=category, luck_date=luck_date)
+        find_luck_msg = LuckMessage.objects.filter(category=category, luck_date=luck_date) # 두번째 그룹이 포함되어 있는지도 확인.
 
         # 프롬프트 메세지 여부 확인
         if not find_luck_msg:
@@ -444,53 +472,52 @@ class GptZodiac(APIView):
 
                 zodiac_data = json.loads(response.choices[0].message.content)
             
+                # zodiac_data 예시
+                # zodiac_data = dict(
+                #     GptResponse=[
+                #         {
+                #             "zodiac": "닭",
+                #             "year": "1981",
+                #             'luck_msg': '감성이 풍부해지는 하루가 예상됩니다. 주변 사람들과의 대화에서 위로를 받을 거요. 예술적인 활동에 참여해 보세요.'
+                #         },
+                #         {
+                #             "zodiac": "개",
+                #             "year": "1982",
+                #             'luck_msg': '오늘은 활기찬 에너지가 넘칩니다. 적극적인 태도가 중요한 기회를 만들들요. 운동을 통해 스트레스를 해소해 보세요.'
+                #         }
+                #     ]
+                # )
+
+                if zodiac_data:
+                    # DB컬럼에 맞게 dict로 변경
+                    for msg in zodiac_data['GptResponse']:
+                        zodiac_msg.append({
+                            'attribute1': msg['zodiac'],
+                            'attribute2': msg['year'],
+                            'luck_msg' :  msg['luck_msg']
+                        })
+
+            # GPT에 요청 결과를 DB에 넣기
+            if zodiac_msg:
+                for msg in zodiac_msg:
+                    serializer = ZodiacSerializer(data={
+                        'luck_date' : luck_date,
+                        'category' : category,
+                        'attribute1' : msg['attribute1'],
+                        'attribute2' : msg['attribute2'],
+                        'luck_msg' : msg['luck_msg'],
+                        'gpt_id' : gpt_id,
+                        }
+                    )
+                    if serializer.is_valid():
+                        serializer.save()
+                    else:
+                        raise ParseError(serializer.errors)
+                return Response(status=status.HTTP_200_OK)
+            else:
+                return Response({'detail': '데이터가 없습니다.'},status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({'luck_message_today': '이미 데이터가 있습니다.'},status=status.HTTP_202_ACCEPTED)
-
-        # zodiac_data 예시
-        # zodiac_data = dict(
-        #     GptResponse=[
-        #         {
-        #             "zodiac": "닭",
-        #             "year": "1981",
-        #             'luck_msg': '감성이 풍부해지는 하루가 예상됩니다. 주변 사람들과의 대화에서 위로를 받을 거요. 예술적인 활동에 참여해 보세요.'
-        #         },
-        #         {
-        #             "zodiac": "개",
-        #             "year": "1982",
-        #             'luck_msg': '오늘은 활기찬 에너지가 넘칩니다. 적극적인 태도가 중요한 기회를 만들들요. 운동을 통해 스트레스를 해소해 보세요.'
-        #         }
-        #     ]
-        # )
-
-        if zodiac_data:
-            # DB컬럼에 맞게 dict로 변경
-            for msg in zodiac_data['GptResponse']:
-                zodiac_msg.append({
-                    'attribute1': msg['zodiac'],
-                    'attribute2': msg['year'],
-                    'luck_msg' :  msg['luck_msg']
-                })
-
-        # GPT에 요청 결과를 DB에 넣기
-        if zodiac_msg:
-            for msg in zodiac_msg:
-                serializer = ZodiacSerializer(data={
-                    'luck_date' : luck_date,
-                    'category' : category,
-                    'attribute1' : msg['attribute1'],
-                    'attribute2' : msg['attribute2'],
-                    'luck_msg' : msg['luck_msg'],
-                    'gpt_id' : gpt_id,
-                    }
-                )
-                if serializer.is_valid():
-                    serializer.save()
-                else:
-                    raise ParseError(serializer.errors)
-            return Response(status=status.HTTP_200_OK)
-        else:
-            return Response({'detail': '데이터가 없습니다.'},status=status.HTTP_400_BAD_REQUEST)
 
 
 # 3. 별자리 운세 받기.
@@ -519,8 +546,22 @@ class GptStar(APIView):
 
         # post 요청의 카테고리로 관련 최근 프롬프트메세지 로드
         category = 'star'
-        a_week = datetime.now() + timedelta(days=7)
-        luck_date = a_week.strftime('%Y%m%d')
+
+        # 요청에 일자 입력시 입력한 일자로 운세 받기.
+        request_date = request.data.get('date')  # POST 요청의 body에서 'date'를 추출
+        if request_date:
+            # 요청에 date가 포함시 이를 datetime 객체로 변환.
+            try:
+                date = datetime.strptime(request_date, '%Y%m%d')    # request date를 datetime 형태로 변환.
+            # 변환이 실패시 오류 변환.
+            except ValueError:
+                return Response({'error': '옳지 않은 날짜 형식입니다. ex) YYYYMMDD.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # 요청에 date 포함되지 않았다면 기본값인 현재 날짜로부터 일주일 뒤의 날짜로 설정.
+        else:
+            date = datetime.now() + timedelta(days=7)
+
+        luck_date = date.strftime('%Y%m%d')
         star_prompt = GptPrompt.objects.filter(category=category).order_by('-gpt_id').first()
 
         # 오늘의 운세 메세지가 DB에 존재하는지 확인
@@ -643,8 +684,22 @@ class GptMbti(APIView):
 
         # post 요청의 카테고리로 관련 최근 프롬프트메세지 로드
         category = 'MBTI'
-        a_week = datetime.now() + timedelta(days=7)
-        luck_date = a_week.strftime('%Y%m%d')
+
+        # 요청에 일자 입력시 입력한 일자로 운세 받기.
+        request_date = request.data.get('date')  # POST 요청의 body에서 'date'를 추출
+        if request_date:
+            # 요청에 date가 포함시 이를 datetime 객체로 변환.
+            try:
+                date = datetime.strptime(request_date, '%Y%m%d')    # request date를 datetime 형태로 변환.
+            # 변환이 실패시 오류 변환.
+            except ValueError:
+                return Response({'error': '옳지 않은 날짜 형식입니다. ex) YYYYMMDD.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # 요청에 date 포함되지 않았다면 기본값인 현재 날짜로부터 일주일 뒤의 날짜로 설정.
+        else:
+            date = datetime.now() + timedelta(days=7)
+
+        luck_date = date.strftime('%Y%m%d')
         mbti_prompt = GptPrompt.objects.filter(category=category).order_by('-gpt_id').first()
 
         # 오늘의 운세 메세지가 DB에 존재하는지 확인
