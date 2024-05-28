@@ -29,13 +29,13 @@ DEBUG = True
 # 온라인 서버에 배포 할때만 사용
 # ALLOWED_HOSTS = ['43.201.60.229']
 # 온라인 서버에서 Nginx, gunicorn 사용시에 사용
-# ALLOWED_HOSTS = [
-#     'kluck-dev.ap-northeast-2.elasticbeanstalk.com',
-#     'kluck-dev2.ap-northeast-2.elasticbeanstalk.com',
-#     'kluck.playfillit.com'
-# ]
+ALLOWED_HOSTS = [
+    'kluck-dev.ap-northeast-2.elasticbeanstalk.com',
+    'kluck-dev2.ap-northeast-2.elasticbeanstalk.com',
+    'kluck.playfillit.com'
+]
 # 개발 중에는 아래 내용을 사용
-ALLOWED_HOSTS = []
+# ALLOWED_HOSTS = []
 
 # Application definition
 
@@ -120,21 +120,22 @@ DATABASES = {
     }
 }
 
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-        },
-    },
-    'loggers': {
-        'django.db.backends': {
-            'level': 'DEBUG',
-            'handlers': ['console'],
-        },
-    },
-}
+# 테이블 생성과 관리자 로그인 관련 SQL확인을 위한 설정
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'handlers': {
+#         'console': {
+#             'class': 'logging.StreamHandler',
+#         },
+#     },
+#     'loggers': {
+#         'django.db.backends': {
+#             'level': 'DEBUG',
+#             'handlers': ['console'],
+#         },
+#     },
+# }
 
 
 # Password validation
