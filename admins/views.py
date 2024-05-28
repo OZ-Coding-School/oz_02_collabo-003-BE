@@ -21,7 +21,7 @@ class AdminLogin(APIView):
         examples=[
             OpenApiExample(
                 'Example',
-                value={'admin_id': 'admin1', 'admin_pw': 'sodlfmadmsrhksflwk1'},
+                value={'admin_id': 'admin1', 'password': 'sodlfmadmsrhksflwk1'},
                 request_only=True,  # 요청 본문에서만 예시 사용
             )
         ],
@@ -29,11 +29,11 @@ class AdminLogin(APIView):
     )
     def post(self, request):
         admin_id = request.data.get('admin_id')
-        admin_pw = request.data.get('admin_pw')
+        admin_pw = request.data.get('password')
 
         try:
             admin = Admin.objects.get(admin_id=admin_id)
-            if check_password(admin_pw, admin.admin_pw):
+            if check_password(admin_pw, admin.password):
                 # 비밀번호 확인 후 로그인 처리
                 admin.last_date = timezone.now()
                 admin.save()
@@ -68,7 +68,7 @@ class AdminUsersSignup(APIView):
                        "admin_user": "관리자99",
                        "cell_num": "01000000000",
                        "email": "admin99@admin99.com",
-                       "admin_pw": "sodlfmadmsrhksflwk99"
+                       "password": "sodlfmadmsrhksflwk99"
                 },
                 request_only=True,  # 요청 본문에서만 예시 사용
             )
@@ -77,17 +77,17 @@ class AdminUsersSignup(APIView):
     )
     def post(self, request):
 
-        password = request.data.get('admin_pw')
+        password = request.data.get('password')
         serializer = AdminSignupSerializer(data=request.data)
 
-        try:
-            validate_password(password)
-        except:
-            raise ParseError('Password is invalid.')
+        # try:
+        #     validate_password(password)
+        # except:
+        #     raise ParseError('Password is invalid.')
 
         if serializer.is_valid():
             user = serializer.save()
-            user.admin_pw = make_password(password)
+            user.password = make_password(password)
             user.save()
             return Response(status=status.HTTP_204_NO_CONTENT)
         else:
