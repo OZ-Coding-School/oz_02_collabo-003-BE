@@ -24,7 +24,7 @@ class PromptToday(APIView):
     serializer_class = PromptTodaySerializer
 
     @extend_schema(tags=['PromptMsg'],
-                   description="BE-GPT101(GET): 오늘의 한마디에 사용되는 최신(마지막 gpt_id) 프롬프트 메세지 로드"
+                    description="BE-GPT101(GET): 오늘의 한마디에 사용되는 최신(마지막 gpt_id) 프롬프트 메세지 로드"
     )
     def get(self, request):
         # 업데이트하는 방식 X, 프롬프트 메세지 이름 사용 X
@@ -146,7 +146,7 @@ class PromptStar(APIView):
         examples=[
             OpenApiExample(
                 'Example',
-                value={'prompt_msg' : "별자리별 운세를 작성할꺼야. '물병자리 (01/20~02/18)', '물고기자리 (02/19~03/20)', '양자리 (03/21~04/19)', '황소자리 (04/20~05/20)', '쌍둥이자리 (05/21~06/20)', '게자리 (06/21~07/22)', '사자자리 (07/23~08/22)', '처녀자리 (08/23~09/22)', '천칭자리 (09/23~10/22)', '전갈자리 (10/23~11/21)', '사수자리 (11/22~12/21)', '염소자리 (12/22~01/19)' 총 12개의 별자리이고 작성방법은 예시를 참고해줘. 예시:'물병자리 (01/20~02/18) 오늘은 어디를 가서도 당신의 밥그릇은 챙길 수 있는 날입니다. 되도록 마음을 크게 먹는 것이 좋습니다. 쪼잔 하다는 소리를 듣지 않도록 조심하세요. 당신의 마음 수양이 제대로 이루어질수록 행운이 따릅니다.' 과하게 부정적인 내용, 성적인 내용, 추상적인 내용은 피해줘. 내용 작성 시 '오늘 ~별자리'이라는 말은 제외하고 어투는 너무 딱딱하지 않고 부드러우면서도 반말은 사용하지 말고 존댓말을 사용해. 각각의 운세 내용 길이를 60자 이상 65자 미만으로 충분히 길게 작성해주고, 3문장으로 작성해줘."
+                value={'prompt_msg' : "별자리별 운세를 작성할꺼야. '물병자리 (01/20~02/18)', '물고기자리 (02/19~03/20)', '양자리 (03/21~04/19)', '황소자리 (04/20~05/20)', '쌍둥이자리 (05/21~06/20)', '게자리 (06/21~07/22)', '사자자리 (07/23~08/22)', '처녀자리 (08/23~09/22)', '천칭자리 (09/23~10/22)', '전갈자리 (10/23~11/21)', '궁수자리 (11/22~12/21)', '염소자리 (12/22~01/19)' 총 12개의 별자리이고 작성방법은 예시를 참고해줘. 예시:'물병자리 (01/20~02/18) 오늘은 어디를 가서도 당신의 밥그릇은 챙길 수 있는 날입니다. 되도록 마음을 크게 먹는 것이 좋습니다. 쪼잔 하다는 소리를 듣지 않도록 조심하세요. 당신의 마음 수양이 제대로 이루어질수록 행운이 따릅니다.' 과하게 부정적인 내용, 성적인 내용, 추상적인 내용은 피해줘. 내용 작성 시 '오늘 ~별자리'이라는 말은 제외하고 어투는 너무 딱딱하지 않고 부드러우면서도 반말은 사용하지 말고 존댓말을 사용해. 각각의 운세 내용 길이를 60자 이상 65자 미만으로 충분히 길게 작성해주고, 3문장으로 작성해줘."
                 },
                 request_only=True,  # 요청 본문에서만 예시 사용
             )
@@ -232,13 +232,12 @@ class PromptHistory(APIView):
     serializer_class = PromptHistorySerializer
 
     @extend_schema(tags=['PromptMsg'])
-    def get(self, request, category):
+    def get(self, request, category, page):
         try:
-            prompt_msgs = GptPrompt.objects.filter(category=category)
+            prompt_msgs = GptPrompt.objects.filter(category=category).order_by('-gpt_id')
             paginator = Paginator(prompt_msgs, 4) # 페이지당 4개의 객체를 보여줍니다. 개수는 원하는대로 조정하세요.
 
-            page_number = request.GET.get('page')
-            page_obj = paginator.get_page(page_number)
+            page_obj = paginator.get_page(page)
 
             serializer = PromptHistorySerializer(page_obj, many=True)
             return Response({
@@ -401,8 +400,8 @@ class GptZodiac(APIView):
             prefix_prompt = '{"GptResponse":[{"zodiac": "닭", "year": "1981", "luck_msg": "메세지"}, ...]}예시와 같은 json 형식으로 작성해줘.'
             prompt_date = luck_date[:4] +'년'+ luck_date[4:6] + '월' + luck_date[6:] + '일 '
             # GPT가 너무 긴 답변을 처리하지 못해서 2파트로 나눠서 요청을 보냄.
-            suffix_prompt1 = '12간지 중에서 쥐, 소, 호랑이, 토끼, 용, 뱀을 작성해줘'
-            suffix_prompt2 = '12간지 중에서 말, 양, 원숭이, 닭, 개, 돼지을 작성해줘'
+            suffix_prompt1 = '12간지 중에서 작성해야하는 띠와 태어난 년도야. [쥐]1960년생, 1972년생, 1984년생, 1996년생 (총 4개), [소]1961년생, 1973년생, 1985년생, 1997년생(총 4개), [호랑이]1962년생, 1974년생, 1986년생, 1998년생 (총 4개), [토끼]1963년생, 1975년생, 1987년생, 1999년생 (총 4개), [용]1964년생, 1976년생, 1988년생, 2000년생 (총 4개), [뱀]1965년생, 1977년생, 1989년생, 2001년생 (총 4개) 작성해줘'
+            suffix_prompt2 = '12간지 중에서 작성해야하는 띠와 태어난 년도야. [말]1966년생, 1978년생, 1990년생, 2002년생 (총 4개), [양]1967년생, 1979년생, 1991년생, 2003년생 (총 4개), [원숭이]1968년생, 1980년생, 1992년생, 2004년생 (총 4개), [닭]1969년생, 1981년생, 1993년생, 2005년생 (총 4개), [개]1970년생, 1982년생, 1994년생, 2006년생 (총 4개), [돼지]1971년생, 1983년생, 1995년생, 2007년생 (총 4개) 작성해줘'
             prompt = PromptHistorySerializer(zodiac_prompt).data['prompt_msg']
 
             # GPT에게 보낼 질문 메세지
@@ -526,7 +525,6 @@ class GptStar(APIView):
             prompt = PromptHistorySerializer(star_prompt).data['prompt_msg']
             prefix_prompt = '{"GptResponse":[{"star": "물병자리", "date_range": "01/20~02/18", "luck_msg": "메세지"}, ...]}예시와 같은 json 형식으로 작성해줘.'
             prompt_date = luck_date[:4] +'년'+ luck_date[4:6] + '월' + luck_date[6:] + '일 '
-            prompt = PromptHistorySerializer(star_prompt).data['prompt_msg']
             prompt = prefix_prompt + prompt_date + prompt
 
             # GPT에게 보낼 메세지 설정

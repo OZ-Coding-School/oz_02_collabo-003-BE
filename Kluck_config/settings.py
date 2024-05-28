@@ -29,7 +29,11 @@ DEBUG = True
 # 온라인 서버에 배포 할때만 사용
 # ALLOWED_HOSTS = ['43.201.60.229']
 # 온라인 서버에서 Nginx, gunicorn 사용시에 사용
-# ALLOWED_HOSTS = ['127.0.0.1']
+# ALLOWED_HOSTS = [
+#     'kluck-dev.ap-northeast-2.elasticbeanstalk.com',
+#     'kluck-dev2.ap-northeast-2.elasticbeanstalk.com',
+#     'kluck.playfillit.com'
+# ]
 # 개발 중에는 아래 내용을 사용
 ALLOWED_HOSTS = []
 
@@ -135,6 +139,13 @@ AUTH_PASSWORD_VALIDATORS = [
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'K-Luck Project API',
+    'DESCRIPTION': '오늘의 운세를 통한 개인화 메시지 발송 기능 개발 프로젝트',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,  # 스키마 엔드포인트를 포함하지 않도록 설정
+}   # '/api/schema/' 숨김처리
 
 
 # Internationalization

@@ -25,19 +25,17 @@ class TodayLuck(APIView):
             # 오늘 날짜 가져오기, 입력 받은 사용자의 데이터를 변수로 저장.
             now = datetime.now()
             today = now.strftime("%Y%m%d")
-            # user_birth = request.GET.get('user_birth')
-            # user_MBTI = request.GET.get('user_MBTI')
 
             # 오늘의 한마디 사용자에게 제공.
             # 3가지의 오늘의 한마디에서 랜덤하게 제공.
+            ran_num = random.randint(1,3)
 
-            today_msg = LuckMessage.objects.filter(luck_date=today, attribute2=random.randint(1,3))
+            today_msg = LuckMessage.objects.filter(luck_date=today, attribute2=ran_num)
             if today_msg:
                 today_serializer = TodayLuckSerializer(today_msg[0]).data
             else:
-                today_serializer = {}
+                today_serializer = {'새벽 공기처럼 맑고 상쾌한 기운이 가득하길.🍃✨ 마음 가득 행복이 채워지는 날 되세요.🌷'}
 
-            ran_num = random.randint(1,3)
             today_msg = LuckMessage.objects.filter(luck_date=today, attribute2=ran_num)
 
 
@@ -191,6 +189,7 @@ class FindSomedayZodiacMessages(APIView):
             message_dict = next((item for item in result if item["attribute1"] == attribute1), None)
             if message_dict:
                 message_dict["messages"].append({
+                    "msg_id": message.msg_id, # msg_id
                     "attribute2": message.attribute2,
                     "luck_msg": message.luck_msg
                 })
@@ -198,6 +197,7 @@ class FindSomedayZodiacMessages(APIView):
                 result.append({
                     "attribute1": attribute1,
                     "messages": [{
+                        "msg_id": message.msg_id,
                         "attribute2": message.attribute2,
                         "luck_msg": message.luck_msg
                     }]

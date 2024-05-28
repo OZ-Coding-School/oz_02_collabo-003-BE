@@ -6,5 +6,5 @@ urlpatterns = [
     path('zodiac/', PromptZodiac.as_view(), name='PromptZodiac'),
     path('star/', PromptStar.as_view(), name='PromptStar'),
     path('mbti/', PromptMbti.as_view(), name='PromptMbti'),
-    path('<str:category>/history/', PromptHistory.as_view(), name='PromptHistory'),
+    path('<str:category>/history/<int:page>/', PromptHistory.as_view(), name='PromptHistory'),
 ]
