@@ -14,7 +14,7 @@ def gpt_today_job():
     except Exception as e:
         logging.error(f"Error occurred during GptToday job execution: {e}")
         return    # 현재 함수 실행을 중지합니다.
-    time.sleep(120) # 2분 대기
+    # time.sleep(120) # 2분 대기
 
     try:
         GptStar().post(request)
@@ -22,7 +22,7 @@ def gpt_today_job():
     except Exception as e:
         logging.error(f"Error occurred during GptToday job execution: {e}")
         return 
-    time.sleep(300) # 5분 대기
+    # time.sleep(300) # 5분 대기
 
     try:
         GptMbti().post(request)
@@ -30,7 +30,7 @@ def gpt_today_job():
     except Exception as e:
         logging.error(f"Error occurred during GptToday job execution: {e}")
         return 
-    time.sleep(300) # 5분 대기
+    # time.sleep(300) # 5분 대기
 
     try:
         GptZodiac().post(request)
