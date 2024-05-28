@@ -275,13 +275,15 @@ class GptToday(APIView):
 
         # post 요청의 카테고리로 관련 최근 프롬프트메세지 로드
         category = 'today'
+        a_week = datetime.now() + timedelta(days=7)
+        luck_date = a_week.strftime('%Y%m%d')
         today_prompt = GptPrompt.objects.filter(category=category).order_by('-gpt_id').first()
 
+        # 오늘의 운세 메세지가 DB에 존재하는지 확인
+        find_prompt = LuckMessage.objects.filter(category=category, luck_date=luck_date)
+
         # 프롬프트 메세지 여부 확인
-        if today_prompt:
-            # now = datetime.now()
-            a_week = datetime.now() + timedelta(days=7)
-            luck_date = a_week.strftime('%Y%m%d')
+        if not find_prompt:
             gpt_id = PromptHistorySerializer(today_prompt).data['gpt_id']
             prefix_prompt = '{"GptResponse":[{"message_num": "1", "luck_msg": "메세지"}, ...]}예시와 같은 json 형식으로 작성해줘.'
             prompt_date = luck_date[:4] +'년'+ luck_date[4:6] + '월' + luck_date[6:] + '일 '
@@ -314,8 +316,9 @@ class GptToday(APIView):
             )
 
             today_data = json.loads(response.choices[0].message.content)
+
         else:
-            return Response(status=status.HTTP_402_PAYMENT_REQUIRED)
+            return Response({'luck_message_today': '이미 데이터가 있습니다.'},status=status.HTTP_202_ACCEPTED)
 
         # today_data 예시
         # today_data = dict(
@@ -388,14 +391,15 @@ class GptZodiac(APIView):
 
         # post 요청의 카테고리로 관련 최근 프롬프트메세지 로드
         category = 'zodiac'
+        a_week = datetime.now() + timedelta(days=7)
+        luck_date = a_week.strftime('%Y%m%d')
         zodiac_prompt = GptPrompt.objects.filter(category=category).order_by('-gpt_id').first()
 
+        # 오늘의 운세 메세지가 DB에 존재하는지 확인
+        find_prompt = LuckMessage.objects.filter(category=category, luck_date=luck_date)
 
         # 프롬프트 메세지 여부 확인
-        if zodiac_prompt:
-            # now = datetime.now()
-            a_week = datetime.now() + timedelta(days=7)
-            luck_date = a_week.strftime('%Y%m%d')
+        if not find_prompt:
             gpt_id = PromptHistorySerializer(zodiac_prompt).data['gpt_id']
             prefix_prompt = '{"GptResponse":[{"zodiac": "닭", "year": "1981", "luck_msg": "메세지"}, ...]}예시와 같은 json 형식으로 작성해줘.'
             prompt_date = luck_date[:4] +'년'+ luck_date[4:6] + '월' + luck_date[6:] + '일 '
@@ -439,34 +443,34 @@ class GptZodiac(APIView):
                 )
 
                 zodiac_data = json.loads(response.choices[0].message.content)
-
-                # zodiac_data 예시
-                # zodiac_data = dict(
-                #     GptResponse=[
-                #         {
-                #             "zodiac": "닭",
-                #             "year": "1981",
-                #             'luck_msg': '감성이 풍부해지는 하루가 예상됩니다. 주변 사람들과의 대화에서 위로를 받을 거요. 예술적인 활동에 참여해 보세요.'
-                #         },
-                #         {
-                #             "zodiac": "개",
-                #             "year": "1982",
-                #             'luck_msg': '오늘은 활기찬 에너지가 넘칩니다. 적극적인 태도가 중요한 기회를 만들들요. 운동을 통해 스트레스를 해소해 보세요.'
-                #         }
-                #     ]
-                # )
-
-                if zodiac_data:
-                    # DB컬럼에 맞게 dict로 변경
-                    for msg in zodiac_data['GptResponse']:
-                        zodiac_msg.append({
-                            'attribute1': msg['zodiac'],
-                            'attribute2': msg['year'],
-                            'luck_msg' :  msg['luck_msg']
-                        })
-
+            
         else:
-            return Response(status=status.HTTP_402_PAYMENT_REQUIRED)
+            return Response({'luck_message_today': '이미 데이터가 있습니다.'},status=status.HTTP_202_ACCEPTED)
+
+        # zodiac_data 예시
+        # zodiac_data = dict(
+        #     GptResponse=[
+        #         {
+        #             "zodiac": "닭",
+        #             "year": "1981",
+        #             'luck_msg': '감성이 풍부해지는 하루가 예상됩니다. 주변 사람들과의 대화에서 위로를 받을 거요. 예술적인 활동에 참여해 보세요.'
+        #         },
+        #         {
+        #             "zodiac": "개",
+        #             "year": "1982",
+        #             'luck_msg': '오늘은 활기찬 에너지가 넘칩니다. 적극적인 태도가 중요한 기회를 만들들요. 운동을 통해 스트레스를 해소해 보세요.'
+        #         }
+        #     ]
+        # )
+
+        if zodiac_data:
+            # DB컬럼에 맞게 dict로 변경
+            for msg in zodiac_data['GptResponse']:
+                zodiac_msg.append({
+                    'attribute1': msg['zodiac'],
+                    'attribute2': msg['year'],
+                    'luck_msg' :  msg['luck_msg']
+                })
 
         # GPT에 요청 결과를 DB에 넣기
         if zodiac_msg:
@@ -515,12 +519,15 @@ class GptStar(APIView):
 
         # post 요청의 카테고리로 관련 최근 프롬프트메세지 로드
         category = 'star'
+        a_week = datetime.now() + timedelta(days=7)
+        luck_date = a_week.strftime('%Y%m%d')
         star_prompt = GptPrompt.objects.filter(category=category).order_by('-gpt_id').first()
 
+        # 오늘의 운세 메세지가 DB에 존재하는지 확인
+        find_prompt = LuckMessage.objects.filter(category=category, luck_date=luck_date)
+
         # 프롬프트 메세지 여부 확인
-        if star_prompt:
-            a_week = datetime.now() + timedelta(days=7)
-            luck_date = a_week.strftime('%Y%m%d')
+        if not find_prompt:
             gpt_id = PromptHistorySerializer(star_prompt).data['gpt_id']
             prompt = PromptHistorySerializer(star_prompt).data['prompt_msg']
             prefix_prompt = '{"GptResponse":[{"star": "물병자리", "date_range": "01/20~02/18", "luck_msg": "메세지"}, ...]}예시와 같은 json 형식으로 작성해줘.'
@@ -555,7 +562,7 @@ class GptStar(APIView):
             star_data = json.loads(response.choices[0].message.content)
 
         else:
-            return Response(status=status.HTTP_402_PAYMENT_REQUIRED)
+            return Response({'luck_message_today': '이미 데이터가 있습니다.'},status=status.HTTP_202_ACCEPTED)
 
         # star_data 예시
         # star_data = dict(
@@ -636,13 +643,15 @@ class GptMbti(APIView):
 
         # post 요청의 카테고리로 관련 최근 프롬프트메세지 로드
         category = 'MBTI'
+        a_week = datetime.now() + timedelta(days=7)
+        luck_date = a_week.strftime('%Y%m%d')
         mbti_prompt = GptPrompt.objects.filter(category=category).order_by('-gpt_id').first()
 
+        # 오늘의 운세 메세지가 DB에 존재하는지 확인
+        find_prompt = LuckMessage.objects.filter(category=category, luck_date=luck_date)
+
         # 프롬프트 메세지 여부 확인
-        if mbti_prompt:
-            # now = datetime.now()
-            a_week = datetime.now() + timedelta(days=7)
-            luck_date = a_week.strftime('%Y%m%d')
+        if not find_prompt:
             gpt_id = PromptHistorySerializer(mbti_prompt).data['gpt_id']
             prompt = PromptHistorySerializer(mbti_prompt).data['prompt_msg']
             prefix_prompt = '{"GptResponse":[{"MBTI": "ENTP", "luck_msg": "메세지"}, ...]}예시와 같은 json 형식으로 작성해줘.'
@@ -677,7 +686,7 @@ class GptMbti(APIView):
             mbti_data = json.loads(response.choices[0].message.content)
             
         else:
-            return Response(status=status.HTTP_402_PAYMENT_REQUIRED)
+            return Response({'luck_message_today': '이미 데이터가 있습니다.'},status=status.HTTP_202_ACCEPTED)
         
         # mbti_data 예시
         # mbti_data = dict(
