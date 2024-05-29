@@ -256,16 +256,16 @@ class GptToday(APIView):
     serializer_class = TodaySerializer
     
     #스웨거 API구분을 위한 데코레이터
-    @extend_schema(tags=['GPT !!BD팀, FE팀에서는 사용하지 말아주세요. BE전용입니다.!!'],
+    @extend_schema(tags=['GPT Prompt'],
         examples=[
             OpenApiExample(
                 'Example',
-                value={'입력값 없음'
+                value={'date' : '20240528'
                 },
                 request_only=True,  # 요청 본문에서만 예시 사용
             )
         ],
-        description="category가 today인 프롬프트중에서 가장 최근의 프롬프트메세지를 사용하여 GPT에 운세 생성요청하여 결과를 DB에 저장"
+        description="category가 today인 프롬프트중에서 가장 최근의 프롬프트메세지를 사용하여 GPT에 운세 생성요청하여 결과를 DB에 저장.<br>원하는 일자 선정하여 해당 일자로 GPT에게 질문 가능. ex) 일자 예시 : 20240528<br>운세 데이터가 없는 일자에만 적용 가능. 운세 데이터가 있다면 개별 수정 필요."
     )
 
     def post(self, request):
@@ -386,16 +386,16 @@ class GptZodiac(APIView):
     serializer_class = ZodiacSerializer
     
     #스웨거 API 구분을 위한 데코레이터
-    @extend_schema(tags=['GPT !!BD팀, FE팀에서는 사용하지 말아주세요. BE전용입니다.!!'],
+    @extend_schema(tags=['GPT Prompt'],
         examples=[
             OpenApiExample(
                 'Example',
-                value={'입력값없음.'
+                value={'date' : '20240528'
                 },
                 request_only=True,  # 요청 본문에서만 예시 사용
             )
         ],
-        description="category가 zodiac인 프롬프트중에서 가장 최근의 프롬프트메세지를 사용하여 GPT에 운세 생성요청하여 결과를 DB에 저장"
+        description="category가 zodiac인 프롬프트중에서 가장 최근의 프롬프트메세지를 사용하여 GPT에 운세 생성요청하여 결과를 DB에 저장<br>원하는 일자 선정하여 해당 일자로 GPT에게 질문 가능. ex) 일자 예시 : 20240528<br>운세 데이터가 없는 일자에만 적용 가능. 운세 데이터가 있다면 개별 수정 필요."
     )
 
     def post(self, request):
@@ -527,16 +527,16 @@ class GptStar(APIView):
     serializer_class = StarSerializer
     
     #스웨거 API 구분을 위한 데코레이터
-    @extend_schema(tags=['GPT !!BD팀, FE팀에서는 사용하지 말아주세요. BE전용입니다.!!'],
+    @extend_schema(tags=['GPT Prompt'],
         examples=[
             OpenApiExample(
                 'Example',
-                value={'category': "star"
+                value={'date' : '20240528'
                 },
                 request_only=True,  # 요청 본문에서만 예시 사용
             )
         ],
-        description="category가 star인 프롬프트중에서 가장 최근의 프롬프트메세지를 사용하여 GPT에 운세 생성요청하여 결과를 DB에 저장"
+        description="category가 star인 프롬프트중에서 가장 최근의 프롬프트메세지를 사용하여 GPT에 운세 생성요청하여 결과를 DB에 저장<br>원하는 일자 선정하여 해당 일자로 GPT에게 질문 가능. ex) 일자 예시 : 20240528<br>운세 데이터가 없는 일자에만 적용 가능. 운세 데이터가 있다면 개별 수정 필요."
     )
     
     def post(self, request):
@@ -665,16 +665,16 @@ class GptMbti(APIView):
     serializer_class = MbtiSerializer
     
     #스웨거 API구분을 위한 데코레이터
-    @extend_schema(tags=['GPT !!BD팀, FE팀에서는 사용하지 말아주세요. BE전용입니다.!!'],
+    @extend_schema(tags=['GPT Prompt'],
         examples=[
             OpenApiExample(
                 'Example',
-                value={'category': "MBTI"
+                value={'date' : '20240528'
                 },
                 request_only=True,  # 요청 본문에서만 예시 사용
             )
         ],
-        description="category가 MBTI인 프롬프트중에서 가장 최근의 프롬프트메세지를 사용하여 GPT에 운세 생성요청하여 결과를 DB에 저장"
+        description="category가 MBTI인 프롬프트중에서 가장 최근의 프롬프트메세지를 사용하여 GPT에 운세 생성요청하여 결과를 DB에 저장<br>원하는 일자 선정하여 해당 일자로 GPT에게 질문 가능. ex) 일자 예시 : 20240528<br>운세 데이터가 없는 일자에만 적용 가능. 운세 데이터가 있다면 개별 수정 필요."
     )
 
     def post(self, request):
