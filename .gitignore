@@ -5,6 +5,9 @@ aws-elastic-beanstalk-cli-setup/
 
 kluck_env/
 .idea/
+ebcli-env/
+.ebextensions/
+.elasticbeanstalk/
 
 ### Django ###
 *.log
