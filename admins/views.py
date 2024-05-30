@@ -2,14 +2,13 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.exceptions import ParseError
-from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.hashers import make_password, check_password
-from django.contrib.auth import authenticate, login
 from django.utils import timezone
-from luck_messages.models import LuckMessage
-from admins.models import Admin
 from .serializers import *
 from drf_spectacular.utils import extend_schema, OpenApiExample
+
+# from django.contrib.auth import authenticate, login, logout
+# from .forms import LoginForm
 
 
 # api/v1/admin/login/
@@ -21,18 +20,41 @@ class AdminLogin(APIView):
         examples=[
             OpenApiExample(
                 'Example',
-                value={'admin_id': 'admin1', 'password': 'sodlfmadmsrhksflwk1'},
+                value={'username': 'admin1', 'password': 'sodlfmadmsrhksflwk1'},
                 request_only=True,  # 요청 본문에서만 예시 사용
             )
         ],
-        description="BE-ADM001: 프론트에서 admin_id(ID), admin_pw(패스워드)를 받아 로그인\n관리자 로그인 후 최종 접속 날짜(last_date)를 오늘 날짜로 업데이트"
+        description="BE-ADM001: 프론트에서 username(ID), password(패스워드)를 받아 로그인\n관리자 로그인 후 최종 접속 날짜(last_date)를 오늘 날짜로 업데이트"
     )
+
+    # def post(self, request):
+    #     form = LoginForm(request.POST)
+    #     if form.is_valid():
+    #         username = form.cleaned_data.get('username')
+    #         password = form.cleaned_data.get('password')
+    #         user = authenticate(request, username=username, password=password)
+    #         try:
+    #             if user is not None:
+    #                 login(request, user)
+    #                 return Response({'message': '로그인 성공'}, status=status.HTTP_200_OK)
+    #             else:
+    #                 return Response({'message': '정보가 없습니다.'}, status=status.HTTP_401_UNAUTHORIZED)
+    #         except kluck_Admin.DoesNotExist:
+    #             return Response({'message': '존재하지 않는 관리자 ID입니다.'}, status=status.HTTP_404_NOT_FOUND)
+    #     else:
+    #         return Response({'message': 'form 정보에 오류가 있습니다.'}, status=status.HTTP_200_OK)
+
+
+
+
+
+
     def post(self, request):
-        admin_id = request.data.get('admin_id')
+        admin_id = request.data.get('username')
         admin_pw = request.data.get('password')
 
         try:
-            admin = Admin.objects.get(admin_id=admin_id)
+            admin = kluck_Admin.objects.get(admin_id=admin_id)
             if check_password(admin_pw, admin.password):
                 # 비밀번호 확인 후 로그인 처리
                 admin.last_date = timezone.now()
@@ -40,7 +62,7 @@ class AdminLogin(APIView):
                 return Response({'message': '로그인 성공'}, status=status.HTTP_200_OK)
             else:
                 return Response({'message': '비밀번호가 일치하지 않습니다.'}, status=status.HTTP_401_UNAUTHORIZED)
-        except Admin.DoesNotExist:
+        except kluck_Admin.DoesNotExist:
             return Response({'message': '존재하지 않는 관리자 ID입니다.'}, status=status.HTTP_404_NOT_FOUND)
 
 
@@ -52,20 +74,19 @@ class AdminUsers(APIView):
     serializer_class = AdminSerializer
     @extend_schema(tags=['Admin'])
     def get(self, request):
-        admins = Admin.objects.all()
+        admins = kluck_Admin.objects.all()
         serializer = AdminSerializer(admins, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-# api/v1/admin/signup/
+# api/v1/admin/signup/   사용 안할수도.
 class AdminUsersSignup(APIView):
     serializer_class = AdminSignupSerializer
     @extend_schema(tags=['Admin'],
         examples=[
             OpenApiExample(
                 'Example',
-                value={"admin_id": "admin99",
-                       "admin_user": "관리자99",
+                value={"username": "admin99",
                        "cell_num": "01000000000",
                        "email": "admin99@admin99.com",
                        "password": "sodlfmadmsrhksflwk99"
