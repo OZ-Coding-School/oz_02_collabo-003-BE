@@ -104,7 +104,7 @@ class FindTodayZodiacMessages(APIView):
     serializer_class = ZodiacSerializer
 
     @extend_schema(tags=['Msg'])
-    def get(self, request):
+    def get(self, request, attribute1):
         now = datetime.now()
         date = now.strftime("%Y%m%d")
         reqCategory = "zodiac"
