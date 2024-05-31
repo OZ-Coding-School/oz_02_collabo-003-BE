@@ -64,13 +64,6 @@ def gpt_today_job():
         logging.error(f"Error occurred during GptZodiac job execution: {e}")
         return
     
-    # try:
-    #     GptZodiac().post(request)
-    #     logging.info("GptZodiac 2차 작업이 성공적으로 실행되었습니다. (기존 데이터가 있다가면 추가되지 않았습니다.)")
-    #     success_count += 1
-    # except Exception as e:
-    #     logging.error(f"Error occurred during GptZodiac job execution: {e}")
-    #     return
     return success_count
 
 result = gpt_today_job()
@@ -82,6 +75,7 @@ if result == 4:
 else:
     subject="Scheduler Fail"
     message="Scheduler 동작 중 오류가 발생했습니다."
+    
 recipient_list=["j00whii@gmail.com"]
 
 send_email(subject, message, recipient_list)
