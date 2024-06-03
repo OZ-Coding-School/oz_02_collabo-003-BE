@@ -1,3 +1,4 @@
 from django.contrib import admin
+from .models import kluck_Admin
 
-# Register your models here.
+admin.site.register(kluck_Admin)

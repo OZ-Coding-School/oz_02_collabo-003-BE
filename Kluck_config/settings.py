@@ -99,6 +99,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "Kluck_config.wsgi.application"
 
+# Auth_user를 커스텀 지정.
+# AUTH_USER_MODEL = 'admins.Admin'
+
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
@@ -116,6 +119,23 @@ DATABASES = {
         }
     }
 }
+
+# 테이블 생성과 관리자 로그인 관련 SQL확인을 위한 설정
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'handlers': {
+#         'console': {
+#             'class': 'logging.StreamHandler',
+#         },
+#     },
+#     'loggers': {
+#         'django.db.backends': {
+#             'level': 'DEBUG',
+#             'handlers': ['console'],
+#         },
+#     },
+# }
 
 
 # Password validation
