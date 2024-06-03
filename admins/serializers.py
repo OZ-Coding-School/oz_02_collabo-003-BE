@@ -2,8 +2,32 @@ from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers
 from luck_messages.models import LuckMessage
 from .models import kluck_Admin
+from django.contrib.auth.models import User
+from django.contrib.auth import authenticate
 
 #/api/v1/admin/login
+로그인
+class LoginSerializer(serializers.Serializer):
+
+    username = serializers.CharField()
+    password = serializers.CharField()
+
+    def validate(self, data):
+        username = data.get('username')
+        password = data.get('password')
+
+        if username and password:
+            user = authenticate(username=username, password=password)
+            if user:
+                data['user'] = user
+            else:
+                raise serializers.ValidationError("아이디 또는 비밀번호를 확인하세요.")
+        else:
+            raise serializers.ValidationError("아이디와 패스워드를 입력해주세요.")
+
+        return data
+
+
 class AdminLoginSerializer(ModelSerializer):
     '''
     프론트에서 admin_id(ID), user_pw(패스워드)를 받아 로그인,
