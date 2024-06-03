@@ -57,9 +57,9 @@ class TodayLuck(APIView):
                 star = "양자리"
             elif user_star >= 420 and user_star <= 520:
                 star = "황소자리"
-            elif user_star >= 521 and user_star <= 620:
+            elif user_star >= 521 and user_star <= 621:
                 star = "쌍둥이자리"
-            elif user_star >= 621 and user_star <= 722:
+            elif user_star >= 622 and user_star <= 722:
                 star = "게자리"
             elif user_star >= 723 and user_star <= 822:
                 star = "사자자리"
@@ -188,6 +188,7 @@ class FindSomedayZodiacMessages(APIView):
             message_dict = next((item for item in result if item["attribute1"] == attribute1), None)
             if message_dict:
                 message_dict["messages"].append({
+                    "msg_id": message.msg_id, # msg_id
                     "attribute2": message.attribute2,
                     "luck_msg": message.luck_msg
                 })
@@ -195,6 +196,7 @@ class FindSomedayZodiacMessages(APIView):
                 result.append({
                     "attribute1": attribute1,
                     "messages": [{
+                        "msg_id": message.msg_id,
                         "attribute2": message.attribute2,
                         "luck_msg": message.luck_msg
                     }]

@@ -8,6 +8,9 @@ ebcli-env/
 
 kluck_env/
 .idea/
+ebcli-env/
+.ebextensions/
+.elasticbeanstalk/
 
 ### Django ###
 *.log
