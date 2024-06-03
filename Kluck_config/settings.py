@@ -29,13 +29,13 @@ DEBUG = True
 # 온라인 서버에 배포 할때만 사용
 # ALLOWED_HOSTS = ['43.201.60.229']
 # 온라인 서버에서 Nginx, gunicorn 사용시에 사용
-ALLOWED_HOSTS = [
-    'kluck-dev.ap-northeast-2.elasticbeanstalk.com',
-    'kluck-dev2.ap-northeast-2.elasticbeanstalk.com',
-    'kluck.playfillit.com'
-]
+# ALLOWED_HOSTS = [
+#     'kluck-dev.ap-northeast-2.elasticbeanstalk.com',
+#     'kluck-dev2.ap-northeast-2.elasticbeanstalk.com',
+#     'kluck.playfillit.com'
+# ]
 # 개발 중에는 아래 내용을 사용
-# ALLOWED_HOSTS = []
+ALLOWED_HOSTS = []
 
 # Application definition
 
@@ -52,6 +52,7 @@ SYSTEM_APPS = [
 CUSTOM_APPS = [
     'rest_framework',
     'drf_spectacular',
+    'django_apscheduler',
     'admin_settings',
     'admins',
     'gpt_prompts',
@@ -69,6 +70,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "django_apscheduler.middleware.DjangoJobExecMiddleware",
 ]
 
 CORS_ORIGIN_ALLOW_ALL = True
