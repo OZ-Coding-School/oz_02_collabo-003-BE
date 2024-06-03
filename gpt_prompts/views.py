@@ -57,13 +57,17 @@ class PromptToday(APIView):
             category = 'today'
             prompt_msg_name = today
             create_date = today
-            last = now + timedelta(days=7)
-            last_date = last.strftime('%Y%m%d')
+            # last = now + timedelta(days=7)
+            # last_date = last.strftime('%Y%m%d')
+            # last_date 추후 운세 데이터 받아올 시 update되는 것으로 변경.
 
             serializer.save(category=category, prompt_msg_name=prompt_msg_name,
-                            create_date=create_date, last_date=last_date, admins_id=admins_id)
+                            create_date=create_date, admins_id=admins_id)
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
+    
+    def post(self, request):
+        return True
 
 # 띠별 운세 프롬프트
 # api/v1/prompt/zodiac
