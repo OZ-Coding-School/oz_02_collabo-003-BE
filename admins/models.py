@@ -1,10 +1,11 @@
 from django.db import models
 from django.contrib.auth.models import User
+from admin_settings.models import AdminSetting
 
 class kluck_Admin(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     cell_num = models.CharField(max_length=11, blank=True, unique=True)
-    adms_id = models.IntegerField(null=True)
+    settings = models.ForeignKey(AdminSetting, on_delete=models.PROTECT)
 
 
     def __str__(self):
