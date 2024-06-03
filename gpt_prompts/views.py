@@ -2,7 +2,6 @@ import json
 from openai import OpenAI
 from datetime import datetime, timedelta
 from drf_spectacular.utils import extend_schema, OpenApiExample
-from drf_spectacular.utils import extend_schema, OpenApiExample
 from rest_framework import status
 from rest_framework.exceptions import ParseError
 from rest_framework.response import Response
