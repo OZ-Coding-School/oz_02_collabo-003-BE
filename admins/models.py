@@ -5,7 +5,7 @@ from admin_settings.models import AdminSetting
 class kluck_Admin(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     cell_num = models.CharField(max_length=11, blank=True, unique=True)
-    adms_id = models.ForeignKey(AdminSetting, on_delete=models.PROTECT, db_column='admins_id')
+
 
 
     def __str__(self):
