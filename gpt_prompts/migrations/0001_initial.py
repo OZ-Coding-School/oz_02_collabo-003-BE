@@ -27,9 +27,9 @@ class Migration(migrations.Migration):
                 ("create_date", models.CharField(blank=True, max_length=8, null=True)),
                 ("last_date", models.CharField(blank=True, max_length=8, null=True)),
                 (
-                    "admins_id",
+                    "user_id",
                     models.ForeignKey(
-                        db_column="admins_id",
+                        db_column="user_id",
                         on_delete=django.db.models.deletion.PROTECT,
                         to="admins.kluck_admin",
                     ),
