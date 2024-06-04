@@ -2,13 +2,54 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.exceptions import ParseError
+from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.hashers import make_password, check_password
 from django.utils import timezone
 from .serializers import *
 from drf_spectacular.utils import extend_schema, OpenApiExample
 
+
 # from django.contrib.auth import authenticate, login, logout
 # from .forms import LoginForm
+
+# api/v1/admin/login/JWT
+# JWT로그인 클래스
+class JWTLogin(APIView):
+    serializer_class = LoginSerializer
+    @extend_schema(tags=['Admin'],
+        examples=[
+            OpenApiExample(
+                'Example',
+                value={'username': 'admin1', 'password': 'sodlfmadmsrhksflwk1'},
+                request_only=True,  # 요청 본문에서만 예시 사용
+            )
+        ],
+        description="JWT Login"
+    )
+    # post로 로그인
+    def post(self, request, *args, **kwargs):
+        # 시리얼라이져로 로그인 정보 받기
+        serializer = LoginSerializer(data=request.data)
+        # 시리얼러이져로 로그인 데이터 검증
+        if serializer.is_valid():
+            # 로그인 유저가 있는지 확인하고 user에 대입
+            user = serializer.validated_data['user']
+            print(serializer.validated_data)
+            # user로 리플래시토큰을 생성하고 refresh에 대입
+            refresh = RefreshToken.for_user(user)
+            # response를 딕셔너리 형식으로 'refresh': refreshtoken, 'access': accesstoken 정보를 반환
+            return Response({
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+            })
+        # 데이터 검증 실패하면 오류 코드 반환
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+
+
 
 
 # api/v1/admin/login/

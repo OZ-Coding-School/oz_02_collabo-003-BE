@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 
 #/api/v1/admin/login
-로그인
+# JWT구성
 class LoginSerializer(serializers.Serializer):
 
     username = serializers.CharField()
