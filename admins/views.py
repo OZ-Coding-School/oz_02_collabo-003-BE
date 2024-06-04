@@ -87,9 +87,9 @@ class AdminUsersSignup(APIView):
             OpenApiExample(
                 'Example',
                 value={"username": "admin99",
-                       "cell_num": "01000000000",
-                       "email": "admin99@admin99.com",
-                       "password": "sodlfmadmsrhksflwk99"
+                        "cell_num": "01000000000",
+                        "email": "admin99@admin99.com",
+                        "password": "sodlfmadmsrhksflwk99"
                 },
                 request_only=True,  # 요청 본문에서만 예시 사용
             )
