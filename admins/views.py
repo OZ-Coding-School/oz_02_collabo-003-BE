@@ -163,7 +163,7 @@ class EditLuckMessage(APIView):
             OpenApiExample(
                 'Example',
                 value={"msg_id": "2694",
-                       "luck_msg": "오늘은 아이유 좋은날 들어요. 오늘은 좋은날이니까"
+                        "luck_msg": "오늘은 아이유 좋은날 들어요. 오늘은 좋은날이니까"
                 },
                 request_only=True,  # 요청 본문에서만 예시 사용
             )
