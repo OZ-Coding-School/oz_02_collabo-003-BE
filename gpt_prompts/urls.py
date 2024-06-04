@@ -2,9 +2,6 @@ from django.urls import path
 from .views import *
 
 urlpatterns = [
-    path('today/', PromptToday.as_view(), name='PromptToday'),
-    path('zodiac/', PromptZodiac.as_view(), name='PromptZodiac'),
-    path('star/', PromptStar.as_view(), name='PromptStar'),
-    path('mbti/', PromptMbti.as_view(), name='PromptMbti'),
+    path('<str:category>/', PromptIndividual.as_view(), name='Prompt'),
     path('<str:category>/history/<int:page>/', PromptHistory.as_view(), name='PromptHistory'),
 ]
