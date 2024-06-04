@@ -2,9 +2,8 @@ from django.urls import path
 from .views import *
 
 urlpatterns = [
-    path('JWTlogin/', JWTLogin.as_view(), name='JWTlogin'),
-    path('login/', AdminLogin.as_view(), name='AdminLogin'),
+    path('login/', JWTLogin.as_view(), name='JWTlogin'),
     path('', AdminUsers.as_view(), name='AdminUsers'),
-    path('signup/', AdminUsersSignup.as_view(), name='AdminUsersSignup'),
     path('msg/', EditLuckMessage.as_view(), name='EditLuckMessage'),
+    # path('signup/', AdminUsersSignup.as_view(), name='AdminUsersSignup'),
 ]
