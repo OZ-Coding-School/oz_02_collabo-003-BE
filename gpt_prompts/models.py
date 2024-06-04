@@ -8,4 +8,4 @@ class GptPrompt(models.Model):
     status = models.CharField(max_length=30, blank=True, null=True)
     create_date = models.CharField(max_length=8, blank=True, null=True)
     last_date = models.CharField(max_length=8, blank=True, null=True)
-    admins_id = models.ForeignKey(kluck_Admin, on_delete=models.PROTECT, db_column='admins_id')
+    user_id = models.ForeignKey(kluck_Admin, on_delete=models.PROTECT, db_column='user_id')
