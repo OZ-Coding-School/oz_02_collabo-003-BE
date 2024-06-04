@@ -63,7 +63,7 @@ class PromptIndividual(APIView):
                 request_only=True,  # 요청 본문에서만 예시 사용
             )
         ],
-        description="BE-GPT102(POST): 오늘의 한마디에 사용되는 최신(마지막 gpt_id) 프롬프트 메세지 저장"
+        description="BE-GPT102, 202, 302, 402(POST): 카테고리별 사용되는 최신(마지막 gpt_id) 프롬프트 메세지 저장"
     )
     def post(self, request, category):
         now = datetime.now()
