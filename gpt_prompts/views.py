@@ -82,9 +82,6 @@ class PromptIndividual(APIView):
                             create_date=create_date, admins_id=admins_id)
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
-    
-    def post(self, request):
-        return True
 
 
 # 각 카테고리별 운세 프롬프트 히스토리
