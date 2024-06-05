@@ -17,8 +17,7 @@ class PromptHistorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model= GptPrompt
-        fields = ('gpt_id', 'category', 'prompt_msg_name', 'prompt_msg', 'create_date', 'last_date')
-
+        fields = ('gpt_id', 'category', 'prompt_msg_name', 'prompt_msg', 'create_date', 'last_date', 'user_id')
 
 # last_date update를 위한 Serializer
 class PromptUpdateSerializer(serializers.ModelSerializer):
