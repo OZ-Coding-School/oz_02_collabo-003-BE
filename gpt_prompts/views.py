@@ -255,10 +255,14 @@ class GptToday(APIView):
                 
                 # prompt의 last_date update
                 last_date = date.strftime('%Y%m%d')
-                today_prompt_last = GptPrompt.objects.filter(category='today').last()
-                today_prompt_serializer = PromptSerializer(today_prompt_last, partial=True)
+                today_prompt_last = GptPrompt.objects.filter(category=category).last()
+
+                # 해당 prompt 데이터 찾아서 last_date 데이터 넣기.
+                today_prompt_serializer = PromptUpdateSerializer(today_prompt_last, data={'last_date': last_date}, partial=True)
+
+                # 해당 prompt 데이터 찾으면 last_date 업데이트하여 저장.
                 if today_prompt_serializer.is_valid():
-                    today_prompt_serializer.save(last_date=last_date)
+                    today_prompt_serializer.save()
                     return Response(today_prompt_serializer.data, status=status.HTTP_200_OK)
                 else:
                     return Response(today_prompt_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -402,9 +406,23 @@ class GptZodiac(APIView):
                         serializer.save()
                     else:
                         raise ParseError(serializer.errors)
-                return Response(status=status.HTTP_200_OK)
             else:
                 return Response({'detail': '데이터가 없습니다.'},status=status.HTTP_400_BAD_REQUEST)
+            
+            # prompt의 last_date update
+            last_date = date.strftime('%Y%m%d')
+            zodiac_prompt_last = GptPrompt.objects.filter(category=category).last()
+
+            # 해당 prompt 데이터 찾아서 last_date 데이터 넣기.
+            zodiac_prompt_serializer = PromptUpdateSerializer(zodiac_prompt_last, data={'last_date': last_date}, partial=True)
+
+            # 해당 prompt 데이터 찾으면 last_date 업데이트하여 저장.
+            if zodiac_prompt_serializer.is_valid():
+                zodiac_prompt_serializer.save()
+                return Response(zodiac_prompt_serializer.data, status=status.HTTP_200_OK)
+            else:
+                return Response(zodiac_prompt_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            # return Response(status=status.HTTP_200_OK)
         else:
             return Response({'luck_message_today': '이미 데이터가 있습니다.'},status=status.HTTP_202_ACCEPTED)
 
@@ -543,7 +561,21 @@ class GptStar(APIView):
                         serializer.save()
                     else:
                         raise ParseError(serializer.errors)
-                return Response(status=status.HTTP_200_OK)
+                    
+                # prompt의 last_date update
+                last_date = date.strftime('%Y%m%d')
+                star_prompt_last = GptPrompt.objects.filter(category=category).last()
+
+                # 해당 prompt 데이터 찾아서 last_date 데이터 넣기.
+                star_prompt_serializer = PromptUpdateSerializer(star_prompt_last, data={'last_date': last_date}, partial=True)
+
+                # 해당 prompt 데이터 찾으면 last_date 업데이트하여 저장.
+                if star_prompt_serializer.is_valid():
+                    star_prompt_serializer.save()
+                    return Response(star_prompt_serializer.data, status=status.HTTP_200_OK)
+                else:
+                    return Response(star_prompt_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                # return Response(status=status.HTTP_200_OK)
             else:
                 return Response({'detail': '데이터가 없습니다.'},status=status.HTTP_400_BAD_REQUEST)
 
@@ -673,16 +705,21 @@ class GptMbti(APIView):
                         serializer.save()
                     else:
                         raise ParseError(serializer.errors)
-                return Response(status=status.HTTP_200_OK)
+
+                # prompt의 last_date update
+                last_date = date.strftime('%Y%m%d')
+                mbti_prompt_last = GptPrompt.objects.filter(category=category).last()
+
+                # 해당 prompt 데이터 찾아서 last_date 데이터 넣기.
+                mbti_prompt_serializer = PromptUpdateSerializer(mbti_prompt_last, data={'last_date': last_date}, partial=True)
+
+                # 해당 prompt 데이터 찾으면 last_date 업데이트하여 저장.
+                if mbti_prompt_serializer.is_valid():
+                    mbti_prompt_serializer.save()
+                    return Response(mbti_prompt_serializer.data, status=status.HTTP_200_OK)
+                else:
+                    return Response(mbti_prompt_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                # return Response(status=status.HTTP_200_OK)
             else:
                 return Response({'detail': '데이터가 없습니다.'},status=status.HTTP_400_BAD_REQUEST)
         
-            # prompt의 last_date update
-            last_date = date.strftime('%Y%m%d')
-            mbti_prompt = GptPrompt.objects.get(category=category).last()
-            mbti_prompt_serializer = PromptSerializer(mbti_prompt, last_date=last_date, partial=True)
-            if mbti_prompt_serializer.is_valid():
-                serializer.save()
-                return Response(mbti_prompt_serializer.data, status=status.HTTP_200_OK)
-            else:
-                return Response(mbti_prompt_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
