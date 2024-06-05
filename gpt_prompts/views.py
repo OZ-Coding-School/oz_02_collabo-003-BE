@@ -7,13 +7,12 @@ from rest_framework.exceptions import ParseError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.core.paginator import Paginator # pagination
-from django.shortcuts import get_object_or_404
 from kluck_env import env_settings as env
 from luck_messages.serializers import *
 from .serializers import *
 from .models import GptPrompt
+from django.shortcuts import get_object_or_404
 from admins.models import kluck_Admin
-from admin_settings.models import AdminSetting
 
 
 # 각 카테고리별 프롬프트 조회 및 생성
@@ -43,33 +42,25 @@ class PromptIndividual(APIView):
         examples=[
             OpenApiExample(
                 'Example - category: today',
-                value={
-                    "user_id":4,
-                    'prompt_msg' : "오늘의 한마디를 총 3개를 작성할거야. 아침에 하루를 시작하는 사람들이 이 글을 보고 힘이 나고 위로를 받았으면 해. 작성 방법은 예시를 참고해줘. 예시 '꽃비 내리는 날 설레는 봄이에요.🌟 꽃 향기처럼 부드럽고 향기로운 하루 보내시길 바래요.🌈 당신의 편에 서서 응원할게요!💪' 과하게 부정적인 내용, 성적인 내용, 추상적인 내용은 피해줘. 내용 작성 시  '오늘', '오늘은' 이라는 단어는 제외하고 어투는 너무 딱딱하지 않고 부드러우면서도 반말은 사용하지 말고 존댓말을 사용해. 문장 가운데마다 이모티콘을 적절히 2개 이상 4개 미만으로 넣어서 작성해줘. 내용 길이를  45자 이상 50자 미만으로 작성해주고, 2문장으로 작성해줘."
+                value={'prompt_msg' : "오늘의 한마디를 총 3개를 작성할거야. 아침에 하루를 시작하는 사람들이 이 글을보고 힘이나고 위로를 받았으면 해. 작성 방법은 예시를 참고해줘. 예시 '꽃비 내리는 날 설레이는 봄이에요.🌟 꽃 향기처럼 부드럽고 향기로운 하루 보내시길 바래요.🌈 당신의 편에 서서 응원할게요!💪' 과하게 부정적인 내용, 성적인 내용, 추상적인 내용은 피해줘. 내용 작성 시  '오늘', '오늘은' 이라는 단어는 제외하고 어투는 너무 딱딱하지 않고 부드러우면서도 반말은 사용하지 말고 존댓말을 사용해. 문장 가운데마다 이모티콘을 적절히 2개 이상 4개 미만으로 넣어서 작성해줘. 내용 길이를  45자 이상 50자 미만으로 작성해주고, 2문장으로 작성해줘."
                 },
                 request_only=True,  # 요청 본문에서만 예시 사용
             ),
             OpenApiExample(
                 'Example - category: zodiac',
-                value={
-                    "user_id":4,
-                    'prompt_msg' : "띠별 운세를 작성할꺼야. 작성해야하는 대상자는 1960년 부터 2007년에 태어난 사람이야. 가장 큰 제목은 띠이고, 세부항목은 태어난 연도이고 해당되는 연도를 각각 나눠서 작성해야해. 작성 방법은 예시를 참고해줘. 예시: '원숭이 1968 직장에서 긍정적인 변화가 기다리고 있습니다. 새로운 프로젝트나 업무가 기회가 될 수 있습니다. 적극적인 태도가 중요합니다.' 과하게 부정적인 내용, 성적인 내용, 추상적인 내용은 피해줘. 내용 작성 시  '오늘 ~년생'이라는 말은 제외하고 어투는 너무 딱딱하지 않고 부드러우면서도 반말은 사용하지 말고 존댓말을 사용해줘. 각각의 운세 내용 길이를 60자 이상 65자 미만으로 충분히 길게 작성해주고, 3문장으로 작성해줘."
+                value={'prompt_msg' : "띠별 운세를 작성할 거야. 작성해야 하는 대상자는 1960년부터 2007년에 태어난 사람이야. 가장 큰 제목은 띠이고, 세부 항목은 태어난 연도이고 해당하는 연도를 각각 나눠서 작성해야 해. 작성 방법은 예시를 참고해 줘. 예시: '원숭이 1968 직장에서 긍정적인 변화가 기다리고 있습니다. 새로운 프로젝트나 업무가 기회가 될 수 있습니다. 적극적인 태도가 중요합니다.' 과하게 부정적인 내용, 성적인 내용, 추상적인 내용은 피해줘. 내용 작성 시 '오늘 ~년생'이라는 말은 제외하고 어투는 너무 딱딱하지 않고 부드러우면서도 반말은 사용하지 말고 존댓말을 사용해 줘. 각각의 운세 내용 길이를 한글로 무조건 공백 포함 65자 미만으로 작성해 줘. 3문장으로 작성해 줘."
                 },
                 request_only=True,  # 요청 본문에서만 예시 사용
             ),
             OpenApiExample(
                 'Example - category: star',
-                value={
-                    "user_id":4,
-                    'prompt_msg' : "별자리별 운세를 작성할꺼야. '물병자리 (01/20~02/18)', '물고기자리 (02/19~03/20)', '양자리 (03/21~04/19)', '황소자리 (04/20~05/20)', '쌍둥이자리 (05/21~06/21)', '게자리 (06/22~07/22)', '사자자리 (07/23~08/22)', '처녀자리 (08/23~09/22)', '천칭자리 (09/23~10/22)', '전갈자리 (10/23~11/21)', '궁수자리 (11/22~12/21)', '염소자리 (12/22~01/19)' 총 12개의 별자리이고 작성방법은 예시를 참고해줘. 예시:'물병자리 (01/20~02/18) 오늘은 어디를 가서도 당신의 밥그릇은 챙길 수 있는 날입니다. 되도록 마음을 크게 먹는 것이 좋습니다. 쪼잔 하다는 소리를 듣지 않도록 조심하세요. 당신의 마음 수양이 제대로 이루어질수록 행운이 따릅니다.' 과하게 부정적인 내용, 성적인 내용, 추상적인 내용은 피해줘. 내용 작성 시 '오늘 ~별자리'이라는 말은 제외하고 어투는 너무 딱딱하지 않고 부드러우면서도 반말은 사용하지 말고 존댓말을 사용해. 각각의 운세 내용 길이를 60자 이상 65자 미만으로 충분히 길게 작성해주고, 3문장으로 작성해줘."
+                value={'prompt_msg' : "별자리별 운세를 작성할꺼야. '물병자리 (01/20~02/18)', '물고기자리 (02/19~03/20)', '양자리 (03/21~04/19)', '황소자리 (04/20~05/20)', '쌍둥이자리 (05/21~06/21)', '게자리 (06/22~07/22)', '사자자리 (07/23~08/22)', '처녀자리 (08/23~09/22)', '천칭자리 (09/23~10/22)', '전갈자리 (10/23~11/21)', '궁수자리 (11/22~12/21)', '염소자리 (12/22~01/19)' 총 12개의 별자리이고 작성방법은 예시를 참고해줘. 예시:'물병자리 (01/20~02/18) 오늘은 어디를 가서도 당신의 밥그릇은 챙길 수 있는 날입니다. 되도록 마음을 크게 먹는 것이 좋습니다. 쪼잔 하다는 소리를 듣지 않도록 조심하세요. 당신의 마음 수양이 제대로 이루어질수록 행운이 따릅니다.' 과하게 부정적인 내용, 성적인 내용, 추상적인 내용은 피해줘. 내용 작성 시 '오늘 ~별자리'이라는 말은 제외하고 어투는 너무 딱딱하지 않고 부드러우면서도 반말은 사용하지 말고 존댓말을 사용해. 각각의 운세 내용 길이를 60자 이상 65자 미만으로 충분히 길게 작성해주고, 3문장으로 작성해줘."
                 },
                 request_only=True,  # 요청 본문에서만 예시 사용
             ),
             OpenApiExample(
                 'Example - category: mbti',
-                value={
-                    "user_id":4,
-                    'prompt_msg' : "작성해야하는 MBTI 유형이야. ISTJ, ISFJ, INFJ, INTJ, ISTP, ISFP, INFP, INTP, ESTP, ESFP, ENFP, ENTP, ESTJ, ESFJ, ENFJ, ENTJ 총 16개의 MBTI 각 유형별로 작성해줘. 작성 방법은 예시를 참고해줘. 예시'ISTJ 오늘은 당신에게 청정한 감성과 정확성이 빛나는 하루가 될 것입니다. 일에 대한 책임감을 가지고 차분하게 일 처리를 하면 좋은 결과를 얻을 수 있을 것입니다.' 과하게 부정적인 내용, 성적인 내용, 추상적인 내용은 피해줘. 내용 작성 시 '오늘은'이라는 말은 제외하고 어투는 너무 딱딱하지 않고 부드러우면서도 반말은 사용하지 말고 존댓말을 사용해. 각각의 운세 내용 길이를 60자 이상 65자 미만으로 충분히 길게 작성해주고,  3문장으로 작성해."
+                value={'prompt_msg' : "작성해야하는 MBTI 유형이야. ISTJ, ISFJ, INFJ, INTJ, ISTP, ISFP, INFP, INTP, ESTP, ESFP, ENFP, ENTP, ESTJ, ESFJ, ENFJ, ENTJ 총 16개의 MBTI 각 유형별로 작성해줘. 작성 방법은 예시를 참고해줘. 예시'ISTJ 오늘은 당신에게 청정한 감성과 정확성이 빛나는 하루가 될 것입니다. 일에 대한 책임감을 가지고 차분하게 일 처리를 하면 좋은 결과를 얻을 수 있을 것입니다.' 과하게 부정적인 내용, 성적인 내용, 추상적인 내용은 피해줘. 내용 작성 시 '오늘은'이라는 말은 제외하고 어투는 너무 딱딱하지 않고 부드러우면서도 반말은 사용하지 말고 존댓말을 사용해. 각각의 운세 내용 길이를 60자 이상 65자 미만으로 충분히 길게 작성해주고,  3문장으로 작성해."
                 },
                 request_only=True,  # 요청 본문에서만 예시 사용
             )
@@ -79,23 +70,21 @@ class PromptIndividual(APIView):
     def post(self, request, category):
         now = datetime.now()
         today = now.strftime('%Y%m%d')
-        
+
         user_id = request.data['user_id']
-        # admin 테이블에 있는 user_id와 입력하는 user_id가 일치하는지 확인.
         admin = get_object_or_404(kluck_Admin, user_id=user_id)
         
-        # admin_settings에 있는 term_date 값 가져오기.
-        term = get_object_or_404(AdminSetting).term_date
-        last = now + timedelta(days=int(term))
-
         serializer = PromptSerializer(data=request.data)
+
         if serializer.is_valid():
             prompt_msg_name = today
             create_date = today
-            last_date = last.strftime('%Y%m%d')
+            # last = now + timedelta(days=7)
+            # last_date = last.strftime('%Y%m%d')
+            # last_date 추후 운세 데이터 받아올 시 update되는 것으로 변경.
 
             serializer.save(category=category, prompt_msg_name=prompt_msg_name,
-                            create_date=create_date, last_date=last_date, user_id=admin)
+                            create_date=create_date, user_id=admin)
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
 
@@ -165,8 +154,7 @@ class GptToday(APIView):
         
         # 요청에 date 포함되지 않았다면 기본값인 현재 날짜로부터 일주일 뒤의 날짜로 설정.
         else:
-            term = get_object_or_404(AdminSetting).term_date
-            date = datetime.now() + timedelta(days=int(term))
+            date = datetime.now() + timedelta(days=7)
 
         luck_date = date.strftime('%Y%m%d')
         today_prompt = GptPrompt.objects.filter(category=category).order_by('-gpt_id').first()
@@ -252,21 +240,7 @@ class GptToday(APIView):
                         serializer.save()
                     else:
                         raise ParseError(serializer.errors)
-                
-                # prompt의 last_date update
-                last_date = date.strftime('%Y%m%d')
-                today_prompt_last = GptPrompt.objects.filter(category=category).last()
-
-                # 해당 prompt 데이터 찾아서 last_date 데이터 넣기.
-                today_prompt_serializer = PromptUpdateSerializer(today_prompt_last, data={'last_date': last_date}, partial=True)
-
-                # 해당 prompt 데이터 찾으면 last_date 업데이트하여 저장.
-                if today_prompt_serializer.is_valid():
-                    today_prompt_serializer.save()
-                    return Response(today_prompt_serializer.data, status=status.HTTP_200_OK)
-                else:
-                    return Response(today_prompt_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-                # return Response(status=status.HTTP_200_OK)
+                return Response(status=status.HTTP_200_OK)
             else:
                 return Response({'detail': '데이터가 없습니다.'},status=status.HTTP_400_BAD_REQUEST)
 
@@ -310,8 +284,7 @@ class GptZodiac(APIView):
         
         # 요청에 date 포함되지 않았다면 기본값인 현재 날짜로부터 일주일 뒤의 날짜로 설정.
         else:
-            term = AdminSetting.objects.last().term_date
-            date = datetime.now() + timedelta(int(term))
+            date = datetime.now() + timedelta(days=7)
 
         luck_date = date.strftime('%Y%m%d')
         zodiac_prompt = GptPrompt.objects.filter(category=category).order_by('-gpt_id').first()
@@ -406,23 +379,9 @@ class GptZodiac(APIView):
                         serializer.save()
                     else:
                         raise ParseError(serializer.errors)
+                return Response(status=status.HTTP_200_OK)
             else:
                 return Response({'detail': '데이터가 없습니다.'},status=status.HTTP_400_BAD_REQUEST)
-            
-            # prompt의 last_date update
-            last_date = date.strftime('%Y%m%d')
-            zodiac_prompt_last = GptPrompt.objects.filter(category=category).last()
-
-            # 해당 prompt 데이터 찾아서 last_date 데이터 넣기.
-            zodiac_prompt_serializer = PromptUpdateSerializer(zodiac_prompt_last, data={'last_date': last_date}, partial=True)
-
-            # 해당 prompt 데이터 찾으면 last_date 업데이트하여 저장.
-            if zodiac_prompt_serializer.is_valid():
-                zodiac_prompt_serializer.save()
-                return Response(zodiac_prompt_serializer.data, status=status.HTTP_200_OK)
-            else:
-                return Response(zodiac_prompt_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-            # return Response(status=status.HTTP_200_OK)
         else:
             return Response({'luck_message_today': '이미 데이터가 있습니다.'},status=status.HTTP_202_ACCEPTED)
 
@@ -466,8 +425,7 @@ class GptStar(APIView):
         
         # 요청에 date 포함되지 않았다면 기본값인 현재 날짜로부터 일주일 뒤의 날짜로 설정.
         else:
-            term = AdminSetting.objects.last().term_date
-            date = datetime.now() + timedelta(int(term))
+            date = datetime.now() + timedelta(days=7)
 
         luck_date = date.strftime('%Y%m%d')
         star_prompt = GptPrompt.objects.filter(category=category).order_by('-gpt_id').first()
@@ -561,21 +519,7 @@ class GptStar(APIView):
                         serializer.save()
                     else:
                         raise ParseError(serializer.errors)
-                    
-                # prompt의 last_date update
-                last_date = date.strftime('%Y%m%d')
-                star_prompt_last = GptPrompt.objects.filter(category=category).last()
-
-                # 해당 prompt 데이터 찾아서 last_date 데이터 넣기.
-                star_prompt_serializer = PromptUpdateSerializer(star_prompt_last, data={'last_date': last_date}, partial=True)
-
-                # 해당 prompt 데이터 찾으면 last_date 업데이트하여 저장.
-                if star_prompt_serializer.is_valid():
-                    star_prompt_serializer.save()
-                    return Response(star_prompt_serializer.data, status=status.HTTP_200_OK)
-                else:
-                    return Response(star_prompt_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-                # return Response(status=status.HTTP_200_OK)
+                return Response(status=status.HTTP_200_OK)
             else:
                 return Response({'detail': '데이터가 없습니다.'},status=status.HTTP_400_BAD_REQUEST)
 
@@ -619,8 +563,7 @@ class GptMbti(APIView):
         
         # 요청에 date 포함되지 않았다면 기본값인 현재 날짜로부터 일주일 뒤의 날짜로 설정.
         else:
-            term = AdminSetting.objects.last().term_date
-            date = datetime.now() + timedelta(int(term))
+            date = datetime.now() + timedelta(days=7)
 
         luck_date = date.strftime('%Y%m%d')
         mbti_prompt = GptPrompt.objects.filter(category=category).order_by('-gpt_id').first()
@@ -705,21 +648,6 @@ class GptMbti(APIView):
                         serializer.save()
                     else:
                         raise ParseError(serializer.errors)
-
-                # prompt의 last_date update
-                last_date = date.strftime('%Y%m%d')
-                mbti_prompt_last = GptPrompt.objects.filter(category=category).last()
-
-                # 해당 prompt 데이터 찾아서 last_date 데이터 넣기.
-                mbti_prompt_serializer = PromptUpdateSerializer(mbti_prompt_last, data={'last_date': last_date}, partial=True)
-
-                # 해당 prompt 데이터 찾으면 last_date 업데이트하여 저장.
-                if mbti_prompt_serializer.is_valid():
-                    mbti_prompt_serializer.save()
-                    return Response(mbti_prompt_serializer.data, status=status.HTTP_200_OK)
-                else:
-                    return Response(mbti_prompt_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-                # return Response(status=status.HTTP_200_OK)
+                return Response(status=status.HTTP_200_OK)
             else:
                 return Response({'detail': '데이터가 없습니다.'},status=status.HTTP_400_BAD_REQUEST)
-        
