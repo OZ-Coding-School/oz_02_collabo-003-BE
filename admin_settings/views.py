@@ -1,7 +1,7 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from django.utils import timezone
 from .serializers import *
 from drf_spectacular.utils import extend_schema, OpenApiExample
 from .models import *
@@ -43,9 +43,31 @@ class Pushtime(APIView):
         description="(화면없음): 프론트에서 push_time을 받아 admin_settings의 push_time에 저장"
     )
     def post(self, request):
-        serializer = Admin_settingsSerializer(data=request.data)
+        try:
+            # insert or update
+            # 기본 키가 1인 AdminSetting 객체를 조회
+            # exist = get_object_or_404(AdminSetting, pk=1)
 
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
+            # update
+            print('update')
+            # 관리자 세팅과 관련 값은 하나만 유지하기로 했기에 1번 row로 설정
+            # targetrow의 값을 통해 새로운 row를 생성하는 것이 아닌 기존의 row를 선택
+            targetrow = AdminSetting.objects.get(pk=4)
+            # partial=True 옵션으로 row전체 update가 아닌 일부만 update
+            serializer = Admin_settingsSerializer(targetrow, data=request.data, partial=True)
+
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
+        except AdminSetting.DoesNotExist:
+            # 객체가 존재하지 않을 경우
+            # insert
+            print('insert')
+            serializer = Admin_settingsSerializer(data=request.data)
+
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
+

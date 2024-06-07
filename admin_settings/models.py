@@ -6,5 +6,5 @@ class AdminSetting(models.Model):
     push_time = models.CharField(max_length=4, blank=True, null=True)
     term_date = models.CharField(max_length=4, blank=True, null=True)
     term_time = models.CharField(max_length=4, blank=True, null=True)
-    update_date = models.DateTimeField(blank=True, null=True)
+    update_date = models.DateTimeField(blank=True, null=True, auto_now=True)
 
