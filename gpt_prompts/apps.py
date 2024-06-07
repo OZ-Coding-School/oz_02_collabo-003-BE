@@ -16,7 +16,7 @@ class GptPromptConfig(AppConfig):
         scheduler = BackgroundScheduler(timezone=pytz.timezone('Asia/Seoul'))
         scheduler.add_job(
             gpt_today_job,
-            trigger=CronTrigger(hour=1, minute=10),  # 매일 새벽 1시 10분에 실행
+            trigger=CronTrigger(hour=18, minute=5),  # 매일 새벽 1시 10분에 실행
         )
         
         logger = logging.getLogger(__name__)

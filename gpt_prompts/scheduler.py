@@ -29,40 +29,25 @@ def gpt_today_job():
     request = None  # 필요한 경우 실제 request 객체를 제공해야 할 수도 있다.
     success_count = 0
     
-    try:
-        GptToday().post(request)
-        logging.info("GptToday 작업이 성공적으로 실행되었습니다. (기존 데이터가 있다가면 추가되지 않았습니다.)")
-        success_count += 1
-    except Exception as e:
-        logging.error(f"Error occurred during GptToday job execution: {e}")
-        return    # 현재 함수 실행을 중지합니다.
+    GptToday().post(request)
+    logging.info("GptToday 작업이 성공적으로 실행되었습니다. (기존 데이터가 있다가면 추가되지 않았습니다.)")
+    success_count += 1
     time.sleep(60) # 1분 대기
 
-    try:
-        GptStar().post(request)
-        logging.info("GptStar 작업이 성공적으로 실행되었습니다. (기존 데이터가 있다가면 추가되지 않았습니다.)")
-        success_count += 1
-    except Exception as e:
-        logging.error(f"Error occurred during GptStar job execution: {e}")
-        return 
+    GptStar().post(request)
+    logging.info("GptStar 작업이 성공적으로 실행되었습니다. (기존 데이터가 있다가면 추가되지 않았습니다.)")
+    success_count += 1
     time.sleep(120) # 2분 대기
 
-    try:
-        GptMbti().post(request)
-        logging.info("GptMbti 작업이 성공적으로 실행되었습니다. (기존 데이터가 있다가면 추가되지 않았습니다.)")
-        success_count += 1
-    except Exception as e:
-        logging.error(f"Error occurred during GptMbti job execution: {e}")
-        return 
+    GptMbti().post(request)
+    logging.info("GptMbti 작업이 성공적으로 실행되었습니다. (기존 데이터가 있다가면 추가되지 않았습니다.)")
+    success_count += 1
     time.sleep(120) # 2분 대기
 
-    try:
-        GptZodiac().post(request)
-        logging.info("GptZodiac 1차 작업이 성공적으로 실행되었습니다. (기존 데이터가 있다가면 추가되지 않았습니다.)")
-        success_count += 1
-    except Exception as e:
-        logging.error(f"Error occurred during GptZodiac job execution: {e}")
-        return
+
+    GptZodiac().post(request)
+    logging.info("GptZodiac 1차 작업이 성공적으로 실행되었습니다. (기존 데이터가 있다가면 추가되지 않았습니다.)")
+    success_count += 1
     
     return success_count
 
