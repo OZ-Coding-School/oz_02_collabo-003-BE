@@ -3,15 +3,15 @@ from openai import OpenAI
 from datetime import datetime, timedelta
 from drf_spectacular.utils import extend_schema, OpenApiExample
 from rest_framework import status
-from rest_framework.exceptions import ParseError
-from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.exceptions import ParseError
+from rest_framework_simplejwt.tokens import AccessToken # 엑세스토큰 임포트
 from django.core.paginator import Paginator # pagination
 from kluck_env import env_settings as env
 from luck_messages.serializers import *
 from .serializers import *
 from .models import GptPrompt
-from django.shortcuts import get_object_or_404
 from admins.models import kluck_Admin
 
 
@@ -68,13 +68,27 @@ class PromptIndividual(APIView):
         description="BE-GPT102, 202, 302, 402(POST): 카테고리별 사용되는 최신(마지막 gpt_id) 프롬프트 메세지 저장"
     )
     def post(self, request, category):
+        # 토큰으로 인증 된 관리자의 user_id 확인
+        # 헤더에서 인증관련 값 추출
+        auth_header = request.headers.get('authorization')
+        # 인증관련 내용에서 Bearer를 제외한 실제 토큰 추출
+        token = auth_header.split(" ")[1]
+        # 토큰에서 user_id추출
+        # 엑세스토큰 디코드
+        decoded_token = AccessToken(token)
+        # user_id를 포함안 kluck_admin instance
+        kluck_admin_user_id = kluck_Admin.objects.get(user_id = decoded_token.payload.get('user_id'))
+
         now = datetime.now()
         today = now.strftime('%Y%m%d')
 
-        user_id = request.data['user_id']
-        admin = get_object_or_404(kluck_Admin, user_id=user_id)
-        
+        # 토큰에서 확인한 user_id
+        user_id = decoded_token.payload.get('user_id')
+        # 리퀘스트에 user_id 키, 값 추가
+        request.data['user_id'] = user_id
+
         serializer = PromptSerializer(data=request.data)
+
 
         if serializer.is_valid():
             prompt_msg_name = today
@@ -84,7 +98,7 @@ class PromptIndividual(APIView):
             # last_date 추후 운세 데이터 받아올 시 update되는 것으로 변경.
 
             serializer.save(category=category, prompt_msg_name=prompt_msg_name,
-                            create_date=create_date, user_id=admin)
+                            create_date=create_date, user_id=kluck_admin_user_id)
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
 
