@@ -119,42 +119,6 @@ class AdminUsers(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-<<<<<<< HEAD
-# api/v1/admin/signup/   사용 안할수도.
-class AdminUsersSignup(APIView):
-    serializer_class = AdminSignupSerializer
-    @extend_schema(tags=['Admin'],
-        examples=[
-            OpenApiExample(
-                'Example',
-                value={"username": "admin99",
-                        "cell_num": "01000000000",
-                        "email": "admin99@admin99.com",
-                        "password": "sodlfmadmsrhksflwk99"
-                },
-                request_only=True,  # 요청 본문에서만 예시 사용
-            )
-        ],
-        description="BE-ADM002(화면없음): 프론트에서 admin_id(ID), admin_user(사용자명), cell_num(폰 번호), email, user_pw(패스워드)를 받아 관리자 등록\n수정 내용을 따로 다시 반환 하지는 않는다."
-    )
-    def post(self, request):
-
-        password = request.data.get('password')
-        serializer = AdminSignupSerializer(data=request.data)
-
-        # try:
-        #     validate_password(password)
-        # except:
-        #     raise ParseError('Password is invalid.')
-
-        if serializer.is_valid():
-            user = serializer.save()
-            user.password = make_password(password)
-            user.save()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        else:
-            raise ParseError(serializer.errors)
-=======
 # # api/v1/admin/signup/   사용 안할수도.
 # class AdminUsersSignup(APIView):
 #     serializer_class = AdminSignupSerializer
@@ -189,7 +153,6 @@ class AdminUsersSignup(APIView):
 #             return Response(status=status.HTTP_204_NO_CONTENT)
 #         else:
 #             raise ParseError(serializer.errors)
->>>>>>> e16dc25c53ebaf4fb4c0fda078dd12cf2bc85260
 
 
 # api/v1/admin/msg/
