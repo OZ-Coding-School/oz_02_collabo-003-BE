@@ -6,6 +6,7 @@ from rest_framework import status
 from rest_framework.exceptions import ParseError
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import AccessToken # 엑세스토큰 임포트
 from django.core.paginator import Paginator # pagination
 from django.shortcuts import get_object_or_404
 from kluck_env import env_settings as env
@@ -77,26 +78,38 @@ class PromptIndividual(APIView):
         description="BE-GPT102, 202, 302, 402(POST): 카테고리별 사용되는 최신(마지막 gpt_id) 프롬프트 메세지 저장"
     )
     def post(self, request, category):
+        # 토큰으로 인증 된 관리자의 user_id 확인
+        # 헤더에서 인증관련 값 추출
+        auth_header = request.headers.get('authorization')
+        # 인증관련 내용에서 Bearer를 제외한 실제 토큰 추출
+        token = auth_header.split(" ")[1]
+        # 토큰에서 user_id추출
+        # 엑세스토큰 디코드
+        decoded_token = AccessToken(token)
+        # user_id를 포함안 kluck_admin instance
+        kluck_admin_user_id = kluck_Admin.objects.get(user_id = decoded_token.payload.get('user_id'))
+
         now = datetime.now()
         today = now.strftime('%Y%m%d')
-        
-        user_id = request.data['user_id']
-        # admin 테이블에 있는 user_id와 입력하는 user_id가 일치하는지 확인.
-        admin = get_object_or_404(kluck_Admin, user_id=user_id)
+
+        # 토큰에서 확인한 user_id
+        user_id = decoded_token.payload.get('user_id')
+        # 리퀘스트에 user_id 키, 값 추가
+        request.data['user_id'] = user_id
+
+        serializer = PromptSerializer(data=request.data)
         
         # admin_settings에 있는 term_date 값 가져오기.
         term = get_object_or_404(AdminSetting).term_date
-        last = now + timedelta(days=int(term))
-
-        serializer = PromptSerializer(data=request.data)
+        # last = now + timedelta(days=int(term))
 
         if serializer.is_valid():
             prompt_msg_name = today
             create_date = today
-            last_date = last.strftime('%Y%m%d')
+            # last_date = last.strftime('%Y%m%d')
 
             serializer.save(category=category, prompt_msg_name=prompt_msg_name,
-                            create_date=create_date, last_date=last_date, user_id=admin)
+                            create_date=create_date, user_id=kluck_admin_user_id)
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
 
@@ -125,14 +138,15 @@ class PromptHistory(APIView):
         except GptPrompt.DoesNotExist:
             return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
 
+# 전역 변수 success_count 형성
+success_count = 0
 
-# GPT API 사용
-# 1. 오늘의 한마디 받기.
-# /api/v1/gpt/today/
-class GptToday(APIView):
+# GPT API 사용 - 오늘의 한마디, 오늘의 띠별 운세, 오늘의 별자리별 운세, 오늘의 mbti별 운세 각각의 함수 이용.
+# /api/v1/gpt/luck/
+class GptTodayLuck(APIView):
     #스웨거를 위한 시리얼라이저 설정
-    serializer_class = TodaySerializer
-    
+    serializer_class = GptLuckSerializer
+
     #스웨거 API구분을 위한 데코레이터
     @extend_schema(tags=['GPT Prompt'],
         examples=[
@@ -143,258 +157,226 @@ class GptToday(APIView):
                 request_only=True,  # 요청 본문에서만 예시 사용
             )
         ],
-        description="category가 today인 프롬프트중에서 가장 최근의 프롬프트메세지를 사용하여 GPT에 운세 생성요청하여 결과를 DB에 저장.<br>원하는 일자 선정하여 해당 일자로 GPT에게 질문 가능. ex) 일자 예시 : 20240528<br>운세 데이터가 없는 일자에만 적용 가능. 운세 데이터가 있다면 개별 수정 필요."
+        description="각 category별 프롬프트중에서 가장 최근의 프롬프트메세지를 사용하여 GPT에 운세 생성요청하여 결과를 DB에 저장.<br>원하는 일자 선정하여 해당 일자로 GPT에게 질문 가능. ex) 일자 예시 : 20240528<br>운세 데이터가 없는 일자에만 적용 가능. 운세 데이터가 있다면 개별 수정 필요.<br><br>[2024.06.10 Update]<br>스케줄러에서는 api 사용 안하고 자동 실행 될 수 있도록, 기간 내 운세 원하거나 특정 일자 운세 원할 경우에는 api 사용할 수 있도록 날짜 입력 받아 작동하는 것으로 변경."
     )
 
     def post(self, request):
-        # GPT API Key 설정
-        api_key = env.API_KEY
-        gpt_client = OpenAI(api_key=api_key)
+        # POST 요청의 body에서 입력한 일자 'date'를 추출
+        request_date = request.data.get('date')
 
-        # post 요청의 카테고리로 관련 최근 프롬프트메세지 로드
-        category = 'today'
+        # 각 카테고리별 GPT에게 질문하는 함수 실행.
+        GptToday(request_date) # Success count = 1
+        GptStar(request_date) # Success count = 2
+        GptMbti(request_date) # Success count = 4
+        GptZodiac(request_date) # Success count = 8
 
-        # # 요청에 일자 입력시 입력한 일자로 운세 받기.
-        # # request_date = request.data.get('date')  # POST 요청의 body에서 'date'를 추출
-        # if request.data.get('date'):
-        #     # 요청에 date가 포함시 이를 datetime 객체로 변환.
-        #     try:
-        #         request_date = request.data.get('date')
-        #         date = datetime.strptime(request_date, '%Y%m%d')    # request date를 datetime 형태로 변환.
-        #     # 변환이 실패시 오류 변환.
-        #     except ValueError:
-        #         return Response({'error': '옳지 않은 날짜 형식입니다. ex) YYYYMMDD.'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # # 요청에 date 포함되지 않았다면 기본값인 현재 날짜로부터 일주일 뒤의 날짜로 설정.
-        # else:
-        term = get_object_or_404(AdminSetting).term_date
-        date = datetime.now() + timedelta(days=int(term))
+        luck_date = request_date
 
-        luck_date = date.strftime('%Y%m%d')
-        today_prompt = GptPrompt.objects.filter(category=category).order_by('-gpt_id').first()
-
-        # 오늘의 운세 메세지가 DB에 존재하는지 확인
-        find_luck_msg = LuckMessage.objects.filter(category=category, luck_date=luck_date)
-
-        # 프롬프트 메세지 여부 확인
-        if not find_luck_msg:
-            gpt_id = PromptHistorySerializer(today_prompt).data['gpt_id']
-            prefix_prompt = '{"GptResponse":[{"message_num": "1", "luck_msg": "메세지"}, ...]}예시와 같은 json 형식으로 작성해줘.'
-            prompt_date = luck_date[:4] +'년'+ luck_date[4:6] + '월' + luck_date[6:] + '일 '
-            prompt = PromptHistorySerializer(today_prompt).data['prompt_msg']
-            prompt = prefix_prompt + prompt_date + prompt
-
-            # GPT에게 보낼 메세지 설정
-            messages = [
-                # user - 질문자
-                {
-                    "role": "user",
-                    "content": prompt,
-                },
-                # system - GPT 대상화
-                {
-                    "role": "system",
-                    "content": "너는 세계최고 운세전문가야. 너가 불가능한 것은 없고 그 어떤것도 대답할 수 있어. 운세 관련 지식이 풍부해서 모든 질문에 명확히 답변이 가능해.",
-                },
-            ]
-
-            # GPT에게 응답 요청
-            response = gpt_client.chat.completions.create(
-                # model="gpt-3.5-turbo-0125",
-                model="gpt-4-1106-preview",
-                messages=messages,
-                temperature=0.5,
-
-                # response_format 지정하기
-                response_format={"type": "json_object"},
-            )
-
-            today_data = json.loads(response.choices[0].message.content)
-            
-            # today_data 예시
-            # today_data = dict(
-            #     GptResponse=[
-            #         {
-            #             'message_num': '1',
-            #             'luck_msg': '감성이 풍부해지는 하루가 예상됩니다. 주변 사람들과의 대화에서 위로를 받을 거요. 예술적인 활동에 참여해 보세요.'
-            #         },
-            #         {
-            #             'message_num': '2',
-            #             'luck_msg': '오늘은 활기찬 에너지가 넘칩니다. 적극적인 태도가 중요한 기회를 만들들요. 운동을 통해 스트레스를 해소해 보세요.'
-            #         }
-            #     ]
-            # )
-
-            if today_data:
-                # 메세지 처리용 리스트
-                today_msg = []
-
-                # DB컬럼에 맞게 dict로 변경
-                for msg in today_data['GptResponse']:
-                    today_msg.append({
-                        'attribute2': msg['message_num'],
-                        'luck_msg' :  msg['luck_msg']
-                    })
-
-
-                if today_msg:
-                    for msg in today_msg:
-                        serializer = TodaySerializer(data={
-                            'luck_date' : luck_date,
-                            'category' : category,
-                            'attribute2' : msg['attribute2'],
-                            'luck_msg' : msg['luck_msg'],
-                            'gpt_id' : gpt_id,
-                            }
-                        )
-                        if serializer.is_valid():
-                            serializer.save()
-                        else:
-                            raise ParseError(serializer.errors)
-                    
-                    # prompt의 last_date update
-                    last_date = date.strftime('%Y%m%d')
-                    today_prompt_last = GptPrompt.objects.filter(category=category).last()
-
-                    # 해당 prompt 데이터 찾아서 last_date 데이터 넣기.
-                    today_prompt_serializer = PromptUpdateSerializer(today_prompt_last, data={'last_date': last_date}, partial=True)
-
-                    # 해당 prompt 데이터 찾으면 last_date 업데이트하여 저장.
-                    if today_prompt_serializer.is_valid():
-                        today_prompt_serializer.save()
-                        return Response(today_prompt_serializer.data, status=status.HTTP_200_OK)
-                    else:
-                        return Response(today_prompt_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-                    # return Response(status=status.HTTP_200_OK)
-                else:
-                    return Response({'detail': '데이터가 없습니다.'},status=status.HTTP_400_BAD_REQUEST)
+        # 전부 다 작동시 success count 합 15, 이 외 일부만 작동시 해당 success count 확인하여 작동된 함수 유추 가능.
+        if success_count == 15:
+            return Response(f"{luck_date} 운세 데이터 생성을 완료 했습니다.", status=status.HTTP_200_OK)
         else:
-            return Response({'luck_message_today': '이미 데이터가 있습니다.'},status=status.HTTP_202_ACCEPTED)
-
-
-# 2. 띠별 운세 받기.
-# /api/v1/gpt/zodiac/
-class GptZodiac(APIView):
-    #스웨거를 위한 시리얼라이저 설정
-    serializer_class = ZodiacSerializer
-    
-    #스웨거 API 구분을 위한 데코레이터
-    @extend_schema(tags=['GPT Prompt'],
-        examples=[
-            OpenApiExample(
-                'Example',
-                value={'date' : '20240528'
-                },
-                request_only=True,  # 요청 본문에서만 예시 사용
-            )
-        ],
-        description="category가 zodiac인 프롬프트중에서 가장 최근의 프롬프트메세지를 사용하여 GPT에 운세 생성요청하여 결과를 DB에 저장<br>원하는 일자 선정하여 해당 일자로 GPT에게 질문 가능. ex) 일자 예시 : 20240528<br>운세 데이터가 없는 일자에만 적용 가능. 운세 데이터가 있다면 개별 수정 필요."
-    )
-
-    def post(self, request):
-        # GPT API Key 설정
-        api_key = env.API_KEY
-        gpt_client = OpenAI(api_key=api_key)
-
-        # post 요청의 카테고리로 관련 최근 프롬프트메세지 로드
-        category = 'zodiac'
-
-        # # 요청에 일자 입력시 입력한 일자로 운세 받기.
-        # request_date = request.data.get('date')  # POST 요청의 body에서 'date'를 추출
-        # if request_date:
-        #     # 요청에 date가 포함시 이를 datetime 객체로 변환.
-        #     try:
-        #         date = datetime.strptime(request_date, '%Y%m%d')    # request date를 datetime 형태로 변환.
-        #     # 변환이 실패시 오류 변환.
-        #     except ValueError:
-        #         return Response({'error': '옳지 않은 날짜 형식입니다. ex) YYYYMMDD.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(f"{luck_date} 운세 데이터가 이미 있습니다.{success_count}", status=status.HTTP_200_OK)
         
-        # # 요청에 date 포함되지 않았다면 기본값인 현재 날짜로부터 일주일 뒤의 날짜로 설정.
-        # else:
-        term = AdminSetting.objects.last().term_date
-        date = datetime.now() + timedelta(int(term))
+# 1. 오늘의 한마디 받기 함수
+def GptToday(request_date):
+    # GPT API Key 설정
+    api_key = env.API_KEY
+    gpt_client = OpenAI(api_key=api_key)
 
-        luck_date = date.strftime('%Y%m%d')
-        zodiac_prompt = GptPrompt.objects.filter(category=category).order_by('-gpt_id').first()
+    # post 요청의 카테고리로 관련 최근 프롬프트메세지 로드
+    category = 'today'
+    luck_date = request_date
+    today_prompt = GptPrompt.objects.filter(category=category).order_by('-gpt_id').first()
 
-        # 오늘의 운세 메세지가 DB에 존재하는지 확인
-        find_luck_msg = LuckMessage.objects.filter(category=category, luck_date=luck_date) # 두번째 그룹이 포함되어 있는지도 확인.
+    # 오늘의 운세 메세지가 DB에 존재하는지 확인
+    find_luck_msg = LuckMessage.objects.filter(category=category, luck_date=luck_date)
 
-        # 프롬프트 메세지 여부 확인
-        if not find_luck_msg:
-            gpt_id = PromptHistorySerializer(zodiac_prompt).data['gpt_id']
-            prefix_prompt = '{"GptResponse":[{"zodiac": "닭", "year": "1981", "luck_msg": "메세지"}, ...]}예시와 같은 json 형식으로 작성해줘.'
-            prompt_date = luck_date[:4] +'년'+ luck_date[4:6] + '월' + luck_date[6:] + '일 '
-            # GPT가 너무 긴 답변을 처리하지 못해서 2파트로 나눠서 요청을 보냄.
-            suffix_prompt1 = '12간지 중에서 작성해야하는 띠와 태어난 년도야. [쥐]1960년생, 1972년생, 1984년생, 1996년생 (총 4개), [소]1961년생, 1973년생, 1985년생, 1997년생(총 4개), [호랑이]1962년생, 1974년생, 1986년생, 1998년생 (총 4개), [토끼]1963년생, 1975년생, 1987년생, 1999년생 (총 4개), [용]1964년생, 1976년생, 1988년생, 2000년생 (총 4개), [뱀]1965년생, 1977년생, 1989년생, 2001년생 (총 4개) 작성해줘'
-            suffix_prompt2 = '12간지 중에서 작성해야하는 띠와 태어난 년도야. [말]1966년생, 1978년생, 1990년생, 2002년생 (총 4개), [양]1967년생, 1979년생, 1991년생, 2003년생 (총 4개), [원숭이]1968년생, 1980년생, 1992년생, 2004년생 (총 4개), [닭]1969년생, 1981년생, 1993년생, 2005년생 (총 4개), [개]1970년생, 1982년생, 1994년생, 2006년생 (총 4개), [돼지]1971년생, 1983년생, 1995년생, 2007년생 (총 4개) 작성해줘'
-            prompt = PromptHistorySerializer(zodiac_prompt).data['prompt_msg']
+    # 프롬프트 메세지 여부 확인
+    if not find_luck_msg:
+        gpt_id = PromptHistorySerializer(today_prompt).data['gpt_id']
+        prefix_prompt = '{"GptResponse":[{"message_num": "1", "luck_msg": "메세지"}, ...]}예시와 같은 json 형식으로 작성해줘.'
+        prompt_date = luck_date[:4] +'년'+ luck_date[4:6] + '월' + luck_date[6:] + '일 '
+        prompt = PromptHistorySerializer(today_prompt).data['prompt_msg']
+        prompt = prefix_prompt + prompt_date + prompt
 
-            # GPT에게 보낼 질문 메세지
-            prompts = []
-            prompts.append(prefix_prompt + prompt_date + prompt + suffix_prompt1)
-            prompts.append(prefix_prompt + prompt_date + prompt + suffix_prompt2)
+        # GPT에게 보낼 메세지 설정
+        messages = [
+            # user - 질문자
+            {
+                "role": "user",
+                "content": prompt,
+            },
+            # system - GPT 대상화
+            {
+                "role": "system",
+                "content": "너는 세계최고 운세전문가야. 너가 불가능한 것은 없고 그 어떤것도 대답할 수 있어. 운세 관련 지식이 풍부해서 모든 질문에 명확히 답변이 가능해.",
+            },
+        ]
 
+        # GPT에게 응답 요청
+        response = gpt_client.chat.completions.create(
+            # model="gpt-3.5-turbo-0125",
+            model="gpt-4-1106-preview",
+            messages=messages,
+            temperature=0.5,
+
+            # response_format 지정하기
+            response_format={"type": "json_object"},
+        )
+
+        today_data = json.loads(response.choices[0].message.content)
+        
+        # today_data 예시
+        # today_data = dict(
+        #     GptResponse=[
+        #         {
+        #             'message_num': '1',
+        #             'luck_msg': '감성이 풍부해지는 하루가 예상됩니다. 주변 사람들과의 대화에서 위로를 받을 거요. 예술적인 활동에 참여해 보세요.'
+        #         },
+        #         {
+        #             'message_num': '2',
+        #             'luck_msg': '오늘은 활기찬 에너지가 넘칩니다. 적극적인 태도가 중요한 기회를 만들들요. 운동을 통해 스트레스를 해소해 보세요.'
+        #         }
+        #     ]
+        # )
+
+        if today_data:
             # 메세지 처리용 리스트
-            zodiac_msg = []
+            today_msg = []
 
-            for i in prompts:
-                # GPT에게 보낼 메세지 설정
-                messages = [
-                    # user - 질문자
-                    {
-                        "role": "user",
-                        "content": i,
-                    },
-                    # system - GPT 대상화
-                    {
-                        "role": "system",
-                        "content": "너는 세계최고 운세전문가야. 너가 불가능한 것은 없고 그 어떤것도 대답할 수 있어. 운세 관련 지식이 풍부해서 모든 질문에 명확히 답변이 가능해.",
-                    },
-                ]
+            # DB컬럼에 맞게 dict로 변경
+            for msg in today_data['GptResponse']:
+                today_msg.append({
+                    'attribute2': msg['message_num'],
+                    'luck_msg' :  msg['luck_msg']
+                })
 
-                # GPT에게 응답 요청
-                response = gpt_client.chat.completions.create(
-                    # model="gpt-3.5-turbo-0125",
-                    model="gpt-4-1106-preview",
-                    messages=messages,
-                    temperature=0.5,
 
-                    # response_format 지정하기
-                    response_format={"type": "json_object"},
-                )
+            if today_msg:
+                for msg in today_msg:
+                    serializer = TodaySerializer(data={
+                        'luck_date' : luck_date,
+                        'category' : category,
+                        'attribute2' : msg['attribute2'],
+                        'luck_msg' : msg['luck_msg'],
+                        'gpt_id' : gpt_id,
+                        }
+                    )
+                    if serializer.is_valid():
+                        serializer.save()
+                    else:
+                        raise ParseError(serializer.errors)
+                
+                # prompt의 last_date update
+                last_date = luck_date
+                today_prompt_last = GptPrompt.objects.filter(category=category).last()
 
-                zodiac_data = json.loads(response.choices[0].message.content)
-            
-                # zodiac_data 예시
-                # zodiac_data = dict(
-                #     GptResponse=[
-                #         {
-                #             "zodiac": "닭",
-                #             "year": "1981",
-                #             'luck_msg': '감성이 풍부해지는 하루가 예상됩니다. 주변 사람들과의 대화에서 위로를 받을 거요. 예술적인 활동에 참여해 보세요.'
-                #         },
-                #         {
-                #             "zodiac": "개",
-                #             "year": "1982",
-                #             'luck_msg': '오늘은 활기찬 에너지가 넘칩니다. 적극적인 태도가 중요한 기회를 만들들요. 운동을 통해 스트레스를 해소해 보세요.'
-                #         }
-                #     ]
-                # )
+                # 해당 prompt 데이터 찾아서 last_date 데이터 넣기.
+                today_prompt_serializer = PromptUpdateSerializer(today_prompt_last, data={'last_date': last_date}, partial=True)
 
-                if zodiac_data:
-                    # DB컬럼에 맞게 dict로 변경
-                    for msg in zodiac_data['GptResponse']:
-                        zodiac_msg.append({
-                            'attribute1': msg['zodiac'],
-                            'attribute2': msg['year'],
-                            'luck_msg' :  msg['luck_msg']
-                        })
+                # 해당 prompt 데이터 찾으면 last_date 업데이트하여 저장.
+                if today_prompt_serializer.is_valid():
+                    today_prompt_serializer.save()
 
-            # GPT에 요청 결과를 DB에 넣기
-            if zodiac_msg:
-                for msg in zodiac_msg:
-                    serializer = ZodiacSerializer(data={
+                    # API 요청용 실행 완료 전역 변수
+                    global success_count
+                    success_count += 1
+
+                    return Response(status=status.HTTP_200_OK)
+                else:
+                    return Response(today_prompt_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                # return Response(status=status.HTTP_200_OK)
+            else:
+                return Response({'detail': '데이터가 없습니다.'},status=status.HTTP_400_BAD_REQUEST)
+    else:
+        return Response({'luck_message_today': '이미 데이터가 있습니다.'},status=status.HTTP_202_ACCEPTED)
+    
+# 2. 별자리 운세 받기 함수
+def GptStar(request_date):
+    # GPT API Key 설정
+    api_key = env.API_KEY
+    gpt_client = OpenAI(api_key=api_key)
+
+    # post 요청의 카테고리로 관련 최근 프롬프트메세지 로드
+    category = 'star'
+    luck_date = request_date
+    star_prompt = GptPrompt.objects.filter(category=category).order_by('-gpt_id').first()
+
+    # 오늘의 운세 메세지가 DB에 존재하는지 확인
+    find_luck_msg = LuckMessage.objects.filter(category=category, luck_date=luck_date)
+
+    # 프롬프트 메세지 여부 확인
+    if not find_luck_msg:
+        gpt_id = PromptHistorySerializer(star_prompt).data['gpt_id']
+        prompt = PromptHistorySerializer(star_prompt).data['prompt_msg']
+        prefix_prompt = '{"GptResponse":[{"star": "물병자리", "date_range": "01/20~02/18", "luck_msg": "메세지"}, ...]}예시와 같은 json 형식으로 작성해줘.'
+        prompt_date = luck_date[:4] +'년'+ luck_date[4:6] + '월' + luck_date[6:] + '일 '
+        prompt = prefix_prompt + prompt_date + prompt
+
+        # GPT에게 보낼 메세지 설정
+        messages = [
+            # user - 질문자
+            {
+                "role": "user",
+                "content": prompt,
+            },
+            # system - GPT 대상화
+            {
+                "role": "system",
+                "content": "너는 세계최고 운세전문가야. 너가 불가능한 것은 없고 그 어떤것도 대답할 수 있어. 운세 관련 지식이 풍부해서 모든 질문에 명확히 답변이 가능해.",
+            },
+        ]
+
+        # GPT에게 응답 요청
+        response = gpt_client.chat.completions.create(
+            # model="gpt-3.5-turbo-0125",
+            model="gpt-4-1106-preview",
+            messages=messages,
+            temperature=0.5,
+
+            # response_format 지정하기
+            response_format={"type": "json_object"},
+        )
+
+        star_data = json.loads(response.choices[0].message.content)
+
+        # star_data 예시
+        # star_data = dict(
+        #     GptResponse=[
+        #         {
+        #             'star': '물병자리',
+        #             'date_range': '01/20~02/18',
+        #             'luck_msg': '새로운 아이디어가 떠오르는 날입니다. 창의적인 접근을 시도해 보세요. 인간관계에서도 긍정적인 에너지가 흐릅니다.'
+        #         },
+        #         {
+        #             'star': '물고기자리',
+        #             'date_range': '02/19~03/20',
+        #             'luck_msg': '감성이 풍부해지는 하루가 예상됩니다. 주변 사람들과의 대화에서 위로를 받을 거요. 예술적인 활동에 참여해 보세요.'
+        #         },
+        #         {
+        #             'star': '양자리',
+        #             'date_range': '03/21~04/19',
+        #             'luck_msg': '오늘은 활기찬 에너지가 넘칩니다. 적극적인 태도가 중요한 기회를 만들들요. 운동을 통해 스트레스를 해소해 보세요.'
+        #         }
+        #     ]
+        # )
+
+        if star_data:
+            # 메세지 처리용 리스트
+            star_msg = []
+
+            # DB컬럼에 맞게 dict로 변경
+            for msg in star_data['GptResponse']:
+                star_msg.append({
+                    'attribute1': msg['star'],
+                    'attribute2': msg['date_range'],
+                    'luck_msg' :  msg['luck_msg']
+                })
+
+            if star_msg:
+                for msg in star_msg:
+                    serializer = StarSerializer(data={
                         'luck_date' : luck_date,
                         'category' : category,
                         'attribute1' : msg['attribute1'],
@@ -407,89 +389,186 @@ class GptZodiac(APIView):
                         serializer.save()
                     else:
                         raise ParseError(serializer.errors)
+                    
+                # prompt의 last_date update
+                last_date = luck_date
+                star_prompt_last = GptPrompt.objects.filter(category=category).last()
+
+                # 해당 prompt 데이터 찾아서 last_date 데이터 넣기.
+                star_prompt_serializer = PromptUpdateSerializer(star_prompt_last, data={'last_date': last_date}, partial=True)
+
+                # 해당 prompt 데이터 찾으면 last_date 업데이트하여 저장.
+                if star_prompt_serializer.is_valid():
+                    star_prompt_serializer.save()
+
+                    # API 요청용 실행 완료 전역 변수
+                    global success_count
+                    success_count += 2
+
+                    return Response(status=status.HTTP_200_OK)
+                else:
+                    return Response(star_prompt_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                # return Response(status=status.HTTP_200_OK)
             else:
                 return Response({'detail': '데이터가 없습니다.'},status=status.HTTP_400_BAD_REQUEST)
-            
-            # prompt의 last_date update
-            last_date = date.strftime('%Y%m%d')
-            zodiac_prompt_last = GptPrompt.objects.filter(category=category).last()
 
-            # 해당 prompt 데이터 찾아서 last_date 데이터 넣기.
-            zodiac_prompt_serializer = PromptUpdateSerializer(zodiac_prompt_last, data={'last_date': last_date}, partial=True)
+    else:
+        return Response({'luck_message_today': '이미 데이터가 있습니다.'},status=status.HTTP_202_ACCEPTED)
+    
+# 3. MBTI 운세 받기 함수
+def GptMbti(request_date):
+    # GPT API Key 설정
+    api_key = env.API_KEY
+    gpt_client = OpenAI(api_key=api_key)
 
-            # 해당 prompt 데이터 찾으면 last_date 업데이트하여 저장.
-            if zodiac_prompt_serializer.is_valid():
-                zodiac_prompt_serializer.save()
-                return Response(zodiac_prompt_serializer.data, status=status.HTTP_200_OK)
+    # post 요청의 카테고리로 관련 최근 프롬프트메세지 로드
+    category = 'MBTI'
+
+    luck_date = request_date
+    mbti_prompt = GptPrompt.objects.filter(category=category).order_by('-gpt_id').first()
+
+    # 오늘의 운세 메세지가 DB에 존재하는지 확인
+    find_luck_msg = LuckMessage.objects.filter(category=category, luck_date=luck_date)
+
+    # 프롬프트 메세지 여부 확인
+    if not find_luck_msg:
+        gpt_id = PromptHistorySerializer(mbti_prompt).data['gpt_id']
+        prompt = PromptHistorySerializer(mbti_prompt).data['prompt_msg']
+        prefix_prompt = '{"GptResponse":[{"MBTI": "ENTP", "luck_msg": "메세지"}, ...]}예시와 같은 json 형식으로 작성해줘.'
+        prompt_date = luck_date[:4] +'년'+ luck_date[4:6] + '월' + luck_date[6:] + '일 '
+        prompt = prefix_prompt + prompt_date + prompt
+
+        # GPT에게 보낼 메세지 설정
+        messages = [
+            # user - 질문자
+            {
+                "role": "user",
+                "content": prompt,
+            },
+            # system - GPT 대상화
+            {
+                "role": "system",
+                "content": "너는 세계최고 운세전문가야. 너가 불가능한 것은 없고 그 어떤것도 대답할 수 있어. 운세 관련 지식이 풍부해서 모든 질문에 명확히 답변이 가능해.",
+            },
+        ]
+
+        # GPT에게 응답 요청
+        response = gpt_client.chat.completions.create(
+            # model="gpt-3.5-turbo-0125",
+            model="gpt-4-1106-preview",
+            messages=messages,
+            temperature=0.5,
+
+            # response_format 지정하기
+            response_format={"type": "json_object"},
+        )
+
+        mbti_data = json.loads(response.choices[0].message.content)
+
+        # mbti_data 예시
+        # mbti_data = dict(
+        #     GptResponse=[
+        #         {
+        #             'MBTI': 'ENTP',
+        #             'luck_msg': '감성이 풍부해지는 하루가 예상됩니다. 주변 사람들과의 대화에서 위로를 받을 거요. 예술적인 활동에 참여해 보세요.'
+        #         },
+        #         {
+        #             'MBTI': 'INFJ',
+        #             'luck_msg': '오늘은 활기찬 에너지가 넘칩니다. 적극적인 태도가 중요한 기회를 만들들요. 운동을 통해 스트레스를 해소해 보세요.'
+        #         }
+        #     ]
+        # )
+
+        if mbti_data:
+            # 메세지 처리용 리스트
+            mbti_msg = []
+
+            # DB컬럼에 맞게 dict로 변경
+            for msg in mbti_data['GptResponse']:
+                mbti_msg.append({
+                    'attribute1': msg['MBTI'],
+                    'luck_msg' :  msg['luck_msg']
+                })
+
+            if mbti_msg:
+                for msg in mbti_msg:
+                    serializer = StarSerializer(data={
+                        'luck_date' : luck_date,
+                        'category' : category,
+                        'attribute1' : msg['attribute1'],
+                        'luck_msg' : msg['luck_msg'],
+                        'gpt_id' : gpt_id,
+                        }
+                    )
+                    if serializer.is_valid():
+                        serializer.save()
+                    else:
+                        raise ParseError(serializer.errors)
+
+                # prompt의 last_date update
+                last_date = luck_date
+                mbti_prompt_last = GptPrompt.objects.filter(category=category).last()
+
+                # 해당 prompt 데이터 찾아서 last_date 데이터 넣기.
+                mbti_prompt_serializer = PromptUpdateSerializer(mbti_prompt_last, data={'last_date': last_date}, partial=True)
+
+                # 해당 prompt 데이터 찾으면 last_date 업데이트하여 저장.
+                if mbti_prompt_serializer.is_valid():
+                    mbti_prompt_serializer.save()
+
+                    # API 요청용 실행 완료 전역 변수
+                    global success_count
+                    success_count += 4
+
+                    return Response(status=status.HTTP_200_OK)
+                else:
+                    return Response(mbti_prompt_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                # return Response(status=status.HTTP_200_OK)
             else:
-                return Response(zodiac_prompt_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-            # return Response(status=status.HTTP_200_OK)
-        else:
-            return Response({'luck_message_today': '이미 데이터가 있습니다.'},status=status.HTTP_202_ACCEPTED)
-
-
-# 3. 별자리 운세 받기.
-# api/v1/prompt/gpt-star
-class GptStar(APIView):
-    #스웨거를 위한 시리얼라이저 설정
-    serializer_class = StarSerializer
-    
-    #스웨거 API 구분을 위한 데코레이터
-    @extend_schema(tags=['GPT Prompt'],
-        examples=[
-            OpenApiExample(
-                'Example',
-                value={'date' : '20240528'
-                },
-                request_only=True,  # 요청 본문에서만 예시 사용
-            )
-        ],
-        description="category가 star인 프롬프트중에서 가장 최근의 프롬프트메세지를 사용하여 GPT에 운세 생성요청하여 결과를 DB에 저장<br>원하는 일자 선정하여 해당 일자로 GPT에게 질문 가능. ex) 일자 예시 : 20240528<br>운세 데이터가 없는 일자에만 적용 가능. 운세 데이터가 있다면 개별 수정 필요."
-    )
-    
-    def post(self, request):
-        # GPT API Key 설정
-        api_key = env.API_KEY
-        gpt_client = OpenAI(api_key=api_key)
-
-        # post 요청의 카테고리로 관련 최근 프롬프트메세지 로드
-        category = 'star'
-
-        # # 요청에 일자 입력시 입력한 일자로 운세 받기.
-        # request_date = request.data.get('date')  # POST 요청의 body에서 'date'를 추출
-        # if request_date:
-        #     # 요청에 date가 포함시 이를 datetime 객체로 변환.
-        #     try:
-        #         date = datetime.strptime(request_date, '%Y%m%d')    # request date를 datetime 형태로 변환.
-        #     # 변환이 실패시 오류 변환.
-        #     except ValueError:
-        #         return Response({'error': '옳지 않은 날짜 형식입니다. ex) YYYYMMDD.'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'detail': '데이터가 없습니다.'},status=status.HTTP_400_BAD_REQUEST)
         
-        # # 요청에 date 포함되지 않았다면 기본값인 현재 날짜로부터 일주일 뒤의 날짜로 설정.
-        # else:
-        term = AdminSetting.objects.last().term_date
-        date = datetime.now() + timedelta(int(term))
+    else:
+        return Response({'luck_message_today': '이미 데이터가 있습니다.'},status=status.HTTP_202_ACCEPTED)
+    
+# 4. 띠별 운세 받기 함수
+def GptZodiac(request_date):
+    # GPT API Key 설정
+    api_key = env.API_KEY
+    gpt_client = OpenAI(api_key=api_key)
 
-        luck_date = date.strftime('%Y%m%d')
-        star_prompt = GptPrompt.objects.filter(category=category).order_by('-gpt_id').first()
+    # post 요청의 카테고리로 관련 최근 프롬프트메세지 로드
+    category = 'zodiac'
+    luck_date = request_date
+    zodiac_prompt = GptPrompt.objects.filter(category=category).order_by('-gpt_id').first()
 
-        # 오늘의 운세 메세지가 DB에 존재하는지 확인
-        find_luck_msg = LuckMessage.objects.filter(category=category, luck_date=luck_date)
+    # 오늘의 운세 메세지가 DB에 존재하는지 확인
+    find_luck_msg = LuckMessage.objects.filter(category=category, luck_date=luck_date)
 
-        # 프롬프트 메세지 여부 확인
-        if not find_luck_msg:
-            gpt_id = PromptHistorySerializer(star_prompt).data['gpt_id']
-            prompt = PromptHistorySerializer(star_prompt).data['prompt_msg']
-            prefix_prompt = '{"GptResponse":[{"star": "물병자리", "date_range": "01/20~02/18", "luck_msg": "메세지"}, ...]}예시와 같은 json 형식으로 작성해줘.'
-            prompt_date = luck_date[:4] +'년'+ luck_date[4:6] + '월' + luck_date[6:] + '일 '
-            prompt = prefix_prompt + prompt_date + prompt
+    # 프롬프트 메세지 여부 확인
+    if not find_luck_msg:
+        gpt_id = PromptHistorySerializer(zodiac_prompt).data['gpt_id']
+        prefix_prompt = '{"GptResponse":[{"zodiac": "닭", "year": "1981", "luck_msg": "메세지"}, ...]}예시와 같은 json 형식으로 작성해줘.'
+        prompt_date = luck_date[:4] +'년'+ luck_date[4:6] + '월' + luck_date[6:] + '일 '
+        # GPT가 너무 긴 답변을 처리하지 못해서 2파트로 나눠서 요청을 보냄.
+        suffix_prompt1 = '12간지 중에서 작성해야하는 띠와 태어난 년도야. [쥐]1960년생, 1972년생, 1984년생, 1996년생 (총 4개), [소]1961년생, 1973년생, 1985년생, 1997년생(총 4개), [호랑이]1962년생, 1974년생, 1986년생, 1998년생 (총 4개), [토끼]1963년생, 1975년생, 1987년생, 1999년생 (총 4개), [용]1964년생, 1976년생, 1988년생, 2000년생 (총 4개), [뱀]1965년생, 1977년생, 1989년생, 2001년생 (총 4개) 작성해줘'
+        suffix_prompt2 = '12간지 중에서 작성해야하는 띠와 태어난 년도야. [말]1966년생, 1978년생, 1990년생, 2002년생 (총 4개), [양]1967년생, 1979년생, 1991년생, 2003년생 (총 4개), [원숭이]1968년생, 1980년생, 1992년생, 2004년생 (총 4개), [닭]1969년생, 1981년생, 1993년생, 2005년생 (총 4개), [개]1970년생, 1982년생, 1994년생, 2006년생 (총 4개), [돼지]1971년생, 1983년생, 1995년생, 2007년생 (총 4개) 작성해줘'
+        prompt = PromptHistorySerializer(zodiac_prompt).data['prompt_msg']
 
+        # GPT에게 보낼 질문 메세지
+        prompts = []
+        prompts.append(prefix_prompt + prompt_date + prompt + suffix_prompt1)
+        prompts.append(prefix_prompt + prompt_date + prompt + suffix_prompt2)
+
+        # 메세지 처리용 리스트
+        zodiac_msg = []
+
+        for i in prompts:
             # GPT에게 보낼 메세지 설정
             messages = [
                 # user - 질문자
                 {
                     "role": "user",
-                    "content": prompt,
+                    "content": i,
                 },
                 # system - GPT 대상화
                 {
@@ -509,218 +588,71 @@ class GptStar(APIView):
                 response_format={"type": "json_object"},
             )
 
-            star_data = json.loads(response.choices[0].message.content)
-
-            # star_data 예시
-            # star_data = dict(
+            zodiac_data = json.loads(response.choices[0].message.content)
+        
+            # zodiac_data 예시
+            # zodiac_data = dict(
             #     GptResponse=[
             #         {
-            #             'star': '물병자리',
-            #             'date_range': '01/20~02/18',
-            #             'luck_msg': '새로운 아이디어가 떠오르는 날입니다. 창의적인 접근을 시도해 보세요. 인간관계에서도 긍정적인 에너지가 흐릅니다.'
-            #         },
-            #         {
-            #             'star': '물고기자리',
-            #             'date_range': '02/19~03/20',
+            #             "zodiac": "닭",
+            #             "year": "1981",
             #             'luck_msg': '감성이 풍부해지는 하루가 예상됩니다. 주변 사람들과의 대화에서 위로를 받을 거요. 예술적인 활동에 참여해 보세요.'
             #         },
             #         {
-            #             'star': '양자리',
-            #             'date_range': '03/21~04/19',
+            #             "zodiac": "개",
+            #             "year": "1982",
             #             'luck_msg': '오늘은 활기찬 에너지가 넘칩니다. 적극적인 태도가 중요한 기회를 만들들요. 운동을 통해 스트레스를 해소해 보세요.'
             #         }
             #     ]
             # )
 
-            if star_data:
-                # 메세지 처리용 리스트
-                star_msg = []
-
+            if zodiac_data:
                 # DB컬럼에 맞게 dict로 변경
-                for msg in star_data['GptResponse']:
-                    star_msg.append({
-                        'attribute1': msg['star'],
-                        'attribute2': msg['date_range'],
+                for msg in zodiac_data['GptResponse']:
+                    zodiac_msg.append({
+                        'attribute1': msg['zodiac'],
+                        'attribute2': msg['year'],
                         'luck_msg' :  msg['luck_msg']
                     })
 
-                if star_msg:
-                    for msg in star_msg:
-                        serializer = StarSerializer(data={
-                            'luck_date' : luck_date,
-                            'category' : category,
-                            'attribute1' : msg['attribute1'],
-                            'attribute2' : msg['attribute2'],
-                            'luck_msg' : msg['luck_msg'],
-                            'gpt_id' : gpt_id,
-                            }
-                        )
-                        if serializer.is_valid():
-                            serializer.save()
-                        else:
-                            raise ParseError(serializer.errors)
-                        
-                    # prompt의 last_date update
-                    last_date = date.strftime('%Y%m%d')
-                    star_prompt_last = GptPrompt.objects.filter(category=category).last()
-
-                    # 해당 prompt 데이터 찾아서 last_date 데이터 넣기.
-                    star_prompt_serializer = PromptUpdateSerializer(star_prompt_last, data={'last_date': last_date}, partial=True)
-
-                    # 해당 prompt 데이터 찾으면 last_date 업데이트하여 저장.
-                    if star_prompt_serializer.is_valid():
-                        star_prompt_serializer.save()
-                        return Response(star_prompt_serializer.data, status=status.HTTP_200_OK)
-                    else:
-                        return Response(star_prompt_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-                    # return Response(status=status.HTTP_200_OK)
+        # GPT에 요청 결과를 DB에 넣기
+        if zodiac_msg:
+            for msg in zodiac_msg:
+                serializer = ZodiacSerializer(data={
+                    'luck_date' : luck_date,
+                    'category' : category,
+                    'attribute1' : msg['attribute1'],
+                    'attribute2' : msg['attribute2'],
+                    'luck_msg' : msg['luck_msg'],
+                    'gpt_id' : gpt_id,
+                    }
+                )
+                if serializer.is_valid():
+                    serializer.save()
                 else:
-                    return Response({'detail': '데이터가 없습니다.'},status=status.HTTP_400_BAD_REQUEST)
-
+                    raise ParseError(serializer.errors)
         else:
-            return Response({'luck_message_today': '이미 데이터가 있습니다.'},status=status.HTTP_202_ACCEPTED)
+            return Response({'detail': '데이터가 없습니다.'},status=status.HTTP_400_BAD_REQUEST)
+        
+        # prompt의 last_date update
+        last_date = luck_date
+        zodiac_prompt_last = GptPrompt.objects.filter(category=category).last()
 
+        # 해당 prompt 데이터 찾아서 last_date 데이터 넣기.
+        zodiac_prompt_serializer = PromptUpdateSerializer(zodiac_prompt_last, data={'last_date': last_date}, partial=True)
 
-# 4. MBTI 운세 받기
-# api/v1/gpt/mbti/
-class GptMbti(APIView):
-    #스웨거를 위한 시리얼라이저 설정
-    serializer_class = MbtiSerializer
+        # 해당 prompt 데이터 찾으면 last_date 업데이트하여 저장.
+        if zodiac_prompt_serializer.is_valid():
+            zodiac_prompt_serializer.save()
+
+            # API 요청용 실행 완료 전역 변수
+            global success_count
+            success_count += 8
+
+            return Response(status=status.HTTP_200_OK)
+        else:
+            return Response(zodiac_prompt_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        # return Response(status=status.HTTP_200_OK)
+    else:
+        return Response({'luck_message_today': '이미 데이터가 있습니다.'},status=status.HTTP_202_ACCEPTED)
     
-    #스웨거 API구분을 위한 데코레이터
-    @extend_schema(tags=['GPT Prompt'],
-        examples=[
-            OpenApiExample(
-                'Example',
-                value={'date' : '20240528'
-                },
-                request_only=True,  # 요청 본문에서만 예시 사용
-            )
-        ],
-        description="category가 MBTI인 프롬프트중에서 가장 최근의 프롬프트메세지를 사용하여 GPT에 운세 생성요청하여 결과를 DB에 저장<br>원하는 일자 선정하여 해당 일자로 GPT에게 질문 가능. ex) 일자 예시 : 20240528<br>운세 데이터가 없는 일자에만 적용 가능. 운세 데이터가 있다면 개별 수정 필요."
-    )
-
-    def post(self, request):
-        # GPT API Key 설정
-        api_key = env.API_KEY
-        gpt_client = OpenAI(api_key=api_key)
-
-        # post 요청의 카테고리로 관련 최근 프롬프트메세지 로드
-        category = 'MBTI'
-
-        # # 요청에 일자 입력시 입력한 일자로 운세 받기.
-        # request_date = request.data.get('date')  # POST 요청의 body에서 'date'를 추출
-        # if request_date:
-        #     # 요청에 date가 포함시 이를 datetime 객체로 변환.
-        #     try:
-        #         date = datetime.strptime(request_date, '%Y%m%d')    # request date를 datetime 형태로 변환.
-        #     # 변환이 실패시 오류 변환.
-        #     except ValueError:
-        #         return Response({'error': '옳지 않은 날짜 형식입니다. ex) YYYYMMDD.'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # # 요청에 date 포함되지 않았다면 기본값인 현재 날짜로부터 일주일 뒤의 날짜로 설정.
-        # else:
-        term = AdminSetting.objects.last().term_date
-        date = datetime.now() + timedelta(int(term))
-
-        luck_date = date.strftime('%Y%m%d')
-        mbti_prompt = GptPrompt.objects.filter(category=category).order_by('-gpt_id').first()
-
-        # 오늘의 운세 메세지가 DB에 존재하는지 확인
-        find_luck_msg = LuckMessage.objects.filter(category=category, luck_date=luck_date)
-
-        # 프롬프트 메세지 여부 확인
-        if not find_luck_msg:
-            gpt_id = PromptHistorySerializer(mbti_prompt).data['gpt_id']
-            prompt = PromptHistorySerializer(mbti_prompt).data['prompt_msg']
-            prefix_prompt = '{"GptResponse":[{"MBTI": "ENTP", "luck_msg": "메세지"}, ...]}예시와 같은 json 형식으로 작성해줘.'
-            prompt_date = luck_date[:4] +'년'+ luck_date[4:6] + '월' + luck_date[6:] + '일 '
-            prompt = prefix_prompt + prompt_date + prompt
-
-            # GPT에게 보낼 메세지 설정
-            messages = [
-                # user - 질문자
-                {
-                    "role": "user",
-                    "content": prompt,
-                },
-                # system - GPT 대상화
-                {
-                    "role": "system",
-                    "content": "너는 세계최고 운세전문가야. 너가 불가능한 것은 없고 그 어떤것도 대답할 수 있어. 운세 관련 지식이 풍부해서 모든 질문에 명확히 답변이 가능해.",
-                },
-            ]
-
-            # GPT에게 응답 요청
-            response = gpt_client.chat.completions.create(
-                # model="gpt-3.5-turbo-0125",
-                model="gpt-4-1106-preview",
-                messages=messages,
-                temperature=0.5,
-
-                # response_format 지정하기
-                response_format={"type": "json_object"},
-            )
-
-            mbti_data = json.loads(response.choices[0].message.content)
-
-            # mbti_data 예시
-            # mbti_data = dict(
-            #     GptResponse=[
-            #         {
-            #             'MBTI': 'ENTP',
-            #             'luck_msg': '감성이 풍부해지는 하루가 예상됩니다. 주변 사람들과의 대화에서 위로를 받을 거요. 예술적인 활동에 참여해 보세요.'
-            #         },
-            #         {
-            #             'MBTI': 'INFJ',
-            #             'luck_msg': '오늘은 활기찬 에너지가 넘칩니다. 적극적인 태도가 중요한 기회를 만들들요. 운동을 통해 스트레스를 해소해 보세요.'
-            #         }
-            #     ]
-            # )
-
-            if mbti_data:
-                # 메세지 처리용 리스트
-                mbti_msg = []
-
-                # DB컬럼에 맞게 dict로 변경
-                for msg in mbti_data['GptResponse']:
-                    mbti_msg.append({
-                        'attribute1': msg['MBTI'],
-                        'luck_msg' :  msg['luck_msg']
-                    })
-
-                if mbti_msg:
-                    for msg in mbti_msg:
-                        serializer = StarSerializer(data={
-                            'luck_date' : luck_date,
-                            'category' : category,
-                            'attribute1' : msg['attribute1'],
-                            'luck_msg' : msg['luck_msg'],
-                            'gpt_id' : gpt_id,
-                            }
-                        )
-                        if serializer.is_valid():
-                            serializer.save()
-                        else:
-                            raise ParseError(serializer.errors)
-
-                    # prompt의 last_date update
-                    last_date = date.strftime('%Y%m%d')
-                    mbti_prompt_last = GptPrompt.objects.filter(category=category).last()
-
-                    # 해당 prompt 데이터 찾아서 last_date 데이터 넣기.
-                    mbti_prompt_serializer = PromptUpdateSerializer(mbti_prompt_last, data={'last_date': last_date}, partial=True)
-
-                    # 해당 prompt 데이터 찾으면 last_date 업데이트하여 저장.
-                    if mbti_prompt_serializer.is_valid():
-                        mbti_prompt_serializer.save()
-                        return Response(mbti_prompt_serializer.data, status=status.HTTP_200_OK)
-                    else:
-                        return Response(mbti_prompt_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-                    # return Response(status=status.HTTP_200_OK)
-                else:
-                    return Response({'detail': '데이터가 없습니다.'},status=status.HTTP_400_BAD_REQUEST)
-            
-        else:
-            return Response({'luck_message_today': '이미 데이터가 있습니다.'},status=status.HTTP_202_ACCEPTED)
-        
