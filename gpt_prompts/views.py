@@ -3,9 +3,9 @@ from openai import OpenAI
 from datetime import datetime, timedelta
 from drf_spectacular.utils import extend_schema, OpenApiExample
 from rest_framework import status
-from rest_framework.exceptions import ParseError
-from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.exceptions import ParseError
 from rest_framework_simplejwt.tokens import AccessToken # 엑세스토큰 임포트
 from django.core.paginator import Paginator # pagination
 from django.shortcuts import get_object_or_404
@@ -102,6 +102,7 @@ class PromptIndividual(APIView):
         # admin_settings에 있는 term_date 값 가져오기.
         term = get_object_or_404(AdminSetting).term_date
         # last = now + timedelta(days=int(term))
+
 
         if serializer.is_valid():
             prompt_msg_name = today
