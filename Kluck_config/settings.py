@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 from pathlib import Path
 from kluck_env import env_settings as env
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -50,12 +51,19 @@ SYSTEM_APPS = [
 ]
 
 CUSTOM_APPS = [
+    # Rest Framework
     'rest_framework',
+    # JWT Token
+    'rest_framework_simplejwt',
+    # 스웨거API
     'drf_spectacular',
     'django_apscheduler',
     'admin_settings',
+    # 관리자 User의 커스텀 테이블
     'admins',
+    # 프롬프트 명령 테이블
     'gpt_prompts',
+    # 운세 데이터 테이블
     'luck_messages',
 ]
 
@@ -101,6 +109,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "Kluck_config.wsgi.application"
 
+# Auth_user를 커스텀 지정.
+# AUTH_USER_MODEL = 'admins.Admin'
+
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
@@ -118,6 +129,23 @@ DATABASES = {
         }
     }
 }
+
+# 테이블 생성과 관리자 로그인 관련 SQL확인을 위한 설정
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'handlers': {
+#         'console': {
+#             'class': 'logging.StreamHandler',
+#         },
+#     },
+#     'loggers': {
+#         'django.db.backends': {
+#             'level': 'DEBUG',
+#             'handlers': ['console'],
+#         },
+#     },
+# }
 
 
 # Password validation
@@ -140,6 +168,24 @@ AUTH_PASSWORD_VALIDATORS = [
 # Swagger settings
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_AUTHENTICATION_CLASSES': ['rest_framework_simplejwt.authentication.JWTAuthentication',],
+    'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.IsAuthenticated',],
+}
+
+# JWT Token설정
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=10),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=60),
+    'ROTATE_REFRESH_TOKENS': False,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': env.Django_TOKEN_KEY,
+    'VERIFYING_KEY': None,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+    'TOKEN_TYPE_CLAIM': 'token_type',
 }
 
 SPECTACULAR_SETTINGS = {
@@ -172,3 +218,18 @@ STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# Email settings
+# 이메일 백엔드 설정: Django에서 이메일을 보내는 데 사용할 백엔드 지정
+# SMTP 이메일 백엔드를 사용하여 SMTP 서버를 통해 이메일을 전송합니다.
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend' # 개발 환경용
+# SMTP 서버 주소 설정: Gmail의 SMTP 서버 주소 사용
+EMAIL_HOST = "smtp.gmail.com"
+# SMTP 서버 포트 설정: Gmail의 TLS 암호화를 사용하는 경우 587 포트 사용
+EMAIL_PORT = 587
+# TLS(Tansport Layer Security, 전송 계층 보안) 암호화 사용 여부 설정: 이메일 통신에 TLS 암호화를 사용하여 보안 강화
+EMAIL_USE_TLS = True
+# SMTP 인증에 사용할 이메일 주소 설정: 환경 변수 설정의 이메일 주소 사용
+EMAIL_HOST_USER = env.EMAIL_HOST_USER
+# SMTP 인증에 사용할 비밀번호 설정: 환경 변수 설정의 비밀번호 사용
+EMAIL_HOST_PASSWORD = env.EMAIL_HOST_PASSWORD

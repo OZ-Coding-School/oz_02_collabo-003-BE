@@ -3,6 +3,7 @@ from django.db.models import Prefetch
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
 from drf_spectacular.utils import extend_schema
 from .serializers import *
 import random
@@ -18,6 +19,7 @@ class TodayLuck(APIView):
     '''
     # 오늘 날짜의 Today, 띠, 별, MBTI 메세지 조회
     serializer_class = TodayLuckSerializer
+    permission_classes = (AllowAny,)
 
     @extend_schema(tags=['Msg'])
     def get(self, request, user_birth, user_MBTI):
@@ -102,6 +104,7 @@ class FindTodayZodiacMessages(APIView):
         BE-LUCK201: 오늘날짜의 띠 메세지 로드
     '''
     serializer_class = ZodiacSerializer
+    permission_classes = (AllowAny,)
 
     @extend_schema(tags=['Msg'])
     def get(self, request, attribute1):
@@ -119,6 +122,7 @@ class FindTodayStarMessages(APIView):
         BE-LUCK301: 오늘날짜의 별자리 메세지 로드
     '''
     serializer_class = StarSerializer
+    permission_classes = (AllowAny,)
 
     @extend_schema(tags=['Msg'])
     def get(self, request):
@@ -136,6 +140,7 @@ class FindTodayMbtiMessages(APIView):
         BE-LUCK401: 오늘날짜의 MBTI 메세지 로드
     '''
     serializer_class = MbtiSerializer
+    permission_classes = (AllowAny,)
 
     @extend_schema(tags=['Msg'])
     def get(self, request):
