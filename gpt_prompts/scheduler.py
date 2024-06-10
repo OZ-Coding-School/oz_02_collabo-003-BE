@@ -91,5 +91,3 @@ def gpt_today_job():
     recipient_list=["j00whii@gmail.com"]
 
     send_email(subject, message, recipient_list)
-
-gpt_today_job()
