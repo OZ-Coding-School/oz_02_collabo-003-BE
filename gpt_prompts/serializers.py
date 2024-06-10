@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from .models import GptPrompt
-from luck_messages.models import LuckMessage
 
 class PromptSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
