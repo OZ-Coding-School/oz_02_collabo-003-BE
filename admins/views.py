@@ -37,7 +37,6 @@ class JWTLogin(APIView):
         if serializer.is_valid():
             # 로그인 유저가 있는지 확인하고 user에 대입
             user = serializer.validated_data['user']
-            print(serializer.validated_data)
             # user로 리플래시토큰을 생성하고 refresh에 대입
             refresh = RefreshToken.for_user(user)
             # response를 딕셔너리 형식으로 'refresh': refreshtoken, 'access': accesstoken 정보를 반환
