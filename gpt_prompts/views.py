@@ -165,19 +165,60 @@ class GptTodayLuck(APIView):
         global success_count
         success_count = 0
 
-        # 각 카테고리별 GPT에게 질문하는 함수 실행.
-        GptToday(request_date) # Success count = 1
-        GptStar(request_date) # Success count = 2
-        GptMbti(request_date) # Success count = 4
-        GptZodiac(request_date) # Success count = 8
-
         luck_date = request_date
 
-        # 전부 다 작동시 success count 합 15, 이 외 일부만 작동시 해당 success count 확인하여 작동된 함수 유추 가능.
-        if success_count == 15:
-            return Response(f"{luck_date} 운세 데이터 생성을 완료 했습니다.", status=status.HTTP_200_OK)
+        # 해당 일자 운세 데이터 작동 했는지 확인.
+        work_on = LuckMessage.objects.filter(category='work', luck_date=luck_date, attribute2=0).first()
+        # attribute1) 1 : '작업중', 2 : '작업완료' / attribute2) 1 : '재작업 흔적'
+
+        if not work_on:
+            # 해당 일자 운세 작업을 이전에도 했는지 확인.
+            worked = LuckMessage.objects.filter(category='work', luck_date=luck_date, attribute2=1).first()
+            if not worked:  # 해당 일자 운세 생성 작업한 적이 없는 경우. (작업 확인 데이터 없는 경우)
+                # 해당 일자 작업 확인 데이터 추가.
+                work_serializer = TodaySerializer(data={
+                    'luck_date' : luck_date,
+                    'category' : 'work',
+                    'attribute2' : 0,
+                    'gpt_id' : 1,
+                })
+
+                if work_serializer.is_valid():
+                    work_serializer.save()
+                else:
+                    raise ParseError(work_serializer.errors)
+            else:   # 해당 일자 운세 생성 작업한 적이 있는 경우. (작업 확인 데이터 있는 경우)
+                # 작업 확인 데이터에 '해당 일자 작업이 이루어지고 있다'로 수정.
+                work_again_serializer = TodaySerializer(worked, data={'attribute2' : 0}, partial=True)
+                if work_again_serializer.is_valid():
+                    work_again_serializer.save()
+                else:
+                    raise ParseError(work_again_serializer.errors)
+                
+            # 각 카테고리별 GPT에게 질문하는 함수 실행.
+            GptToday(request_date) # Success count = 1
+            GptStar(request_date) # Success count = 2
+            GptMbti(request_date) # Success count = 4
+            GptZodiac(request_date) # Success count = 8
+
+            # 작업이 전부 완료된 뒤 작업 확인 데이터 내용 '완료'로 수정.
+            work = LuckMessage.objects.filter(category='work', luck_date=luck_date).first()
+            done_serializer = TodaySerializer(work, data={
+                'attribute2': 1, 
+                'luck_msg' : f'Success count = {success_count}',
+                'gpt_id' : 1}, partial=True)
+            if done_serializer.is_valid():
+                done_serializer.save()
+            else:
+                raise ParseError(done_serializer.errors)
+            
+            # 전부 다 작동시 success count 합 15, 이 외 일부만 작동시 해당 success count 확인하여 작동된 함수 유추 가능.
+            if success_count == 15:
+                return Response(f"{luck_date} 운세 데이터 생성을 완료 했습니다.", status=status.HTTP_200_OK)
+            else:
+                return Response(f"{luck_date} 운세 데이터가 이미 있습니다.{success_count}", status=status.HTTP_206_PARTIAL_CONTENT)
         else:
-            return Response(f"{luck_date} 운세 데이터가 이미 있습니다.{success_count}", status=status.HTTP_206_PARTIAL_CONTENT)
+            return Response(f"{luck_date} 운세 데이터 생성을 하는 중입니다.", status=status.HTTP_208_ALREADY_REPORTED)  # popup 알림창 필요.
         
 # 1. 오늘의 한마디 받기 함수
 def GptToday(request_date):
