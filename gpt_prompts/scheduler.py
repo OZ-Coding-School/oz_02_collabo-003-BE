@@ -38,7 +38,7 @@ def gpt_today_job():
     
     # 해당 일자 운세 데이터 작동 했는지 확인.
     work_on = LuckMessage.objects.filter(category='work', luck_date=luck_date, attribute2=0).first()
-    # attribute1) 1 : '작업중', 2 : '작업완료' / attribute2) 1 : '재작업 흔적'
+    # attribute2) 0 : '작업중', 1 : '작업완료'
 
     if not work_on:
         # 해당 일자 운세 작업을 이전에도 했는지 확인.
