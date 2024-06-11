@@ -57,6 +57,8 @@ CUSTOM_APPS = [
     'rest_framework_simplejwt',
     # 스웨거API
     'drf_spectacular',
+    # scheduler
+    'django_apscheduler',
     # 각종 설정값 테이블
     'admin_settings',
     # 관리자 User의 커스텀 테이블
@@ -78,6 +80,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    # "django_apscheduler.middleware.DjangoJobExecMiddleware",
 ]
 
 CORS_ORIGIN_ALLOW_ALL = True
