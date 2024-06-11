@@ -88,6 +88,9 @@ def gpt_today_job():
         subject="Scheduler Done"
         message=f"Scheduler 동작 중 일부가 실행되었습니다. result_count = {scheduler_count}"
         
-    recipient_list=["j00whii@gmail.com"]
+    # kluck_Admin 모델을 통해 관련된 사용자 이메일 리스트 가져오기
+    admin_emails = kluck_Admin.objects.values_list('user__email', flat=True)
+    # 이메일 리스트를 recipient_list로 변환
+    recipient_list = list(admin_emails)
 
     send_email(subject, message, recipient_list)
