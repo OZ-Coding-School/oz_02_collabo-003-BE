@@ -161,6 +161,10 @@ class GptTodayLuck(APIView):
         # POST 요청의 body에서 입력한 일자 'date'를 추출
         request_date = request.data.get('date')
 
+        # success_count 변수값 초기화.
+        global success_count
+        success_count = 0
+
         # 각 카테고리별 GPT에게 질문하는 함수 실행.
         GptToday(request_date) # Success count = 1
         GptStar(request_date) # Success count = 2
@@ -173,7 +177,7 @@ class GptTodayLuck(APIView):
         if success_count == 15:
             return Response(f"{luck_date} 운세 데이터 생성을 완료 했습니다.", status=status.HTTP_200_OK)
         else:
-            return Response(f"{luck_date} 운세 데이터가 이미 있습니다.{success_count}", status=status.HTTP_200_OK)
+            return Response(f"{luck_date} 운세 데이터가 이미 있습니다.{success_count}", status=status.HTTP_206_PARTIAL_CONTENT)
         
 # 1. 오늘의 한마디 받기 함수
 def GptToday(request_date):
@@ -287,7 +291,7 @@ def GptToday(request_date):
             else:
                 return Response({'detail': '데이터가 없습니다.'},status=status.HTTP_400_BAD_REQUEST)
     else:
-        return Response({'luck_message_today': '이미 데이터가 있습니다.'},status=status.HTTP_202_ACCEPTED)
+        return Response({'luck_message_today': '이미 데이터가 있습니다.'},status=status.HTTP_206_PARTIAL_CONTENT)
     
 # 2. 별자리 운세 받기 함수
 def GptStar(request_date):
@@ -410,7 +414,7 @@ def GptStar(request_date):
                 return Response({'detail': '데이터가 없습니다.'},status=status.HTTP_400_BAD_REQUEST)
 
     else:
-        return Response({'luck_message_today': '이미 데이터가 있습니다.'},status=status.HTTP_202_ACCEPTED)
+        return Response({'luck_message_today': '이미 데이터가 있습니다.'},status=status.HTTP_206_PARTIAL_CONTENT)
     
 # 3. MBTI 운세 받기 함수
 def GptMbti(request_date):
@@ -525,7 +529,7 @@ def GptMbti(request_date):
                 return Response({'detail': '데이터가 없습니다.'},status=status.HTTP_400_BAD_REQUEST)
         
     else:
-        return Response({'luck_message_today': '이미 데이터가 있습니다.'},status=status.HTTP_202_ACCEPTED)
+        return Response({'luck_message_today': '이미 데이터가 있습니다.'},status=status.HTTP_206_PARTIAL_CONTENT)
     
 # 4. 띠별 운세 받기 함수
 def GptZodiac(request_date):
@@ -651,5 +655,5 @@ def GptZodiac(request_date):
             return Response(zodiac_prompt_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         # return Response(status=status.HTTP_200_OK)
     else:
-        return Response({'luck_message_today': '이미 데이터가 있습니다.'},status=status.HTTP_202_ACCEPTED)
+        return Response({'luck_message_today': '이미 데이터가 있습니다.'},status=status.HTTP_206_PARTIAL_CONTENT)
     
