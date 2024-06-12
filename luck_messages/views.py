@@ -38,8 +38,6 @@ class TodayLuck(APIView):
             else:
                 today_serializer = {'새벽 공기처럼 맑고 상쾌한 기운이 가득하길.🍃✨ 마음 가득 행복이 채워지는 날 되세요.🌷'}
 
-            today_msg = LuckMessage.objects.filter(luck_date=today, category='today')
-
 
             # 사용자 출생연도에 맞는 띠별 오늘의 운세 제공.
             user_zodiac = user_birth[:4]
