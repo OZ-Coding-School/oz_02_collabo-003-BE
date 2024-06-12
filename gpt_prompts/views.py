@@ -11,6 +11,7 @@ from django.core.paginator import Paginator # pagination
 from django.shortcuts import get_object_or_404
 from kluck_env import env_settings as env
 from luck_messages.serializers import *
+from luck_messages.models import LuckMessage
 from .serializers import *
 from .models import GptPrompt
 from admins.models import kluck_Admin
@@ -133,10 +134,72 @@ class PromptHistory(APIView):
         except GptPrompt.DoesNotExist:
             return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
 
-# 전역 변수 success_count 형성
-success_count = 0
+
+# # 운세 데이터 성공 여부를 위한 변수 설정.
+# success_count = 0
+
+# 각 API 요청별 운세 받기 함수의 success_count 더하기 함수.
+def run_gpt_functions(luck_date):
+    success_count = 0
+    if GptToday(luck_date):
+        success_count += 1
+    if GptStar(luck_date):
+        success_count += 2
+    if GptMbti(luck_date):
+        success_count += 4
+    if GptZodiac1(luck_date):
+        success_count += 8
+    if GptZodiac2(luck_date):
+        success_count += 16
+    return success_count
+
+# 운세 작업 진행도를 확인하기 위한 함수들
+# 1. 운세 작업 상태 확인 데이터 생성 함수
+def add_work_date(luck_date):
+    work_serializer = TodaySerializer(data={
+        'luck_date' : luck_date,
+        'category' : 'work',
+        'attribute2' : 0,
+        'gpt_id' : 1,
+    })
+
+    if work_serializer.is_valid():
+        work_serializer.save()
+        return True
+    else:
+        log_error(work_serializer.errors)
+        return False
+    
+# 2. 운세 작업 상태 확인 데이터 업데이트 함수
+def update_work_date(worked):
+    work_again_serializer = TodaySerializer(worked, data={'attribute2' : 0}, partial=True)
+    if work_again_serializer.is_valid():
+        work_again_serializer.save()
+        return True
+    else:
+        log_error(work_again_serializer.errors)
+        return False
+    
+# 3. 운세 작업 상태 완료 데이터 업데이트 함수
+def update_done_date(work, success_count):
+    done_serializer = TodaySerializer(work, data={
+        'attribute2': 1, 
+        'luck_msg' : f'Success count = {success_count}',
+        'gpt_id' : 1}, partial=True)
+    if done_serializer.is_valid():
+        done_serializer.save()
+        return True
+    else:
+        log_error(done_serializer.errors)
+        return False
+
+# Error 출력용 함수
+def log_error(errors):
+    # 오류를 터미널에 출력. 다른 방법도 추가 가능.
+    print(errors)
 
 # GPT API 사용 - 오늘의 한마디, 오늘의 띠별 운세, 오늘의 별자리별 운세, 오늘의 mbti별 운세 각각의 함수 이용.
+# 1) 특정 일자 오늘의 운세 세트 생성
 # /api/v1/gpt/luck/
 class GptTodayLuck(APIView):
     #스웨거를 위한 시리얼라이저 설정
@@ -147,12 +210,12 @@ class GptTodayLuck(APIView):
         examples=[
             OpenApiExample(
                 'Example',
-                value={'date' : '20240528'
+                value={'date' : '20240612'
                 },
                 request_only=True,  # 요청 본문에서만 예시 사용
             )
         ],
-        description="각 category별 프롬프트중에서 가장 최근의 프롬프트메세지를 사용하여 GPT에 운세 생성요청하여 결과를 DB에 저장.<br>원하는 일자 선정하여 해당 일자로 GPT에게 질문 가능. ex) 일자 예시 : 20240528<br>운세 데이터가 없는 일자에만 적용 가능. 운세 데이터가 있다면 개별 수정 필요.<br><br>[2024.06.10 Update]<br>스케줄러에서는 api 사용 안하고 자동 실행 될 수 있도록, 기간 내 운세 원하거나 특정 일자 운세 원할 경우에는 api 사용할 수 있도록 날짜 입력 받아 작동하는 것으로 변경."
+        description="각 category별 프롬프트중에서 가장 최근의 프롬프트메세지를 사용하여 GPT에 운세 생성 요청하여 결과를 DB에 저장.<br>원하는 일자 선정하여 해당 일자로 GPT에게 질문 가능. ex) 일자 예시 : 20240612<br>운세 데이터가 없는 일자에만 생성 가능. 운세 데이터가 있다면 개별 수정 필요.<br><br>[2024.06.10 Update]<br>스케줄러에서는 api 사용 안하고 자동 실행 될 수 있도록, 기간 내 운세 원하거나 특정 일자 운세 원할 경우에는 api 사용할 수 있도록 날짜 입력 받아 작동하는 것으로 변경."
     )
 
     def post(self, request):
@@ -160,7 +223,7 @@ class GptTodayLuck(APIView):
         request_date = request.data.get('date')
 
         # success_count 변수값 초기화.
-        global success_count
+        # global success_count
         success_count = 0
 
         luck_date = request_date
@@ -174,50 +237,125 @@ class GptTodayLuck(APIView):
             worked = LuckMessage.objects.filter(category='work', luck_date=luck_date, attribute2=1).first()
             if not worked:  # 해당 일자 운세 생성 작업한 적이 없는 경우. (작업 확인 데이터 없는 경우)
                 # 해당 일자 작업 확인 데이터 추가.
-                work_serializer = TodaySerializer(data={
-                    'luck_date' : luck_date,
-                    'category' : 'work',
-                    'attribute2' : 0,
-                    'gpt_id' : 1,
-                })
-
-                if work_serializer.is_valid():
-                    work_serializer.save()
-                else:
-                    raise ParseError(work_serializer.errors)
+                if not add_work_date(luck_date):
+                    return Response(f"{luck_date} 운세 생성 작업을 확인하기 위한 데이터를 생성하는데 오류가 발생했습니다.",status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             else:   # 해당 일자 운세 생성 작업한 적이 있는 경우. (작업 확인 데이터 있는 경우)
                 # 작업 확인 데이터에 '해당 일자 작업이 이루어지고 있다'로 수정.
-                work_again_serializer = TodaySerializer(worked, data={'attribute2' : 0}, partial=True)
-                if work_again_serializer.is_valid():
-                    work_again_serializer.save()
-                else:
-                    raise ParseError(work_again_serializer.errors)
-                
+                if not update_work_date(worked):
+                    return Response(f"{luck_date} 운세 생성 작업을 확인하기 위한 데이터를 업데이트하는데 오류가 발생했습니다.",status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
             # 각 카테고리별 GPT에게 질문하는 함수 실행.
-            GptToday(request_date) # Success count = 1
-            GptStar(request_date) # Success count = 2
-            GptMbti(request_date) # Success count = 4
-            GptZodiac(request_date) # Success count = 8
+            # GptToday(luck_date) # Success count = 1
+            # GptStar(luck_date) # Success count = 2
+            # GptMbti(luck_date) # Success count = 4
+            # GptZodiac1(luck_date) # Success count = 8
+            # GptZodiac2(luck_date) # Success count = 16
+            success_count += run_gpt_functions(luck_date)
 
             # 작업이 전부 완료된 뒤 작업 확인 데이터 내용 '완료'로 수정.
             work = LuckMessage.objects.filter(category='work', luck_date=luck_date).first()
-            done_serializer = TodaySerializer(work, data={
-                'attribute2': 1, 
-                'luck_msg' : f'Success count = {success_count}',
-                'gpt_id' : 1}, partial=True)
-            if done_serializer.is_valid():
-                done_serializer.save()
-            else:
-                raise ParseError(done_serializer.errors)
+            if not update_done_date(work, success_count):
+                return Response(f"{luck_date} 운세 생성 작업 확인 데이터를 완료로 업데이트하는데 오류가 발생했습니다.",status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             
-            # 전부 다 작동시 success count 합 15, 이 외 일부만 작동시 해당 success count 확인하여 작동된 함수 유추 가능.
-            if success_count == 15:
+            # 전부 다 작동시 success count 합 31, 이 외 일부만 작동시 해당 success count 확인하여 작동된 함수 유추 가능.
+            if success_count == 31:
                 return Response(f"{luck_date} 운세 데이터 생성을 완료 했습니다.", status=status.HTTP_200_OK)
             else:
                 return Response(f"{luck_date} 운세 데이터가 이미 있습니다.{success_count}", status=status.HTTP_206_PARTIAL_CONTENT)
         else:
-            return Response(f"{luck_date} 운세 데이터 생성을 하는 중입니다.", status=status.HTTP_208_ALREADY_REPORTED)  # popup 알림창 필요.
+            return Response(f"{luck_date} 운세 데이터 생성을 하는 중입니다.", status=status.HTTP_208_ALREADY_REPORTED)
+
+
+# 2) 원하는 기간 오늘의 운세 세트 생성
+# /api/v1/gpt/luck/terms/
+class GptLuckPeriod(APIView):
+    #스웨거를 위한 시리얼라이저 설정
+    serializer_class = GptLuckSerializer
+
+    #스웨거 API구분을 위한 데코레이터
+    @extend_schema(tags=['GPT Prompt'],
+        examples=[
+            OpenApiExample(
+                'Example',
+                value={'date1' : '20240613',
+                        'date2' : '20240713'
+                },
+                request_only=True,  # 요청 본문에서만 예시 사용
+            )
+        ],
+        description="원하는 기간을 설정 후 각 일자별로 운세를 생성한다. 각 category별 프롬프트중에서 가장 최근의 프롬프트메세지를 사용하여 GPT에 운세 생성 요청하고 결과를 DB에 저장. <br>ex) 일자 예시 : 20240613 / 20240713<br><br>※주의사항<br>- 콘텐츠 자동 생성일 주기(term_date)와 맞물려서 작동되어야 합니다."
+    )
+    def post(self, request):
+        # POST 요청의 body에서 입력한 일자 'date1'과 'date2'를 추출
+        request_date1 = request.data.get('date1')   # 20240613
+        request_date2 = request.data.get('date2')   # 20240713
+
+        # 문자열을 datetime 객체로 변환하는 함수
+        def str_to_date(date_str):
+            return datetime.strptime(date_str, '%Y%m%d')
         
+        # POST로 요청받은 데이터 날짜 형태로 변환.
+        date1 = str_to_date(request_date1)
+        date2 = str_to_date(request_date2)
+
+        # 기간 변수 설정
+        date_term = (date2 - date1).days
+
+        # 원하는 일자만큼 생성되었는지 확인하기 위한 변수 설정.
+        date_count = 0
+        
+        # 결과 메시지 리스트
+        results = []
+
+        for i in range(date_term + 1):  # +1을 해서 마지막 날짜도 포함
+            date = date1 + timedelta(days=i)
+            luck_date = date.strftime('%Y%m%d')
+
+            # success_count 변수값 초기화.
+            # global success_count
+            success_count = 0
+
+            # 해당 일자 운세 작업을 이전에도 했는지 확인.
+            worked = LuckMessage.objects.filter(category='work', luck_date=luck_date, attribute2=1).first()
+            # attribute2) 0 : '작업중', 1 : '작업완료'
+
+            if not worked:  # 해당 일자 운세 생성 작업한 적이 없는 경우. (작업 확인 데이터 없는 경우)
+                # 해당 일자 작업 확인 데이터 추가.
+                if not add_work_date(luck_date):
+                    return Response(f"{luck_date} 운세 생성 작업을 확인하기 위한 데이터를 생성하는데 오류가 발생했습니다.",status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            else:   # 해당 일자 운세 생성 작업한 적이 있는 경우. (작업 확인 데이터 있는 경우)
+                # 작업 확인 데이터에 '해당 일자 작업이 이루어지고 있다'로 수정.
+                if not update_work_date(worked):
+                    return Response(f"{luck_date} 운세 생성 작업을 확인하기 위한 데이터를 업데이트하는데 오류가 발생했습니다.",status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                
+            # 각 카테고리별 GPT에게 질문하는 함수 실행.
+            # GptToday(luck_date) # Success count = 1
+            # GptStar(luck_date) # Success count = 2
+            # GptMbti(luck_date) # Success count = 4
+            # GptZodiac1(luck_date) # Success count = 8
+            # GptZodiac2(luck_date) # Success count = 16
+            success_count += run_gpt_functions(luck_date)
+
+            # 작업이 전부 완료된 뒤 작업 확인 데이터 내용 '완료'로 수정.
+            work = LuckMessage.objects.filter(category='work', luck_date=luck_date).first()
+            if not update_done_date(work, success_count):
+                return Response(f"{luck_date} 운세 생성 작업 확인 데이터를 완료로 업데이트하는데 오류가 발생했습니다.",status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
+            date_count += 1
+
+            # 전부 다 작동시 success count 합 31, 이 외 일부만 작동시 해당 success count 확인하여 작동된 함수 유추 가능.
+            if success_count == 31 or success_count == 0:
+                results.append(f"{luck_date} 운세 데이터 생성을 완료했습니다.")
+            else:
+                return Response(f"{luck_date} 운세 데이터 생성 중에 오류가 발생했습니다. {results}", status=status.HTTP_417_EXPECTATION_FAILED)
+
+        # 원하는 기간만큼 운세가 만들어졌는지 확인.
+        if date_count == date_term + 1:
+            return Response(f"{request_date1} ~ {request_date2} 기간 동안 {date_count}일 데이터를 완성했습니다.{results}", status=status.HTTP_200_OK)
+        else:
+            return Response(f"원하는 기간 중 {date_count}일 일부만 만들어졌습니다.{results}", status=status.HTTP_206_PARTIAL_CONTENT)
+
+
 # 1. 오늘의 한마디 받기 함수
 def GptToday(request_date):
     # GPT API Key 설정
@@ -257,7 +395,8 @@ def GptToday(request_date):
         # GPT에게 응답 요청
         response = gpt_client.chat.completions.create(
             # model="gpt-3.5-turbo-0125",
-            model="gpt-4-1106-preview",
+            # model="gpt-4-1106-preview",
+            model="gpt-4o",
             messages=messages,
             temperature=0.5,
 
@@ -306,9 +445,9 @@ def GptToday(request_date):
             if today_prompt_serializer.is_valid():
                 today_prompt_serializer.save()
 
-                # API 요청용 실행 완료 전역 변수
-                global success_count
-                success_count += 1
+                # # API 요청용 실행 완료 전역 변수
+                # global success_count
+                # success_count += 1
 
                 return Response(status=status.HTTP_200_OK)
             else:
@@ -358,7 +497,8 @@ def GptStar(request_date):
         # GPT에게 응답 요청
         response = gpt_client.chat.completions.create(
             # model="gpt-3.5-turbo-0125",
-            model="gpt-4-1106-preview",
+            # model="gpt-4-1106-preview",
+            model="gpt-4o",
             messages=messages,
             temperature=0.5,
 
@@ -428,9 +568,9 @@ def GptStar(request_date):
                 if star_prompt_serializer.is_valid():
                     star_prompt_serializer.save()
 
-                    # API 요청용 실행 완료 전역 변수
-                    global success_count
-                    success_count += 2
+                    # # API 요청용 실행 완료 전역 변수
+                    # global success_count
+                    # success_count += 2
 
                     return Response(status=status.HTTP_200_OK)
                 else:
@@ -483,6 +623,7 @@ def GptMbti(request_date):
         response = gpt_client.chat.completions.create(
             # model="gpt-3.5-turbo-0125",
             model="gpt-4-1106-preview",
+            # model="gpt-4o",
             messages=messages,
             temperature=0.5,
 
@@ -491,6 +632,7 @@ def GptMbti(request_date):
         )
 
         mbti_data = json.loads(response.choices[0].message.content)
+        # print(mbti_data)
 
         # mbti_data 예시
         # mbti_data = dict(
@@ -543,9 +685,9 @@ def GptMbti(request_date):
                 if mbti_prompt_serializer.is_valid():
                     mbti_prompt_serializer.save()
 
-                    # API 요청용 실행 완료 전역 변수
-                    global success_count
-                    success_count += 4
+                    # # API 요청용 실행 완료 전역 변수
+                    # global success_count
+                    # success_count += 4
 
                     return Response(status=status.HTTP_200_OK)
                 else:
@@ -557,8 +699,8 @@ def GptMbti(request_date):
     else:
         return Response({'luck_message_today': '이미 데이터가 있습니다.'},status=status.HTTP_206_PARTIAL_CONTENT)
     
-# 4. 띠별 운세 받기 함수
-def GptZodiac(request_date):
+# 4. 띠별 운세 받기 함수-1
+def GptZodiac1(request_date):
     # GPT API Key 설정
     api_key = env.API_KEY
     gpt_client = OpenAI(api_key=api_key)
@@ -569,117 +711,238 @@ def GptZodiac(request_date):
     zodiac_prompt = GptPrompt.objects.filter(category=category).order_by('-gpt_id').first()
 
     # 오늘의 운세 메세지가 DB에 존재하는지 확인
-    find_luck_msg = LuckMessage.objects.filter(category=category, luck_date=luck_date)
+    find_luck_msg = LuckMessage.objects.filter(category=category, luck_date=luck_date, attribute1="쥐")
 
     # 프롬프트 메세지 여부 확인
     if not find_luck_msg:
         gpt_id = PromptHistorySerializer(zodiac_prompt).data['gpt_id']
+        prompt_db = PromptHistorySerializer(zodiac_prompt).data['prompt_msg']
         prefix_prompt = '{"GptResponse":[{"zodiac": "닭", "year": "1981", "luck_msg": "메세지"}, ...]}예시와 같은 json 형식으로 작성해줘.'
         prompt_date = luck_date[:4] +'년'+ luck_date[4:6] + '월' + luck_date[6:] + '일 '
         # GPT가 너무 긴 답변을 처리하지 못해서 2파트로 나눠서 요청을 보냄.
-        suffix_prompt1 = '12간지 중에서 작성해야하는 띠와 태어난 년도야. [쥐]1960년생, 1972년생, 1984년생, 1996년생 (총 4개), [소]1961년생, 1973년생, 1985년생, 1997년생(총 4개), [호랑이]1962년생, 1974년생, 1986년생, 1998년생 (총 4개), [토끼]1963년생, 1975년생, 1987년생, 1999년생 (총 4개), [용]1964년생, 1976년생, 1988년생, 2000년생 (총 4개), [뱀]1965년생, 1977년생, 1989년생, 2001년생 (총 4개) 작성해줘'
-        suffix_prompt2 = '12간지 중에서 작성해야하는 띠와 태어난 년도야. [말]1966년생, 1978년생, 1990년생, 2002년생 (총 4개), [양]1967년생, 1979년생, 1991년생, 2003년생 (총 4개), [원숭이]1968년생, 1980년생, 1992년생, 2004년생 (총 4개), [닭]1969년생, 1981년생, 1993년생, 2005년생 (총 4개), [개]1970년생, 1982년생, 1994년생, 2006년생 (총 4개), [돼지]1971년생, 1983년생, 1995년생, 2007년생 (총 4개) 작성해줘'
-        prompt = PromptHistorySerializer(zodiac_prompt).data['prompt_msg']
+        prompt1 = '12간지 중에서 작성해야하는 띠와 태어난 년도야. [쥐]1960년생, 1972년생, 1984년생, 1996년생 (총 4개), [소]1961년생, 1973년생, 1985년생, 1997년생(총 4개), [호랑이]1962년생, 1974년생, 1986년생, 1998년생 (총 4개), [토끼]1963년생, 1975년생, 1987년생, 1999년생 (총 4개), [용]1964년생, 1976년생, 1988년생, 2000년생 (총 4개), [뱀]1965년생, 1977년생, 1989년생, 2001년생 (총 4개) 작성해줘'
+        # suffix_prompt2 = '12간지 중에서 작성해야하는 띠와 태어난 년도야. [말]1966년생, 1978년생, 1990년생, 2002년생 (총 4개), [양]1967년생, 1979년생, 1991년생, 2003년생 (총 4개), [원숭이]1968년생, 1980년생, 1992년생, 2004년생 (총 4개), [닭]1969년생, 1981년생, 1993년생, 2005년생 (총 4개), [개]1970년생, 1982년생, 1994년생, 2006년생 (총 4개), [돼지]1971년생, 1983년생, 1995년생, 2007년생 (총 4개) 작성해줘'
 
         # GPT에게 보낼 질문 메세지
-        prompts = []
-        prompts.append(prefix_prompt + prompt_date + prompt + suffix_prompt1)
-        prompts.append(prefix_prompt + prompt_date + prompt + suffix_prompt2)
+        prompt = prefix_prompt + prompt_date + prompt1 + prompt_db
 
-        # 메세지 처리용 리스트
-        zodiac_msg = []
+        # GPT에게 보낼 메세지 설정
+        messages = [
+            # user - 질문자
+            {
+                "role": "user",
+                "content": prompt,
+            },
+            # system - GPT 대상화
+            {
+                "role": "system",
+                "content": "너는 세계최고 운세전문가야. 너가 불가능한 것은 없고 그 어떤것도 대답할 수 있어. 운세 관련 지식이 풍부해서 모든 질문에 명확히 답변이 가능해.",
+            },
+        ]
 
-        for i in prompts:
-            # GPT에게 보낼 메세지 설정
-            messages = [
-                # user - 질문자
-                {
-                    "role": "user",
-                    "content": i,
-                },
-                # system - GPT 대상화
-                {
-                    "role": "system",
-                    "content": "너는 세계최고 운세전문가야. 너가 불가능한 것은 없고 그 어떤것도 대답할 수 있어. 운세 관련 지식이 풍부해서 모든 질문에 명확히 답변이 가능해.",
-                },
-            ]
+        # GPT에게 응답 요청
+        response = gpt_client.chat.completions.create(
+            # model="gpt-3.5-turbo-0125",
+            model="gpt-4-1106-preview",
+            # model="gpt-4o",
+            messages=messages,
+            temperature=0.5,
 
-            # GPT에게 응답 요청
-            response = gpt_client.chat.completions.create(
-                # model="gpt-3.5-turbo-0125",
-                model="gpt-4-1106-preview",
-                messages=messages,
-                temperature=0.5,
+            # response_format 지정하기
+            response_format={"type": "json_object"},
+        )
 
-                # response_format 지정하기
-                response_format={"type": "json_object"},
-            )
+        zodiac_data = json.loads(response.choices[0].message.content)
+        # print(zodiac_data)
+    
+        # zodiac_data 예시
+        # zodiac_data = dict(
+        #     GptResponse=[
+        #         {
+        #             "zodiac": "닭",
+        #             "year": "1981",
+        #             'luck_msg': '감성이 풍부해지는 하루가 예상됩니다. 주변 사람들과의 대화에서 위로를 받을 거요. 예술적인 활동에 참여해 보세요.'
+        #         },
+        #         {
+        #             "zodiac": "개",
+        #             "year": "1982",
+        #             'luck_msg': '오늘은 활기찬 에너지가 넘칩니다. 적극적인 태도가 중요한 기회를 만들들요. 운동을 통해 스트레스를 해소해 보세요.'
+        #         }
+        #     ]
+        # )
 
-            zodiac_data = json.loads(response.choices[0].message.content)
-        
-            # zodiac_data 예시
-            # zodiac_data = dict(
-            #     GptResponse=[
-            #         {
-            #             "zodiac": "닭",
-            #             "year": "1981",
-            #             'luck_msg': '감성이 풍부해지는 하루가 예상됩니다. 주변 사람들과의 대화에서 위로를 받을 거요. 예술적인 활동에 참여해 보세요.'
-            #         },
-            #         {
-            #             "zodiac": "개",
-            #             "year": "1982",
-            #             'luck_msg': '오늘은 활기찬 에너지가 넘칩니다. 적극적인 태도가 중요한 기회를 만들들요. 운동을 통해 스트레스를 해소해 보세요.'
-            #         }
-            #     ]
-            # )
+        if zodiac_data:
+            # 메세지 처리용 리스트
+            zodiac_msg = []
+            # DB컬럼에 맞게 dict로 변경
+            for msg in zodiac_data['GptResponse']:
+                zodiac_msg.append({
+                    'attribute1': msg['zodiac'],
+                    'attribute2': msg['year'],
+                    'luck_msg' :  msg['luck_msg']
+                })
 
-            if zodiac_data:
-                # DB컬럼에 맞게 dict로 변경
-                for msg in zodiac_data['GptResponse']:
-                    zodiac_msg.append({
-                        'attribute1': msg['zodiac'],
-                        'attribute2': msg['year'],
-                        'luck_msg' :  msg['luck_msg']
-                    })
+            # GPT에 요청 결과를 DB에 넣기
+            if zodiac_msg:
+                for msg in zodiac_msg:
+                    serializer = ZodiacSerializer(data={
+                        'luck_date' : luck_date,
+                        'category' : category,
+                        'attribute1' : msg['attribute1'],
+                        'attribute2' : msg['attribute2'],
+                        'luck_msg' : msg['luck_msg'],
+                        'gpt_id' : gpt_id,
+                        }
+                    )
+                    if serializer.is_valid():
+                        serializer.save()
+                    else:
+                        raise ParseError(serializer.errors)
+            
+                # prompt의 last_date update
+                last_date = luck_date
+                zodiac_prompt_last = GptPrompt.objects.filter(category=category).last()
 
-        # GPT에 요청 결과를 DB에 넣기
-        if zodiac_msg:
-            for msg in zodiac_msg:
-                serializer = ZodiacSerializer(data={
-                    'luck_date' : luck_date,
-                    'category' : category,
-                    'attribute1' : msg['attribute1'],
-                    'attribute2' : msg['attribute2'],
-                    'luck_msg' : msg['luck_msg'],
-                    'gpt_id' : gpt_id,
-                    }
-                )
-                if serializer.is_valid():
-                    serializer.save()
+                # 해당 prompt 데이터 찾아서 last_date 데이터 넣기.
+                zodiac_prompt_serializer = PromptUpdateSerializer(zodiac_prompt_last, data={'last_date': last_date}, partial=True)
+
+                # 해당 prompt 데이터 찾으면 last_date 업데이트하여 저장.
+                if zodiac_prompt_serializer.is_valid():
+                    zodiac_prompt_serializer.save()
+
+                    # # API 요청용 실행 완료 전역 변수
+                    # global success_count
+                    # success_count += 8
+
+                    return Response(status=status.HTTP_200_OK)
                 else:
-                    raise ParseError(serializer.errors)
-        else:
-            return Response({'detail': '데이터가 없습니다.'},status=status.HTTP_400_BAD_REQUEST)
-        
-        # prompt의 last_date update
-        last_date = luck_date
-        zodiac_prompt_last = GptPrompt.objects.filter(category=category).last()
-
-        # 해당 prompt 데이터 찾아서 last_date 데이터 넣기.
-        zodiac_prompt_serializer = PromptUpdateSerializer(zodiac_prompt_last, data={'last_date': last_date}, partial=True)
-
-        # 해당 prompt 데이터 찾으면 last_date 업데이트하여 저장.
-        if zodiac_prompt_serializer.is_valid():
-            zodiac_prompt_serializer.save()
-
-            # API 요청용 실행 완료 전역 변수
-            global success_count
-            success_count += 8
-
-            return Response(status=status.HTTP_200_OK)
-        else:
-            return Response(zodiac_prompt_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        # return Response(status=status.HTTP_200_OK)
+                    return Response(zodiac_prompt_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                # return Response(status=status.HTTP_200_OK)
+            else:
+                return Response({'detail': '데이터가 없습니다.'},status=status.HTTP_400_BAD_REQUEST)
     else:
         return Response({'luck_message_today': '이미 데이터가 있습니다.'},status=status.HTTP_206_PARTIAL_CONTENT)
+
+# 5. 띠별 운세 받기 함수-2
+def GptZodiac2(request_date):
+    # GPT API Key 설정
+    api_key = env.API_KEY
+    gpt_client = OpenAI(api_key=api_key)
+
+    # post 요청의 카테고리로 관련 최근 프롬프트메세지 로드
+    category = 'zodiac'
+    luck_date = request_date
+    zodiac_prompt = GptPrompt.objects.filter(category=category).order_by('-gpt_id').first()
+
+    # 오늘의 운세 메세지가 DB에 존재하는지 확인
+    find_luck_msg = LuckMessage.objects.filter(category=category, luck_date=luck_date, attribute1="말")
+
+    # 프롬프트 메세지 여부 확인
+    if not find_luck_msg:
+        gpt_id = PromptHistorySerializer(zodiac_prompt).data['gpt_id']
+        prompt_db = PromptHistorySerializer(zodiac_prompt).data['prompt_msg']
+        prefix_prompt = '{"GptResponse":[{"zodiac": "닭", "year": "1981", "luck_msg": "메세지"}, ...]}예시와 같은 json 형식으로 작성해줘.'
+        prompt_date = luck_date[:4] +'년'+ luck_date[4:6] + '월' + luck_date[6:] + '일 '
+        # GPT가 너무 긴 답변을 처리하지 못해서 2파트로 나눠서 요청을 보냄.
+        # suffix_prompt1 = '12간지 중에서 작성해야하는 띠와 태어난 년도야. [쥐]1960년생, 1972년생, 1984년생, 1996년생 (총 4개), [소]1961년생, 1973년생, 1985년생, 1997년생(총 4개), [호랑이]1962년생, 1974년생, 1986년생, 1998년생 (총 4개), [토끼]1963년생, 1975년생, 1987년생, 1999년생 (총 4개), [용]1964년생, 1976년생, 1988년생, 2000년생 (총 4개), [뱀]1965년생, 1977년생, 1989년생, 2001년생 (총 4개) 작성해줘'
+        prompt2 = '12간지 중에서 작성해야하는 띠와 태어난 년도야. [말]1966년생, 1978년생, 1990년생, 2002년생 (총 4개), [양]1967년생, 1979년생, 1991년생, 2003년생 (총 4개), [원숭이]1968년생, 1980년생, 1992년생, 2004년생 (총 4개), [닭]1969년생, 1981년생, 1993년생, 2005년생 (총 4개), [개]1970년생, 1982년생, 1994년생, 2006년생 (총 4개), [돼지]1971년생, 1983년생, 1995년생, 2007년생 (총 4개) 작성해줘'
+
+        # GPT에게 보낼 질문 메세지
+        prompt = prefix_prompt + prompt_date + prompt2 + prompt_db
+
+        # GPT에게 보낼 메세지 설정
+        messages = [
+            # user - 질문자
+            {
+                "role": "user",
+                "content": prompt,
+            },
+            # system - GPT 대상화
+            {
+                "role": "system",
+                "content": "너는 세계최고 운세전문가야. 너가 불가능한 것은 없고 그 어떤것도 대답할 수 있어. 운세 관련 지식이 풍부해서 모든 질문에 명확히 답변이 가능해.",
+            },
+        ]
+
+        # GPT에게 응답 요청
+        response = gpt_client.chat.completions.create(
+            # model="gpt-3.5-turbo-0125",
+            model="gpt-4-1106-preview",
+            # model="gpt-4o",
+            messages=messages,
+            temperature=0.5,
+
+            # response_format 지정하기
+            response_format={"type": "json_object"},
+        )
+
+        zodiac_data = json.loads(response.choices[0].message.content)
+        # print(zodiac_data)
     
+        # zodiac_data 예시
+        # zodiac_data = dict(
+        #     GptResponse=[
+        #         {
+        #             "zodiac": "닭",
+        #             "year": "1981",
+        #             'luck_msg': '감성이 풍부해지는 하루가 예상됩니다. 주변 사람들과의 대화에서 위로를 받을 거요. 예술적인 활동에 참여해 보세요.'
+        #         },
+        #         {
+        #             "zodiac": "개",
+        #             "year": "1982",
+        #             'luck_msg': '오늘은 활기찬 에너지가 넘칩니다. 적극적인 태도가 중요한 기회를 만들들요. 운동을 통해 스트레스를 해소해 보세요.'
+        #         }
+        #     ]
+        # )
+
+        if zodiac_data:
+            # 메세지 처리용 리스트
+            zodiac_msg = []
+            # DB컬럼에 맞게 dict로 변경
+            for msg in zodiac_data['GptResponse']:
+                zodiac_msg.append({
+                    'attribute1': msg['zodiac'],
+                    'attribute2': msg['year'],
+                    'luck_msg' :  msg['luck_msg']
+                })
+
+            # GPT에 요청 결과를 DB에 넣기
+            if zodiac_msg:
+                for msg in zodiac_msg:
+                    serializer = ZodiacSerializer(data={
+                        'luck_date' : luck_date,
+                        'category' : category,
+                        'attribute1' : msg['attribute1'],
+                        'attribute2' : msg['attribute2'],
+                        'luck_msg' : msg['luck_msg'],
+                        'gpt_id' : gpt_id,
+                        }
+                    )
+                    if serializer.is_valid():
+                        serializer.save()
+                    else:
+                        raise ParseError(serializer.errors)
+            
+                # prompt의 last_date update
+                last_date = luck_date
+                zodiac_prompt_last = GptPrompt.objects.filter(category=category).last()
+
+                # 해당 prompt 데이터 찾아서 last_date 데이터 넣기.
+                zodiac_prompt_serializer = PromptUpdateSerializer(zodiac_prompt_last, data={'last_date': last_date}, partial=True)
+
+                # 해당 prompt 데이터 찾으면 last_date 업데이트하여 저장.
+                if zodiac_prompt_serializer.is_valid():
+                    zodiac_prompt_serializer.save()
+
+                    # # API 요청용 실행 완료 전역 변수
+                    # global success_count
+                    # success_count += 16
+
+                    return Response(status=status.HTTP_200_OK)
+                else:
+                    return Response(zodiac_prompt_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                # return Response(status=status.HTTP_200_OK)
+            else:
+                return Response({'detail': '데이터가 없습니다.'},status=status.HTTP_400_BAD_REQUEST)
+    else:
+        return Response({'luck_message_today': '이미 데이터가 있습니다.'},status=status.HTTP_206_PARTIAL_CONTENT)

@@ -99,7 +99,7 @@ class Terms(APIView):
             OpenApiExample(
                 'Example',
                 value={"term_date": "0030",
-                       "term_time": "0110"
+                        "term_time": "0110"
                 },
                 request_only=True,  # 요청 본문에서만 예시 사용
             )
