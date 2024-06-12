@@ -33,7 +33,8 @@ DEBUG = True
 ALLOWED_HOSTS = [
     'kluck-dev.ap-northeast-2.elasticbeanstalk.com',
     'kluck-dev2.ap-northeast-2.elasticbeanstalk.com',
-    'kluck.playfillit.com'
+    'kluck.playfillit.com',
+    '172.31.12.235'
 ]
 # 개발 중에는 아래 내용을 사용
 # ALLOWED_HOSTS = []
