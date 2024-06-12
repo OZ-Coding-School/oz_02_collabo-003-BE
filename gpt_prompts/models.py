@@ -7,3 +7,5 @@ class GptPrompt(models.Model):
     create_date = models.CharField(max_length=8, blank=True, null=True)
     last_date = models.CharField(max_length=8, blank=True, null=True)
     user_id = models.ForeignKey(kluck_Admin, on_delete=models.PROTECT, db_column='user_id')
+    # prompt_msg_name = models.CharField(max_length=100, blank=True, null=True) 사용안함
+    # status = models.CharField(max_length=30, blank=True, null=True) 사용안함
