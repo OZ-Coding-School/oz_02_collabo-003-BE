@@ -101,12 +101,10 @@ class PromptIndividual(APIView):
 
 
         if serializer.is_valid():
-            prompt_msg_name = today
             create_date = today
             # last_date = last.strftime('%Y%m%d')
 
-            serializer.save(category=category, prompt_msg_name=prompt_msg_name,
-                            create_date=create_date, user_id=kluck_admin_user_id)
+            serializer.save(category=category, create_date=create_date, user_id=kluck_admin_user_id)
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
 
