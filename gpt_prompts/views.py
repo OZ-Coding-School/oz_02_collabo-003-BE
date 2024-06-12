@@ -45,7 +45,7 @@ class PromptIndividual(APIView):
             OpenApiExample(
                 'Example - category: today',
                 value={
-                    'prompt_msg' : "오늘의 한마디를 총 3개를 작성할거야. 아침에 하루를 시작하는 사람들이 이 글을 보고 힘이 나고 위로를 받았으면 해. 작성 방법은 예시를 참고해줘. 예시 '꽃비 내리는 날 설레는 봄이에요.🌟 꽃 향기처럼 부드럽고 향기로운 하루 보내시길 바래요.🌈 당신의 편에 서서 응원할게요!💪' 과하게 부정적인 내용, 성적인 내용, 추상적인 내용은 피해줘. 내용 작성 시  '오늘', '오늘은' 이라는 단어는 제외하고 어투는 너무 딱딱하지 않고 부드러우면서도 반말은 사용하지 말고 존댓말을 사용해. 문장 가운데마다 이모티콘을 적절히 2개 이상 4개 미만으로 넣어서 작성해줘. 내용 길이를  45자 이상 50자 미만으로 작성해주고, 2문장으로 작성해줘."
+                    'prompt_msg' : "오늘의 한마디를 하나 작성할 거야. 아침에 하루를 시작하는 사람들이 이 글을 보고 힘이 나고 위로를 받았으면 해. 작성 방법은 예시를 참고해 줘. 예시 '꽃비 내리는 날 설레는 봄이에요.🌟 꽃 향기처럼 부드럽고 향기로운 하루 보내시길 바라요.🌈 당신의 편에 서서 응원할게요!💪' 과하게 부정적인 내용, 성적인 내용, 추상적인 내용은 피해줘. 내용 작성 시 '오늘', '오늘은' 이라는 단어는 제외하고 어투는 너무 딱딱하지 않고 부드러우면서도 반말은 사용하지 말고 존댓말을 사용해. 문장 가운데마다 이모티콘을 적절히 2개 이상 4개 미만으로 넣어서 작성해 줘. 내용 길이를 45자 이상 50자 미만으로 작성해 주고, 2문장으로 작성해 줘."
                 },
                 request_only=True,  # 요청 본문에서만 예시 사용
             ),
@@ -237,7 +237,7 @@ def GptToday(request_date):
     # 프롬프트 메세지 여부 확인
     if not find_luck_msg:
         gpt_id = PromptHistorySerializer(today_prompt).data['gpt_id']
-        prefix_prompt = '{"GptResponse":[{"message_num": "1", "luck_msg": "메세지"}, ...]}예시와 같은 json 형식으로 작성해줘.'
+        prefix_prompt = '{"GptResponse":[{"message_num": "1", "luck_msg": "메세지"}]} 예시와 같은 json 형식으로 작성해 줘.'
         prompt_date = luck_date[:4] +'년'+ luck_date[4:6] + '월' + luck_date[6:] + '일 '
         prompt = PromptHistorySerializer(today_prompt).data['prompt_msg']
         prompt = prefix_prompt + prompt_date + prompt
@@ -275,62 +275,49 @@ def GptToday(request_date):
         #         {
         #             'message_num': '1',
         #             'luck_msg': '감성이 풍부해지는 하루가 예상됩니다. 주변 사람들과의 대화에서 위로를 받을 거요. 예술적인 활동에 참여해 보세요.'
-        #         },
-        #         {
-        #             'message_num': '2',
-        #             'luck_msg': '오늘은 활기찬 에너지가 넘칩니다. 적극적인 태도가 중요한 기회를 만들들요. 운동을 통해 스트레스를 해소해 보세요.'
         #         }
         #     ]
         # )
 
         if today_data:
-            # 메세지 처리용 리스트
-            today_msg = []
 
-            # DB컬럼에 맞게 dict로 변경
-            for msg in today_data['GptResponse']:
-                today_msg.append({
-                    'attribute2': msg['message_num'],
-                    'luck_msg' :  msg['luck_msg']
-                })
+            # [0] 리스트의 요소에 접근하기
+            msg = today_data['GptResponse'][0]
 
-
-            if today_msg:
-                for msg in today_msg:
-                    serializer = TodaySerializer(data={
-                        'luck_date' : luck_date,
-                        'category' : category,
-                        'attribute2' : msg['attribute2'],
-                        'luck_msg' : msg['luck_msg'],
-                        'gpt_id' : gpt_id,
-                        }
-                    )
-                    if serializer.is_valid():
-                        serializer.save()
-                    else:
-                        raise ParseError(serializer.errors)
-                
-                # prompt의 last_date update
-                last_date = luck_date
-                today_prompt_last = GptPrompt.objects.filter(category=category).last()
-
-                # 해당 prompt 데이터 찾아서 last_date 데이터 넣기.
-                today_prompt_serializer = PromptUpdateSerializer(today_prompt_last, data={'last_date': last_date}, partial=True)
-
-                # 해당 prompt 데이터 찾으면 last_date 업데이트하여 저장.
-                if today_prompt_serializer.is_valid():
-                    today_prompt_serializer.save()
-
-                    # API 요청용 실행 완료 전역 변수
-                    global success_count
-                    success_count += 1
-
-                    return Response(status=status.HTTP_200_OK)
-                else:
-                    return Response(today_prompt_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-                # return Response(status=status.HTTP_200_OK)
+            serializer = TodaySerializer(data={
+                'luck_date' : luck_date,
+                'category' : category,
+                'attribute2' : msg['message_num'],
+                'luck_msg' : msg['luck_msg'],
+                'gpt_id' : gpt_id,
+                }
+            )
+            if serializer.is_valid():
+                serializer.save()
             else:
-                return Response({'detail': '데이터가 없습니다.'},status=status.HTTP_400_BAD_REQUEST)
+                raise ParseError(serializer.errors)
+                
+            # prompt의 last_date update
+            last_date = luck_date
+            today_prompt_last = GptPrompt.objects.filter(category=category).last()
+
+            # 해당 prompt 데이터 찾아서 last_date 데이터 넣기.
+            today_prompt_serializer = PromptUpdateSerializer(today_prompt_last, data={'last_date': last_date}, partial=True)
+
+            # 해당 prompt 데이터 찾으면 last_date 업데이트하여 저장.
+            if today_prompt_serializer.is_valid():
+                today_prompt_serializer.save()
+
+                # API 요청용 실행 완료 전역 변수
+                global success_count
+                success_count += 1
+
+                return Response(status=status.HTTP_200_OK)
+            else:
+                return Response(today_prompt_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                # return Response(status=status.HTTP_200_OK)
+        else:
+            return Response({'detail': '데이터가 없습니다.'},status=status.HTTP_400_BAD_REQUEST)
     else:
         return Response({'luck_message_today': '이미 데이터가 있습니다.'},status=status.HTTP_206_PARTIAL_CONTENT)
     
