@@ -64,58 +64,58 @@ def gpt_today_job():
             else:
                 raise ParseError(work_again_serializer.errors)
 
-    # 각 카테고리별 GPT에게 질문하는 함수 실행.        
-    try:
-        Today = GptToday(luck_date)
-        if Today.status_code == status.HTTP_200_OK:
-            scheduler_count += 1
-            logging.info("GptToday 작업이 실행되었습니다.")
-        else:
-            logging.info("GptToday 작업이 실행되지 않았습니다.")
-    except Exception as e:
-        logging.error(f"GptToday 작업 실행 중 예외가 발생했습니다: {e}")
+        # 각 카테고리별 GPT에게 질문하는 함수 실행.
+        try:
+            Today = GptToday(luck_date)
+            if Today.status_code == status.HTTP_200_OK:
+                scheduler_count += 1
+                logging.info("GptToday 작업이 실행되었습니다.")
+            else:
+                logging.info("GptToday 작업이 실행되지 않았습니다.")
+        except Exception as e:
+            logging.error(f"GptToday 작업 실행 중 예외가 발생했습니다: {e}")
 
-    try:
-        Star = GptStar(luck_date)
-        if Star.status_code == status.HTTP_200_OK:
-            scheduler_count += 2
-            logging.info("GptStar 작업이 실행되었습니다.")
-        else:
-            logging.info("GptStar 작업이 실행되지 않았습니다.")
-    except Exception as e:
-        logging.error(f"GptStar 작업 실행 중 예외가 발생했습니다: {e}")
+        try:
+            Star = GptStar(luck_date)
+            if Star.status_code == status.HTTP_200_OK:
+                scheduler_count += 2
+                logging.info("GptStar 작업이 실행되었습니다.")
+            else:
+                logging.info("GptStar 작업이 실행되지 않았습니다.")
+        except Exception as e:
+            logging.error(f"GptStar 작업 실행 중 예외가 발생했습니다: {e}")
 
-    try:
-        Mbti = GptMbti(luck_date)
-        if Mbti.status_code == status.HTTP_200_OK:
-            scheduler_count += 4
-            logging.info("GptMbti 작업이 실행되었습니다.")
-        else:
-            logging.info("GptMbti 작업이 실행되지 않았습니다.")
-    except Exception as e:
-        logging.error(f"GptMbti 작업 실행 중 예외가 발생했습니다: {e}")
+        try:
+            Mbti = GptMbti(luck_date)
+            if Mbti.status_code == status.HTTP_200_OK:
+                scheduler_count += 4
+                logging.info("GptMbti 작업이 실행되었습니다.")
+            else:
+                logging.info("GptMbti 작업이 실행되지 않았습니다.")
+        except Exception as e:
+            logging.error(f"GptMbti 작업 실행 중 예외가 발생했습니다: {e}")
 
-    try:
-        Zodiac = GptZodiac(luck_date)
-        if Zodiac.status_code == status.HTTP_200_OK:
-            scheduler_count += 8
-            logging.info("GptZodiac 작업이 실행되었습니다.")
-        else:
-            logging.info("GptZodiac 작업이 실행되지 않았습니다.")
-    except Exception as e:
-        logging.error(f"GptZodiac 작업 실행 중 예외가 발생했습니다: {e}")
+        try:
+            Zodiac = GptZodiac(luck_date)
+            if Zodiac.status_code == status.HTTP_200_OK:
+                scheduler_count += 8
+                logging.info("GptZodiac 작업이 실행되었습니다.")
+            else:
+                logging.info("GptZodiac 작업이 실행되지 않았습니다.")
+        except Exception as e:
+            logging.error(f"GptZodiac 작업 실행 중 예외가 발생했습니다: {e}")
 
-    # 작업이 전부 완료된 뒤 작업 확인 데이터 내용 '완료'로 수정.
-    work = LuckMessage.objects.filter(category='work', luck_date=luck_date).first()
-    done_serializer = TodaySerializer(work, data={
-        'attribute2': 1, 
-        'luck_msg' : f'Success count = {scheduler_count}',
-        'gpt_id' : 1}, partial=True)
-    if done_serializer.is_valid():
-        done_serializer.save()
-    else:
-        raise ParseError(done_serializer.errors)
-    
+        # 작업이 전부 완료된 뒤 작업 확인 데이터 내용 '완료'로 수정.
+        work = LuckMessage.objects.filter(category='work', luck_date=luck_date).first()
+        done_serializer = TodaySerializer(work, data={
+            'attribute2': 1,
+            'luck_msg' : f'Success count = {scheduler_count}',
+            'gpt_id' : 1}, partial=True)
+        if done_serializer.is_valid():
+            done_serializer.save()
+        else:
+            raise ParseError(done_serializer.errors)
+
     # 스케줄러가 다 동작된 이후 메일 전송.
     # 전부 다 작동시 success count 합 15, 이 외 일부만 작동시 해당 success count 확인하여 작동된 함수 유추 가능.
     if scheduler_count == 15:
