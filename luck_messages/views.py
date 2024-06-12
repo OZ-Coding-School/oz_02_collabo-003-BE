@@ -30,15 +30,13 @@ class TodayLuck(APIView):
 
             # 오늘의 한마디 사용자에게 제공.
             # 3가지의 오늘의 한마디에서 랜덤하게 제공.
-            ran_num = random.randint(1,3)
+            # ran_num = random.randint(1,3)
 
-            today_msg = LuckMessage.objects.filter(luck_date=today, attribute2=ran_num)
+            today_msg = LuckMessage.objects.filter(luck_date=today, category='today')
             if today_msg:
                 today_serializer = TodayLuckSerializer(today_msg[0]).data
             else:
                 today_serializer = {'새벽 공기처럼 맑고 상쾌한 기운이 가득하길.🍃✨ 마음 가득 행복이 채워지는 날 되세요.🌷'}
-
-            today_msg = LuckMessage.objects.filter(luck_date=today, attribute2=ran_num)
 
 
             # 사용자 출생연도에 맞는 띠별 오늘의 운세 제공.
