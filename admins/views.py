@@ -4,15 +4,8 @@ from rest_framework.response import Response
 from rest_framework.exceptions import ParseError
 from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.contrib.auth.hashers import make_password, check_password
-from django.utils import timezone
 from .serializers import *
-from drf_spectacular.utils import extend_schema, OpenApiExample
-
-
-# from django.contrib.auth import authenticate, login, logout
-# from .forms import LoginForm
-
+from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiResponse
 
 # api/v1/admin/login/
 # JWT로그인 클래스
@@ -47,12 +40,50 @@ class JWTLogin(APIView):
         # 데이터 검증 실패하면 오류 코드 반환
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+# api/v1/admin/refresh/
+class JWTRefresh(APIView):
+    permission_classes = (AllowAny,)
 
-
-
-
-
-
+    @extend_schema(
+        tags=['Admin'],
+        request={
+            'application/json': {
+                'type': 'object',
+                'properties': {
+                    'refresh': {'type': 'string'},
+                },
+                'required': ['refresh'],
+            }
+        },
+        responses={
+            200: OpenApiResponse(
+                response={
+                    'type': 'object',
+                    'properties': {
+                        'access': {'type': 'string'},
+                    },
+                    'example': {
+                        'access': 'new access token'
+                    }
+                }
+            ),
+            401: OpenApiResponse(
+                response={
+                    'type': 'object',
+                    'properties': {
+                        'detail': {'type': 'string'},
+                    },
+                    'example': {
+                        'detail': 'Invalid token'
+                    }
+                }
+            )
+        },
+        description="Check and refresh tokens"
+    )
+    def post(self, request, *args, **kwargs):
+        refresh_token = request.data.get('refresh')
+        # refresh_token이 없으면 refresh_token이 필요하다고 오류 반환
 
 #
 # class AdminLogin(APIView):
