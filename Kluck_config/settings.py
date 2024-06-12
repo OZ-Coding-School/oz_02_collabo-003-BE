@@ -30,13 +30,13 @@ DEBUG = True
 # 온라인 서버에 배포 할때만 사용
 # ALLOWED_HOSTS = ['43.201.60.229']
 # 온라인 서버에서 Nginx, gunicorn 사용시에 사용
-# ALLOWED_HOSTS = [
-#     'kluck-dev.ap-northeast-2.elasticbeanstalk.com',
-#     'kluck-dev2.ap-northeast-2.elasticbeanstalk.com',
-#     'kluck.playfillit.com'
-# ]
+ALLOWED_HOSTS = [
+    'kluck-dev.ap-northeast-2.elasticbeanstalk.com',
+    'kluck-dev2.ap-northeast-2.elasticbeanstalk.com',
+    'kluck.playfillit.com'
+]
 # 개발 중에는 아래 내용을 사용
-ALLOWED_HOSTS = []
+# ALLOWED_HOSTS = []
 
 # Application definition
 
@@ -173,8 +173,8 @@ REST_FRAMEWORK = {
 
 # JWT Token설정
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=10),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=60),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=10),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': True,
     'ALGORITHM': 'HS256',
