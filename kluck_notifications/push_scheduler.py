@@ -3,6 +3,7 @@ from firebase_admin import credentials # 서비스 계정 키를 사용하여 Fi
 from firebase_admin import messaging # FCM 메시지 생성 및 전송
 from datetime import datetime
 from kluck_env import env_settings as env
+from .models import DeviceToken
 from luck_messages.models import LuckMessage
 
 # firebase adminsdk 초기화
@@ -13,6 +14,8 @@ print("Firebase Admin SDK 초기화 완료")
 
 # push 보내는 함수
 def send_push_notification():
+    # 특정 앱에 해당하는 디바이스 토큰 가져오기
+    registration_tokens = list(DeviceToken.objects.filter(app_name='오늘의 운세').values_list('token', flat=True))
 
     # firebase에 등록된 디바이스 토큰 가져오기
     registration_tokens = env.FCM_TOKEN
@@ -27,7 +30,6 @@ def send_push_notification():
     if today_luck_msg:
         title = '오늘의 운세'
         body = today_luck_msg.luck_msg
-        print(body, "body!!!!!!")
 
     # 여러 기기에 메시지 전송
     message = messaging.MulticastMessage(
