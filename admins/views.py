@@ -1,18 +1,10 @@
-from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.exceptions import ParseError
 from rest_framework.permissions import AllowAny
-from rest_framework_simplejwt.tokens import RefreshToken
-from django.contrib.auth.hashers import make_password, check_password
-from django.utils import timezone
+from rest_framework import status
+from rest_framework_simplejwt.tokens import RefreshToken, TokenError
+from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiResponse
 from .serializers import *
-from drf_spectacular.utils import extend_schema, OpenApiExample
-
-
-# from django.contrib.auth import authenticate, login, logout
-# from .forms import LoginForm
-
 
 # api/v1/admin/login/
 # JWT로그인 클래스
@@ -47,62 +39,64 @@ class JWTLogin(APIView):
         # 데이터 검증 실패하면 오류 코드 반환
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+# api/v1/admin/refresh/
+class JWTRefresh(APIView):
+    permission_classes = (AllowAny,)
+    authentication_classes = ()
 
+    @extend_schema(
+        tags=['Admin'],
+        request={
+            'application/json': {
+                'type': 'object',
+                'properties': {
+                    'refresh': {'type': 'string'},
+                },
+                'required': ['refresh'],
+            }
+        },
+        responses={
+            200: OpenApiResponse(
+                response={
+                    'type': 'object',
+                    'properties': {
+                        'access': {'type': 'string'},
+                    },
+                    'example': {
+                        'access': 'new access token'
+                    }
+                }
+            ),
+            401: OpenApiResponse(
+                response={
+                    'type': 'object',
+                    'properties': {
+                        'detail': {'type': 'string'},
+                    },
+                    'example': {
+                        'detail': 'Invalid token'
+                    }
+                }
+            )
+        },
+        description="Check and refresh tokens"
+    )
+    def post(self, request, *args, **kwargs):
+        refresh_token = request.data.get('refresh')
 
+        # refresh_token이 없으면 refresh_token이 필요하다고 오류 반환
+        if not refresh_token:
+            return Response({'detail': 'Refresh token이 없습니다.'},status=status.HTTP_400_BAD_REQUEST)
 
-
-
-
-
-#
-# class AdminLogin(APIView):
-#     serializer_class = AdminLoginSerializer
-#
-#     # POST 메소드에 대한 스키마 정의 및 예시 포함
-#     @extend_schema(tags=['Admin'],
-#         examples=[
-#             OpenApiExample(
-#                 'Example',
-#                 value={'username': 'admin1', 'password': 'sodlfmadmsrhksflwk1'},
-#                 request_only=True,  # 요청 본문에서만 예시 사용
-#             )
-#         ],
-#         description="BE-ADM001: 프론트에서 username(ID), password(패스워드)를 받아 로그인\n관리자 로그인 후 최종 접속 날짜(last_date)를 오늘 날짜로 업데이트"
-#     )
-
-    # def post(self, request):
-    #     form = LoginForm(request.POST)
-    #     if form.is_valid():
-    #         username = form.cleaned_data.get('username')
-    #         password = form.cleaned_data.get('password')
-    #         user = authenticate(request, username=username, password=password)
-    #         try:
-    #             if user is not None:
-    #                 login(request, user)
-    #                 return Response({'message': '로그인 성공'}, status=status.HTTP_200_OK)
-    #             else:
-    #                 return Response({'message': '정보가 없습니다.'}, status=status.HTTP_401_UNAUTHORIZED)
-    #         except kluck_Admin.DoesNotExist:
-    #             return Response({'message': '존재하지 않는 관리자 ID입니다.'}, status=status.HTTP_404_NOT_FOUND)
-    #     else:
-    #         return Response({'message': 'form 정보에 오류가 있습니다.'}, status=status.HTTP_200_OK)
-    #
-    # def post(self, request):
-    #     admin_id = request.data.get('username')
-    #     admin_pw = request.data.get('password')
-    #
-    #     try:
-    #         admin = kluck_Admin.objects.get(admin_id=admin_id)
-    #         if check_password(admin_pw, admin.password):
-    #             # 비밀번호 확인 후 로그인 처리
-    #             admin.last_date = timezone.now()
-    #             admin.save()
-    #             return Response({'message': '로그인 성공'}, status=status.HTTP_200_OK)
-    #         else:
-    #             return Response({'message': '비밀번호가 일치하지 않습니다.'}, status=status.HTTP_401_UNAUTHORIZED)
-    #     except kluck_Admin.DoesNotExist:
-    #         return Response({'message': '존재하지 않는 관리자 ID입니다.'}, status=status.HTTP_404_NOT_FOUND)
-
+        try:
+            # request로 받은 refresh_token으로 RefreshToken 객체 생성
+            refresh = RefreshToken(refresh_token)
+            # RefreshToken 객체에서 새로운 access_token 생성
+            new_access_token = str(refresh.access_token)
+            # response로 access_token 반환
+            return Response({'access': new_access_token})
+        except TokenError:
+            return Response({'detail': 'Invalid token'}, status=status.HTTP_401_UNAUTHORIZED)
 
 # api/vi/admin/
 class AdminUsers(APIView):
@@ -116,42 +110,6 @@ class AdminUsers(APIView):
         admins = kluck_Admin.objects.all()
         serializer = AdminSerializer(admins, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-# # api/v1/admin/signup/   사용 안할수도.
-# class AdminUsersSignup(APIView):
-#     serializer_class = AdminSignupSerializer
-#     @extend_schema(tags=['Admin'],
-#         examples=[
-#             OpenApiExample(
-#                 'Example',
-#                 value={"username": "admin99",
-#                        "cell_num": "01000000000",
-#                        "email": "admin99@admin99.com",
-#                        "password": "sodlfmadmsrhksflwk99"
-#                 },
-#                 request_only=True,  # 요청 본문에서만 예시 사용
-#             )
-#         ],
-#         description="BE-ADM002(화면없음): 프론트에서 admin_id(ID), admin_user(사용자명), cell_num(폰 번호), email, user_pw(패스워드)를 받아 관리자 등록\n수정 내용을 따로 다시 반환 하지는 않는다."
-#     )
-#     def post(self, request):
-#
-#         password = request.data.get('password')
-#         serializer = AdminSignupSerializer(data=request.data)
-#
-#         # try:
-#         #     validate_password(password)
-#         # except:
-#         #     raise ParseError('Password is invalid.')
-#
-#         if serializer.is_valid():
-#             user = serializer.save()
-#             user.password = make_password(password)
-#             user.save()
-#             return Response(status=status.HTTP_204_NO_CONTENT)
-#         else:
-#             raise ParseError(serializer.errors)
 
 
 # api/v1/admin/msg/
@@ -181,4 +139,3 @@ class EditLuckMessage(APIView):
             return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
