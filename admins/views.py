@@ -23,7 +23,7 @@ class JWTLogin(APIView):
         examples=[
             OpenApiExample(
                 'Example',
-                value={'username': 'admin', 'password': 'sksmsrhksflwk1'},
+                value={'username': 'admin1', 'password': 'sksmsrhksflwk1'},
                 request_only=True,  # 요청 본문에서만 예시 사용
             )
         ],
