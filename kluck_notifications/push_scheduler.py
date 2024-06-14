@@ -11,9 +11,7 @@ def send_push_notifications():
     # firebase adminsdk 초기화
     cred_path = 'kluck_notifications/kluck-firebase.json'
     cred = credentials.Certificate(cred_path)
-    firebase_admin.initialize_app(cred, {
-            'projectId': 'k-luck',
-        })
+    firebase_admin.initialize_app(cred) # 초기화 한번만
 
     try:
         # DB에서 디바이스 토큰 가져오기
