@@ -248,17 +248,56 @@ class LuckDays(APIView):
         date = now.strftime("%Y%m%d")
         # 4가지 카테고리의 오늘포함 오늘보다 큰 날짜 값 조회 및 리스트로 저장
         # 카테고리 조회
-        categories = LuckMessage.objects.values('category', falt=True).distinct()
-        print(categories)
-        # 오늘 포함 더 큰 날짜값을 카테고리별로 조회
-        luck_dates = LuckMessage.objects.filter(category='mbti', luck_date__gte=date).order_by('luck_date')
-        serializer = LuckMessagesSerializer(luck_dates, many=True, fields=('luck_date','category'))
+        categories_QuerySet = LuckMessage.objects.values_list('category', flat=True).distinct()
+        categories_dict = {
+            'today' : [],
+            'star' : [],
+            'MBTI' : [],
+            'zodiac' : []
+        }
+        # 카테고리별 반복, work, None 제외
+        for category in categories_QuerySet:
+            if category in ['work', None]:
+                continue
+            if category in categories_dict:
+                luck_dates = LuckMessage.objects.filter(category=category, luck_date__gte=date).order_by('luck_date')
+                serializer = LuckMessagesSerializer(luck_dates, many=True, fields=('luck_date',))
+                # 카테고리명으로 각각의 날짜값 저장
+                for luck_date in serializer.data:
+                    categories_dict[category].append(luck_date["luck_date"])
+                categories_dict[category] = list(set(categories_dict[category]))
+        # 카테고리중에서 가장 많은 날짜 개수 파악
+        # 카테고리별 운세 수를 저장할 딕셔너리 선언
+        luck_date_cnt = {}
+        # 카테고리별 운세 수 저장
+        for category in categories_dict:
+            luck_date_cnt[category] = (len(categories_dict[category]))
+        # 카테고리 운세 수 중에서 가장 작은 카테고리 선택 모두 같은 경우 today선택
+        # 카테고리별 숫자 비교용 리스트 선언
+        category_cnt = []
+        for key, value in luck_date_cnt.items():
+            category_cnt.append(value)
 
+        # 날짜의 숫자가 다른 날이 있는지 파악
+        # 카테고리별 운세가 있는 날짜 수 확인
+        category_cnt = set(category_cnt)
+        # 조회 대상 카테고리 변수 선언
+        target_category = ''
+        # 운세 수가 서로 다른 카테고리가 있다면 그중에 수가 가장 작은 카테고리 선택
+        if len(category_cnt) != 1:
+            for key, value in luck_date_cnt.items():
+                # 가장 작은 숫자가 여럿이라면 가장 마지막 카테고리가 선택됨
+                if value == min(category_cnt):
+                    target_category = key
+        else:
+            # 운세 수가 모두 같다면 가장 첫번째 카테고리 선택
+            target_category = next(iter(luck_date_cnt),None)
 
+        # 선택된 카테고리 여부 판단
+        if target_category == None:
+            luck_days = {'luck_days':""}
+        else:
+            categories_dict[target_category].sort()
+            luck_days = {'luck_days':categories_dict[target_category]}
 
-
-
-
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-
+        return Response(luck_days, status=status.HTTP_200_OK)
