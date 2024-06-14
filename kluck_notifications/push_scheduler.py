@@ -48,7 +48,6 @@ def send_push_notifications():
                 ),
                 tokens = registration_tokens, # 여러 개의 등록 토큰 리스트
             )
-            print("푸시 알림 메시지 생성 완료")
 
             # Firebase로 푸시 알림 전송
             response = messaging.send_multicast(message)
