@@ -4,4 +4,4 @@ from .models import DeviceToken
 class DeviceTokenSerializer(serializers.ModelSerializer):
     class Meta:
         model = DeviceToken
-        fields = ('token', 'app_name')
+        fields = ('token', 'device_os')
