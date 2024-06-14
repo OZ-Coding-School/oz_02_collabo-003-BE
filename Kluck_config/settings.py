@@ -68,6 +68,8 @@ CUSTOM_APPS = [
     'gpt_prompts',
     # 운세 데이터 테이블
     'luck_messages',
+    # 푸시 알림 테이블
+    'kluck_notifications',
 ]
 
 INSTALLED_APPS = SYSTEM_APPS + CUSTOM_APPS

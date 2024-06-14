@@ -1,12 +1,16 @@
-from datetime import datetime
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from drf_spectacular.utils import extend_schema
+from django.shortcuts import get_object_or_404
+from admin_settings.models import AdminSetting
 from .serializers import *
 from .models import LuckMessage
 from operator import itemgetter
+from datetime import datetime, timedelta
+import re
+# import random
 
 # urls.py
 # api/v1/msg/main/
@@ -146,9 +150,10 @@ class FindTodayMbtiMessages(APIView):
         serializer = MbtiSerializer(messages, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+      
 ######################
-
 # urls_admin.py
+
 #/api/v1/admin/today/<str:luck_date>
 class FindSomedayTodayMessages(APIView):
     '''
@@ -232,15 +237,55 @@ class FindSomedayMbtiMessages(APIView):
         serializer = MbtiSerializer(messages, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
+# /api/v1/admin/dashboard/
+class AdminDashboard(APIView):
+    '''
+    BE-ADM010: 관리자 페이지 메인 화면 [콘텐츠 생성 현황]과 관련된 스케줄러 작동 현황 데이터 보내기.
+    '''
+    # 오늘 날짜 스케줄러에서 생성한 메시지 상태 확인
+    serializer = TodayLuckSerializer
+    
+    @extend_schema(tags=['AdminMsg'])
+    def get(self, request):
+        now = datetime.now()
+        term = get_object_or_404(AdminSetting).term_date
+        date = now + timedelta(days=int(term))
+        scheduler_date = date.strftime('%Y%m%d')
+        today_scheduler = LuckMessage.objects.filter(category='work', luck_date=scheduler_date)
+
+        if not today_scheduler.exists():
+            return Response(f"{scheduler_date} 데이터 X", status=status.HTTP_204_NO_CONTENT)
+        else:
+            scheduler_status = LuckMessage.objects.filter(category='work', luck_date=scheduler_date, attribute2=0)
+            if scheduler_status.exists():
+                return Response(f"{scheduler_date} 생성 중", status=status.HTTP_226_IM_USED)
+            else:
+                success_counts = [get_success_count(item.luck_msg) for item in today_scheduler]
+                if all(count == 31 for count in success_counts):
+                    return Response(f"{scheduler_date} 생성 완료", status=status.HTTP_200_OK)
+                elif any(count == 0 for count in success_counts):
+                    return Response(f"{scheduler_date} 생성 완료", status=status.HTTP_200_OK)
+                else:
+                    return Response(f"{scheduler_date} 일부 생성 완료", status=status.HTTP_206_PARTIAL_CONTENT)
+
+
+# luck_msg 필드 파싱 함수
+def get_success_count(luck_msg):
+    pattern = r'Success count = (\d+)'
+    match = re.search(pattern, luck_msg)
+    if match:
+        return int(match.group(1))
+    else:
+        return None
+
+      
 #/api/v1/admin/luckdays
 class LuckDays(APIView):
     # 오늘 날짜 확인
     # 4가지 카테고리의 오늘포함 오늘보다 큰 날짜 값 조회 및 리스트로 저장
     # 4가지 카테고리의 날짜값을 비교해서 모두 중복되는 날짜만 남기는 리스트 저장 및 반환
     serializer_class = LuckMessagesSerializer
-
-    permission_classes = (AllowAny,)
-    authentication_classes = ()
 
     @extend_schema(tags=['AdminMsg'])
     def get(self, request):

@@ -1,10 +1,11 @@
-import logging
-import time
 from django.core.mail import send_mail
 from django.conf import settings
+from django.shortcuts import get_object_or_404
 from luck_messages.models import LuckMessage
 from luck_messages.serializers import *
 from .views import *
+import logging
+from datetime import datetime, timedelta
 
 # 로깅 기본 설정: 로그 레벨, 로그 포맷, 파일 이름 등을 지정할 수 있습니다.
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s', filename='gpt_jobs.log')

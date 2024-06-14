@@ -11,8 +11,12 @@ class GptPromptConfig(AppConfig):
     verbose_name = "GPT API를 이용한 오늘의 한마디 데이터 자동 저장"
 
     def ready(self):
-        from admin_settings.models import AdminSetting
+        # 스케줄러 초기화 다른 곳으로 옮겨 지연시키기
+        self.initialize_scheduler()
+
+    def initialize_scheduler(self):
         from .scheduler import gpt_today_job
+        from admin_settings.models import AdminSetting
 
         # AdminSetting 테이블에서 term_time 가져오기
         try:

@@ -22,6 +22,7 @@ apscheduler = "^3.10.4"
 cement = "2.8.2"
 awsebcli = "3.20.10"
 djangorestframework-simplejwt = "^5.3.1"
+firebase-admin = "^6.5.0"
 
 [build-system]
 requires = ["poetry-core"]
