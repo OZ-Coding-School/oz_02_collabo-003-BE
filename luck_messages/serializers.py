@@ -44,3 +44,18 @@ class GptLuckSerializer(serializers.ModelSerializer):
     class Meta:
         model = LuckMessage
         fields = ('msg_id', 'luck_date', 'category', 'attribute1', 'attribute2', 'luck_msg', 'gpt_id')
+
+class LuckMessagesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LuckMessage
+        fields = '__all__'
+
+    # 원하는 필드만 볼 수 있도록 커스텀 하는 로직
+    def __init__(self, *arg, **kwargs):
+        fields = kwargs.pop('fields', None)
+        super(LuckMessagesSerializer, self).__init__(*arg, **kwargs)
+        if fields:
+            allowed = set(fields)
+            existing = set(self.fields)
+            for field_name in existing - allowed:
+                self.fields.pop(field_name)
