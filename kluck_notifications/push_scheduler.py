@@ -5,17 +5,17 @@ from datetime import datetime, timedelta
 from .models import DeviceToken
 from luck_messages.models import LuckMessage
 
-# firebase adminsdk 초기화
-cred_path = 'kluck_notifications/kluck-firebase.json'
-cred = credentials.Certificate(cred_path)
-if not firebase_admin._apps:
-    firebase_admin.initialize_app(cred, {
-        'projectId': 'k-luck',
-    })
-print("Firebase Admin SDK 초기화 완료")
-
 # push 보내는 함수
 def send_push_notifications():
+    # firebase adminsdk 초기화
+    cred_path = 'kluck_notifications/kluck-firebase.json'
+    cred = credentials.Certificate(cred_path)
+    if not firebase_admin._apps:
+        firebase_admin.initialize_app(cred, {
+            'projectId': 'k-luck',
+        })
+    print("Firebase Admin SDK 초기화 완료")
+    
     try:
         # DB에서 디바이스 토큰 가져오기
         registration_tokens = list(DeviceToken.objects.values_list('token', flat=True))
