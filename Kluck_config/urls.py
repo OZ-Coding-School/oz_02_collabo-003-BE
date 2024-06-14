@@ -38,5 +38,7 @@ urlpatterns = [
     path('api/v1/prompt/', include('gpt_prompts.urls')),
     path('api/v1/gpt/', include('gpt_prompts.urls_gpt')),
     # 어드민 세팅스 관련
-    path('api/v1/adms/', include('admin_settings.urls'))
+    path('api/v1/adms/', include('admin_settings.urls')),
+    # 푸시 알림 관련
+    path('api/v1/push/', include('kluck_notifications.urls'))
 ]
