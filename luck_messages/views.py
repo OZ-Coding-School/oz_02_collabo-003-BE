@@ -1,17 +1,14 @@
 from datetime import datetime
-from django.db.models import Prefetch
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from drf_spectacular.utils import extend_schema
 from .serializers import *
-import random
 from .models import LuckMessage
-from collections import defaultdict
 from operator import itemgetter
 
-
+# urls.py
 # api/v1/msg/main/
 class TodayLuck(APIView):
     '''
@@ -149,15 +146,10 @@ class FindTodayMbtiMessages(APIView):
         serializer = MbtiSerializer(messages, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+######################
 
-
-
-
-
-
-
-
-#/api/v1/msg/today/<str:luck_date>
+# urls_admin.py
+#/api/v1/admin/today/<str:luck_date>
 class FindSomedayTodayMessages(APIView):
     '''
         BE-GPT104: 특정 날짜별 한마디 메세지 로드
@@ -172,7 +164,7 @@ class FindSomedayTodayMessages(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-#/api/v1/msg/zodiac/<str:luck_date>
+#/api/v1/admin/zodiac/<str:luck_date>
 class FindSomedayZodiacMessages(APIView):
     '''
         BE-GPT204: 특정 날짜별 띠 메세지 로드
@@ -239,3 +231,31 @@ class FindSomedayMbtiMessages(APIView):
         messages = LuckMessage.objects.filter(luck_date=luck_date, category=reqCategory)
         serializer = MbtiSerializer(messages, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+#/api/v1/admin/luckdays
+class LuckDays(APIView):
+    # 오늘 날짜 확인
+    # 4가지 카테고리의 오늘포함 오늘보다 큰 날짜 값 조회 및 리스트로 저장
+    # 4가지 카테고리의 날짜값을 비교해서 모두 중복되는 날짜만 남기는 리스트 저장 및 반환
+    serializer_class = LuckMessagesSerializer
+
+    permission_classes = (AllowAny,)
+    authentication_classes = ()
+
+    @extend_schema(tags=['AdminMsg'])
+    def get(self, request):
+        now = datetime.now()
+        date = now.strftime("%Y%m%d")
+        # 4가지 카테고리의 오늘포함 오늘보다 큰 날짜 값 조회 및 리스트로 저장
+        # 오늘 포함 더 큰 날짜값 조회
+        luck_dates = LuckMessage.objects.filter(luck_date__gte=date)
+        serializer = LuckMessagesSerializer(luck_dates, many=True, fields=('luck_date',))
+
+
+
+
+
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
