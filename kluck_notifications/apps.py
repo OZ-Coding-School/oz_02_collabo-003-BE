@@ -14,7 +14,7 @@ class KluckNotificationsConfig(AppConfig):
         from .push_scheduler import send_push_notifications
             
         try:
-            # AdminSetting 테이블에서 term_time 가져오기
+            # AdminSetting 테이블에서 push_time 가져오기
             push_time = AdminSetting.objects.first().push_time
             # 숫자 네자리를 문자열로 변환하여 분리
             push_time_str = str(push_time).zfill(4)  # 네자리로 맞추기 위해 zfill 사용
