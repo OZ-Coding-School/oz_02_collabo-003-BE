@@ -247,9 +247,12 @@ class LuckDays(APIView):
         now = datetime.now()
         date = now.strftime("%Y%m%d")
         # 4가지 카테고리의 오늘포함 오늘보다 큰 날짜 값 조회 및 리스트로 저장
-        # 오늘 포함 더 큰 날짜값 조회
-        luck_dates = LuckMessage.objects.filter(luck_date__gte=date)
-        serializer = LuckMessagesSerializer(luck_dates, many=True, fields=('luck_date',))
+        # 카테고리 조회
+        categories = LuckMessage.objects.values('category', falt=True).distinct()
+        print(categories)
+        # 오늘 포함 더 큰 날짜값을 카테고리별로 조회
+        luck_dates = LuckMessage.objects.filter(category='mbti', luck_date__gte=date).order_by('luck_date')
+        serializer = LuckMessagesSerializer(luck_dates, many=True, fields=('luck_date','category'))
 
 
 
