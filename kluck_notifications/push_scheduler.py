@@ -57,7 +57,7 @@ def send_push_notifications():
 
 # 비활성화 토큰 삭제하기
 def remove_inactive_tokens():
-    # 비환성화 토큰 삭제 기준 날짜
+    # 비환성화 토큰 삭제 기준 날짜 (FCM 공식 문서 중 비활성 토큰 기간 참고 - 2개월)
     deactive_date = timezone.now() - timedelta(days=60)
     # 비활성화된 토큰 찾기 (update_time이 60일 초과했을 경우)
     inactive_tokens = DeviceToken.objects.filter(update_date__lt=deactive_date) # __lt : 작은 값 비교 / __lte : 작거나 같은 값
