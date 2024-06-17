@@ -36,7 +36,7 @@ class PushToken(APIView):
                 serializer.save()
                 return Response({'message': '토큰이 저장되었습니다.'}, status=status.HTTP_201_CREATED)
             else: # 토큰이 중복되는 경우, update_time 갱신
-                token_exists.update_time = timezone.now()
+                token_exists.update_date = timezone.now()
                 token_exists.save()
                 return Response({'message': '토큰이 갱신되었습니다.'}, status=status.HTTP_200_OK)
         else:

@@ -60,7 +60,7 @@ def remove_inactive_tokens():
     # 비환성화 토큰 삭제 기준 날짜
     deactive_date = timezone.now() - timedelta(days=60)
     # 비활성화된 토큰 찾기 (update_time이 60일 초과했을 경우)
-    inactive_tokens = DeviceToken.objects.filter(update_time__lt=deactive_date) # __lt : 작은 값 비교 / __lte : 작거나 같은 값
+    inactive_tokens = DeviceToken.objects.filter(update_date__lt=deactive_date) # __lt : 작은 값 비교 / __lte : 작거나 같은 값
     # 비활성화 토큰 개수
     count = inactive_tokens.count()
     # 비활성화 토큰 삭제
