@@ -255,7 +255,7 @@ class AdminDashboard(APIView):
         today_scheduler = LuckMessage.objects.filter(category='work', luck_date=scheduler_date)
 
         if not today_scheduler.exists():
-            return Response(f"{scheduler_date} 데이터 X", status=status.HTTP_204_NO_CONTENT)
+            return Response(f"{scheduler_date} 생성 오류", status=status.HTTP_204_NO_CONTENT)
         else:
             scheduler_status = LuckMessage.objects.filter(category='work', luck_date=scheduler_date, attribute2=0)
             if scheduler_status.exists():
