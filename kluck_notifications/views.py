@@ -8,6 +8,8 @@ from.serializers import *
 # push 알림을 위한 토큰 받아오기
 class PushToken(APIView):
     serializer_class = DeviceTokenSerializer
+    
+    # 스웨거 UI
     @extend_schema(tags=['PushToken'],
         examples=[
             OpenApiExample(
@@ -18,6 +20,7 @@ class PushToken(APIView):
         ],
         description="Device Token"
     )
+    
     def post(self, request):
         serializer = DeviceTokenSerializer(data=request.data)
 
@@ -31,5 +34,9 @@ class PushToken(APIView):
             if not token_exists: # 토큰이 중복되지 않는 경우, 토큰 저장
                 serializer.save()
                 return Response({'message': '토큰이 저장되었습니다.'}, status=status.HTTP_201_CREATED)
+            else: # 토큰이 중복되는 경우, update_time 갱신
+                token_exists.update_time = timezone.now()
+                token_exists.save()
+                return Response({'message': '토큰이 갱신되었습니다.'}, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

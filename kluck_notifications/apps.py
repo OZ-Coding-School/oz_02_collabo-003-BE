@@ -11,7 +11,7 @@ class KluckNotificationsConfig(AppConfig):
 
     def ready(self):
         from admin_settings.models import AdminSetting
-        from .push_scheduler import send_push_notifications
+        from .push_scheduler import send_push_notifications, remove_inactive_tokens
             
         try:
             # AdminSetting 테이블에서 push_time 가져오기
@@ -28,8 +28,12 @@ class KluckNotificationsConfig(AppConfig):
 
         push_scheduler = BackgroundScheduler(timezone=pytz.timezone('Asia/Seoul'))
         push_scheduler.add_job(
-            send_push_notifications,
-            trigger=CronTrigger(hour=hour, minute=minute),
+            send_push_notifications, # 푸시 알림 보내기
+            trigger=CronTrigger(hour=hour, minute=minute), # 설정된 push_time에 실행
+        )
+        push_scheduler.add_job(
+            remove_inactive_tokens, # 비활성화 토큰 삭제
+            trigger=CronTrigger(hour=0, minute=0),  # 매일 자정에 실행
         )
 
         try:
