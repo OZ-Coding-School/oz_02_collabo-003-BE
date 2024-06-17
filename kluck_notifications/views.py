@@ -1,6 +1,7 @@
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
 from drf_spectacular.utils import extend_schema, OpenApiExample
 from django.utils import timezone
 from .models import *
@@ -8,6 +9,8 @@ from.serializers import *
 
 # push 알림을 위한 토큰 받아오기
 class PushToken(APIView):
+    permission_classes = (AllowAny,)
+    authentication_classes = () 
     serializer_class = DeviceTokenSerializer
     
     # 스웨거 UI
@@ -15,7 +18,7 @@ class PushToken(APIView):
         examples=[
             OpenApiExample(
                 'Example',
-                value={'token': 'abcd1234efgh5678', 'device_os': 'Android'},
+                value={'token': 'abcd1234efgh5678', 'device_os': 'android'},
                 request_only=True,  # 요청 본문에서만 예시 사용
             )
         ],
