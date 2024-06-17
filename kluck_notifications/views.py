@@ -2,6 +2,7 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema, OpenApiExample
+from django.utils import timezone
 from .models import *
 from.serializers import *
 
@@ -29,7 +30,7 @@ class PushToken(APIView):
             device_os = serializer.validated_data['device_os']
 
             # 중복 토큰 검사
-            token_exists = DeviceToken.objects.filter(token=token, device_os=device_os)
+            token_exists = DeviceToken.objects.filter(token=token, device_os=device_os).first()
 
             if not token_exists: # 토큰이 중복되지 않는 경우, 토큰 저장
                 serializer.save()

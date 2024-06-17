@@ -2,7 +2,6 @@ import firebase_admin # Firebase Admin SDK 사용
 from firebase_admin import credentials # 서비스 계정 키를 사용하여 Firebase Admin SDK 인증
 from firebase_admin import messaging # FCM 메시지 생성 및 전송
 from django.utils import timezone
-from kluck_env import env_settings as env
 from datetime import datetime, timedelta
 from .models import DeviceToken
 from luck_messages.models import LuckMessage
@@ -58,14 +57,14 @@ def send_push_notifications():
 
 # 비활성화 토큰 삭제하기
 def remove_inactive_tokens():
-    # 비환성화 토큰 삭제 기준 날짜 (현재 날짜보다 60일 이전)
+    # 비환성화 토큰 삭제 기준 날짜
     deactive_date = timezone.now() - timedelta(days=60)
-    # 비활성화된 토큰 찾기
-    inactive_tokens = DeviceToken.objects.filter(update_time__lt=deactive_date) # __lt : 작은 값 비교
+    # 비활성화된 토큰 찾기 (update_time이 60일 초과했을 경우)
+    inactive_tokens = DeviceToken.objects.filter(update_time__lt=deactive_date) # __lt : 작은 값 비교 / __lte : 작거나 같은 값
     # 비활성화 토큰 개수
     count = inactive_tokens.count()
     # 비활성화 토큰 삭제
     inactive_tokens.delete()
     
-    # 비활성화 토큰 개수 출력
+    # 삭제된 비활성화 토큰 개수 출력
     print(f'Deleted {count} inactive tokens')
