@@ -13,7 +13,7 @@ push_logger = logging.getLogger('push_jobs')
 # log level 설정
 push_logger.setLevel(logging.INFO)
 # 파일 핸들러 생성
-file_handler = logging.FileHandler('/var/log/push_jobs.log')
+file_handler = logging.FileHandler('/var/log/push/push_jobs.log')
 push_logger.addHandler(file_handler)
 # 포맷 설정
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(funcName)s:%(lineno)s - %(message)s')
