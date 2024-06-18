@@ -37,7 +37,7 @@ DEBUG = True
 #     '43.201.60.229',
 # ]
 # 개발 중에는 아래 내용을 사용
-ALLOWED_HOSTS = [*]
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 
