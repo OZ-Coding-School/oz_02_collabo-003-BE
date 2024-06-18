@@ -1,8 +1,12 @@
 from django.apps import AppConfig
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
+import logging
 import pytz
 
+
+# 푸시 로거 가져오기
+push_logger = logging.getLogger('push_jobs')
 
 class KluckNotificationsConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
@@ -22,6 +26,7 @@ class KluckNotificationsConfig(AppConfig):
             minute = int(push_time_str[2:])  # 뒤 두 자리
         except AttributeError:
             # 예외 처리: AdminSetting 객체가 없을 경우 기본값 설정
+            push_logger.warning("AdminSetting 객체가 없어 기본값으로 설정합니다.")
             hour = 8
             minute = 0
 
@@ -37,6 +42,9 @@ class KluckNotificationsConfig(AppConfig):
         )
 
         try:
+            push_logger.info("Starting Push scheduler...")
             push_scheduler.start()
         except KeyboardInterrupt:
+            push_logger.warning("Stopping Push scheduler...")
             push_scheduler.shutdown()
+            push_logger.warning("Push scheduler shut down successfully!")
