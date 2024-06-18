@@ -172,7 +172,7 @@ def add_work_date(luck_date):
     
 # 2. 운세 작업 상태 확인 데이터 업데이트 함수
 def update_work_date(worked):
-    work_again_serializer = TodaySerializer(worked, data={'attribute2' : 0}, partial=True)
+    work_again_serializer = TodaySerializer(worked, data={'attribute2' : 0, 'gpt_id' : 1}, partial=True)
     if work_again_serializer.is_valid():
         work_again_serializer.save()
         return True
@@ -315,39 +315,44 @@ class GptLuckPeriod(APIView):
             # global success_count
             success_count = 0
 
-            # 해당 일자 운세 작업을 이전에도 했는지 확인.
-            worked = LuckMessage.objects.filter(category='work', luck_date=luck_date, attribute2=1).first()
+            # 해당 일자 운세 데이터 작동 했는지 확인.
+            work_on = LuckMessage.objects.filter(category='work', luck_date=luck_date, attribute2=0).first()
             # attribute2) 0 : '작업중', 1 : '작업완료'
 
-            if not worked:  # 해당 일자 운세 생성 작업한 적이 없는 경우. (작업 확인 데이터 없는 경우)
-                # 해당 일자 작업 확인 데이터 추가.
-                if not add_work_date(luck_date):
-                    return Response(f"{luck_date} 운세 생성 작업을 확인하기 위한 데이터를 생성하는데 오류가 발생했습니다.",status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-            else:   # 해당 일자 운세 생성 작업한 적이 있는 경우. (작업 확인 데이터 있는 경우)
-                # 작업 확인 데이터에 '해당 일자 작업이 이루어지고 있다'로 수정.
-                if not update_work_date(worked):
-                    return Response(f"{luck_date} 운세 생성 작업을 확인하기 위한 데이터를 업데이트하는데 오류가 발생했습니다.",status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            if not work_on:
+                # 해당 일자 운세 작업을 이전에도 했는지 확인.
+                worked = LuckMessage.objects.filter(category='work', luck_date=luck_date, attribute2=1).first()
+                if not worked:  # 해당 일자 운세 생성 작업한 적이 없는 경우. (작업 확인 데이터 없는 경우)
+                    # 해당 일자 작업 확인 데이터 추가.
+                    if not add_work_date(luck_date):
+                        return Response(f"{luck_date} 운세 생성 작업을 확인하기 위한 데이터를 생성하는데 오류가 발생했습니다.",status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                else:   # 해당 일자 운세 생성 작업한 적이 있는 경우. (작업 확인 데이터 있는 경우)
+                    # 작업 확인 데이터에 '해당 일자 작업이 이루어지고 있다'로 수정.
+                    if not update_work_date(worked):
+                        return Response(f"{luck_date} 운세 생성 작업을 확인하기 위한 데이터를 업데이트하는데 오류가 발생했습니다.",status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                    
+                # 각 카테고리별 GPT에게 질문하는 함수 실행.
+                # GptToday(luck_date) # Success count = 1
+                # GptStar(luck_date) # Success count = 2
+                # GptMbti(luck_date) # Success count = 4
+                # GptZodiac1(luck_date) # Success count = 8
+                # GptZodiac2(luck_date) # Success count = 16
+                success_count += run_gpt_functions(luck_date)
+
+                # 작업이 전부 완료된 뒤 작업 확인 데이터 내용 '완료'로 수정.
+                work = LuckMessage.objects.filter(category='work', luck_date=luck_date).first()
+                if not update_done_date(work, success_count):
+                    return Response(f"{luck_date} 운세 생성 작업 확인 데이터를 완료로 업데이트하는데 오류가 발생했습니다.",status=status.HTTP_500_INTERNAL_SERVER_ERROR)
                 
-            # 각 카테고리별 GPT에게 질문하는 함수 실행.
-            # GptToday(luck_date) # Success count = 1
-            # GptStar(luck_date) # Success count = 2
-            # GptMbti(luck_date) # Success count = 4
-            # GptZodiac1(luck_date) # Success count = 8
-            # GptZodiac2(luck_date) # Success count = 16
-            success_count += run_gpt_functions(luck_date)
+                date_count += 1
 
-            # 작업이 전부 완료된 뒤 작업 확인 데이터 내용 '완료'로 수정.
-            work = LuckMessage.objects.filter(category='work', luck_date=luck_date).first()
-            if not update_done_date(work, success_count):
-                return Response(f"{luck_date} 운세 생성 작업 확인 데이터를 완료로 업데이트하는데 오류가 발생했습니다.",status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-            
-            date_count += 1
-
-            # 전부 다 작동시 success count 합 31, 이 외 일부만 작동시 해당 success count 확인하여 작동된 함수 유추 가능.
-            if success_count == 31 or success_count == 0:
-                results.append(f"{luck_date} 운세 데이터 생성을 완료했습니다.")
+                # 전부 다 작동시 success count 합 31, 이 외 일부만 작동시 해당 success count 확인하여 작동된 함수 유추 가능.
+                if success_count == 31 or success_count == 0:
+                    results.append(f"{luck_date} 운세 데이터 생성을 완료했습니다.")
+                else:
+                    return Response(f"{luck_date} 운세 데이터 생성 중에 오류가 발생했습니다. {results}", status=status.HTTP_417_EXPECTATION_FAILED)
             else:
-                return Response(f"{luck_date} 운세 데이터 생성 중에 오류가 발생했습니다. {results}", status=status.HTTP_417_EXPECTATION_FAILED)
+                return Response(f"{luck_date} 운세 데이터 생성을 하는 중입니다.", status=status.HTTP_208_ALREADY_REPORTED)
 
         # 원하는 기간만큼 운세가 만들어졌는지 확인.
         if date_count == date_term + 1:
