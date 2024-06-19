@@ -36,7 +36,7 @@ DEBUG = True
 #     '172.31.12.235',
 #     '43.201.60.229',
 # ]
-# 개발 중에는 아래 내용을 사용
+# 개발 중에는 아래 내용을 사용  - EB서버의 gunicorn에서 ALLOWED_HOSTS에러가 발생하고 있으니 *로 변경하고 후에 원인을 찾기로 함.
 ALLOWED_HOSTS = ['*']
 
 # Application definition
