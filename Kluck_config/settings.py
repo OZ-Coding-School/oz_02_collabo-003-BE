@@ -50,6 +50,7 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 SYSTEM_APPS = [
+    'Kluck_config',
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -60,7 +61,6 @@ SYSTEM_APPS = [
 ]
 
 CUSTOM_APPS = [
-    'Kluck_config',
     # Rest Framework
     'rest_framework',
     # JWT Token
