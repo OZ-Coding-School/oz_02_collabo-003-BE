@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 from pathlib import Path
 from kluck_env import env_settings as env
 from datetime import timedelta
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -60,6 +61,8 @@ CUSTOM_APPS = [
     'drf_spectacular',
     # scheduler
     'django_apscheduler',
+    # crontab
+    'django_crontab',
     # 각종 설정값 테이블
     'admin_settings',
     # 관리자 User의 커스텀 테이블
@@ -238,3 +241,11 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = env.EMAIL_HOST_USER
 # SMTP 인증에 사용할 비밀번호 설정: 환경 변수 설정의 비밀번호 사용
 EMAIL_HOST_PASSWORD = env.EMAIL_HOST_PASSWORD
+
+# Crontab Setting
+# Django 프로젝트의 루트 디렉토리 경로
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CRONJOBS = [
+    ('* * * * *', 'kluck_notifications.cron.push_cron_job', f'>> {os.path.join(BASE_DIR, "logs/push_cron.log")} 2>&1'), # 매 분마다 실행
+    ('0 0 * * *', 'kluck_notifications.cron.remove_inactive_tokens', f'>> {os.path.join(BASE_DIR, "logs/device_token_cron.log")} 2>&1'), # 매일 자정마다 실행
+]
