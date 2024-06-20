@@ -17,13 +17,13 @@ import logging
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "Kluck_config.settings")
 
 application = get_wsgi_application()
-logger = logging.getLogger('wsgi_scheduler.log')
+# logger = logging.getLogger('wsgi_scheduler.log')
 
-# 스케쥴러 초기화
-# if os.environ.get('RUN_MAIN') != 'true':  # runserver 명령이 재시작될 때를 피하기 위함
-logger.info('스케쥴러 초기화')
-initialize_term_scheduler()
-logger.info('Term스케쥴러 초기화 완료')
-initialize_push_scheduler()
-logger.info('Push스케쥴러 초기화 완료')
-logger.info('스케쥴러 초기화 완료')
+# # 스케쥴러 초기화
+# # if os.environ.get('RUN_MAIN') != 'true':  # runserver 명령이 재시작될 때를 피하기 위함
+# logger.info('스케쥴러 초기화')
+# initialize_term_scheduler()
+# logger.info('Term스케쥴러 초기화 완료')
+# initialize_push_scheduler()
+# logger.info('Push스케쥴러 초기화 완료')
+# logger.info('스케쥴러 초기화 완료')

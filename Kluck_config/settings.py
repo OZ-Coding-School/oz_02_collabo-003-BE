@@ -14,6 +14,14 @@ from pathlib import Path
 from kluck_env import env_settings as env
 from datetime import timedelta
 
+# Django 설정 초기화
+import os
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'Kluck_config.settings')
+
+import django
+django.setup()
+
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -238,10 +246,3 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = env.EMAIL_HOST_USER
 # SMTP 인증에 사용할 비밀번호 설정: 환경 변수 설정의 비밀번호 사용
 EMAIL_HOST_PASSWORD = env.EMAIL_HOST_PASSWORD
-
-# Django 설정 초기화
-import os
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'Kluck_config.settings')
-
-import django
-django.setup()
