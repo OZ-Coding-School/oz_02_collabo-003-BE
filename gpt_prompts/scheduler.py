@@ -6,9 +6,20 @@ from luck_messages.serializers import *
 from .views import *
 import logging
 from datetime import datetime, timedelta
+from apscheduler.schedulers.background import BackgroundScheduler
+from django_apscheduler.jobstores import DjangoJobStore
+from apscheduler.triggers.cron import CronTrigger
+import pytz
+from admin_settings.models import AdminSetting
+from django_apscheduler.models import DjangoJob
 
 # 로깅 기본 설정: 로그 레벨, 로그 포맷, 파일 이름 등을 지정할 수 있습니다.
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s', filename='gpt_jobs.log')
+
+# 스케쥴러 등록
+scheduler = BackgroundScheduler(timezone=pytz.timezone('Asia/Seoul'))
+scheduler.add_jobstore(DjangoJobStore(), 'default')
+
 
 # 이메일 전송 함수
 def send_email(subject, message, recipient_list):
@@ -122,10 +133,74 @@ def gpt_today_job():
         else:
             subject="Scheduler Done"
             message=f"Scheduler 동작 중 일부가 실행되었습니다. result_count = {scheduler_count}"
-        
+
     # kluck_Admin 모델을 통해 관련된 사용자 이메일 리스트 가져오기
     admin_emails = kluck_Admin.objects.values_list('user__email', flat=True)
     # 이메일 리스트를 recipient_list로 변환
     recipient_list = list(admin_emails)
 
     send_email(subject, message, recipient_list)
+
+
+def initialize_term_scheduler():
+    logger = logging.getLogger(__name__)
+
+    # AdminSetting 테이블에서 term_time 가져오기
+    try:
+        scheduler_time = AdminSetting.objects.first().term_time
+        # 숫자 네자리를 문자열로 변환하여 분리
+        scheduler_time_str = str(scheduler_time).zfill(4)  # 네자리로 맞추기 위해 zfill 사용
+        hour = int(scheduler_time_str[:2])  # 앞 두 자리
+        minute = int(scheduler_time_str[2:])  # 뒤 두 자리
+    except AttributeError:
+        # 예외 처리: AdminSetting 객체가 없을 경우 기본값 설정
+        logger.warning("AdminSetting 객체가 없어 기본값으로 설정합니다.")
+        hour = 1
+        minute = 10
+
+    job_id = 'term_scheduler'
+    # DjangoJob 모델에서 동일한 ID를 가진 작업 삭제
+    django_job = DjangoJob.objects.filter(id=job_id).first()
+    if django_job:
+        django_job.delete()
+        logger.info(f'기존 DjangoJob({job_id}) 삭제')
+    else:
+        logger.info(f'{job_id}에 해당하는 DjangoJob이 존재하지 않습니다.')
+
+    # 원인은 알수 없으나 아래 get_job이 DB에 분명히 존재하는 값을 읽지못함.
+    # existing_job = scheduler.get_job(job_id)
+    # if existing_job:
+    #     print(f'기존 작업({job_id}) 삭제')
+    #     scheduler.remove_job(job_id)
+    #     try:
+    #         DjangoJob.objects.get(id=job_id).delete()
+    #     except DjangoJob.DoesNotExist:
+    #         pass
+    # else:
+    #     print(job_id,'가 없음.')
+
+    if not scheduler.get_job(job_id):
+        scheduler.add_job(
+            gpt_today_job,
+            trigger=CronTrigger(hour=hour, minute=minute),
+            id=job_id
+        )
+
+    # 등록된 job정보 출력
+    for job in scheduler.get_jobs():
+        job_id = job.id
+        job_name = job.name
+        job_trigger = job.trigger
+        logger.info(f"Job ID: {job_id}, Job Name: {job_name}, Job Trigger: {job_trigger}")
+
+
+    try:
+        if not scheduler.running:
+            logger.info("Starting scheduler...")
+            scheduler.start()
+        else:
+            logger.info("Scheduler already running.")
+    except KeyboardInterrupt:
+        logger.info("Stopping scheduler...")
+        scheduler.shutdown()
+        logger.info("Scheduler shut down successfully!")

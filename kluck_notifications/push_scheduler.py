@@ -6,6 +6,16 @@ from datetime import datetime, timedelta
 from .models import DeviceToken
 from luck_messages.models import LuckMessage
 import logging
+from admin_settings.models import AdminSetting
+from apscheduler.schedulers.background import BackgroundScheduler
+from django_apscheduler.jobstores import DjangoJobStore
+from apscheduler.triggers.cron import CronTrigger
+from django_apscheduler.models import DjangoJob
+import pytz
+
+# 스케쥴러 등록
+push_scheduler = BackgroundScheduler(timezone=pytz.timezone('Asia/Seoul'))
+push_scheduler.add_jobstore(DjangoJobStore(), 'default')
 
 # 푸시 알림 로그 따로 쌓기
 # logger instence 생성
@@ -22,11 +32,14 @@ file_handler.setFormatter(formatter)
 # push 보내는 함수
 def send_push_notifications():
     # firebase adminsdk 초기화
-    cred_path = 'kluck_notifications/kluck-firebase.json'
     try:
+        cred_path = 'kluck_notifications/kluck-firebase.json'
         cred = credentials.Certificate(cred_path)
-        firebase_admin.initialize_app(cred) # 초기화 한번만
-        push_logger.info("Firebase Admin SDK 초기화 성공")
+        if not firebase_admin._apps:  # 초기화되지 않았다면 초기화
+            firebase_admin.initialize_app(cred)  # 초기화 한번만
+            push_logger.info("Firebase Admin SDK 초기화 성공")
+        else:
+            push_logger.info("Firebase Admin SDK 이미 초기화됨")
     except Exception as e:
         push_logger.error(f"Firebase Admin SDK 초기화 실패: {e}")
         return
@@ -45,7 +58,7 @@ def send_push_notifications():
         if today_luck_msg:
             title = '오늘의 운세'
             body = today_luck_msg.luck_msg
-            
+
             # 푸시 알림 메시지 생성
             message = messaging.MulticastMessage( # 여러 기기에 메시지 전송
                 notification=messaging.Notification(
@@ -73,7 +86,7 @@ def send_push_notifications():
             push_logger.info(f"푸시 알림 발송 성공. Response: {response}")
         else:
             push_logger.info(f"오늘의 운세 메시지가 존재하지 않습니다. today_luck_msg: {today_luck_msg}")
-            
+
     except Exception as e:
         push_logger.error(f"푸시 알림 전송 중 오류 발생: {e}")
 
@@ -88,9 +101,83 @@ def remove_inactive_tokens():
         count = inactive_tokens.count()
         # 비활성화 토큰 삭제
         inactive_tokens.delete()
-        
+
         # 삭제된 비활성화 토큰 개수 출력
         push_logger.info(f'Deleted {count} inactive tokens')
 
     except Exception as e:
         push_logger.error(f"비활성화 토큰 삭제 중 오류 발생: {e}")
+
+
+def initialize_push_scheduler():
+
+    # AdminSetting 테이블에서 push_time 가져오기
+    try:
+        push_time = AdminSetting.objects.first().push_time
+        # 숫자 네자리를 문자열로 변환하여 분리
+        push_time_str = str(push_time).zfill(4)  # 네자리로 맞추기 위해 zfill 사용
+        hour = int(push_time_str[:2])  # 앞 두 자리
+        minute = int(push_time_str[2:])  # 뒤 두 자리
+    except AttributeError:
+        # 예외 처리: AdminSetting 객체가 없을 경우 기본값 설정
+        push_logger.warning("AdminSetting 객체가 없어 기본값으로 설정합니다.")
+        hour = 8
+        minute = 0
+
+    push_job_id = 'push_scheduler'
+    # DjangoJob 모델에서 동일한 ID를 가진 작업 삭제
+    django_job = DjangoJob.objects.filter(id=push_job_id).first()
+    if django_job:
+        django_job.delete()
+        push_logger.info(f'기존 django_push_job({push_job_id}) 삭제')
+    else:
+        push_logger.info(f'{push_job_id}에 해당하는 django_push_job이 존재하지 않습니다.')
+
+    push_logger.info('push_job 추가시도')
+    push_scheduler.add_job(
+        send_push_notifications, # 푸시 알림 보내기
+        trigger=CronTrigger(hour=hour, minute=minute), # 설정된 push_time에 실행
+        id=push_job_id
+    )
+    # 등록된 job정보 출력
+    for job in push_scheduler.get_jobs():
+        job_id = job.id
+        job_name = job.name
+        job_trigger = job.trigger
+        push_logger.info(f"Job ID: {job_id}, Job Name: {job_name}, Job Trigger: {job_trigger}")
+    push_logger.info('push_job 추가완료')
+
+    token_job_id = 'token_scheduler'
+    # DjangoJob 모델에서 동일한 ID를 가진 작업 삭제
+    django_job = DjangoJob.objects.filter(id=token_job_id).first()
+    if django_job:
+        django_job.delete()
+        push_logger.info(f'기존 django_token_job({token_job_id}) 삭제')
+    else:
+        push_logger.info(f'{token_job_id}에 해당하는 django_token_job이 존재하지 않습니다.')
+
+    push_logger.info('token_job 추가시도')
+    push_scheduler.add_job(
+        remove_inactive_tokens, # 비활성화 토큰 삭제
+        trigger=CronTrigger(hour=0, minute=0),  # 매일 자정에 실행
+        id=token_job_id
+    )
+
+    # 등록된 job정보 출력
+    for job in push_scheduler.get_jobs():
+        job_id = job.id
+        job_name = job.name
+        job_trigger = job.trigger
+        push_logger.info(f"Job ID: {job_id}, Job Name: {job_name}, Job Trigger: {job_trigger}")
+    push_logger.info('token_job 추가완료')
+
+    try:
+        if not push_scheduler.running:
+            push_logger.info("Starting scheduler...")
+            push_scheduler.start()
+        else:
+            push_logger.info("Scheduler already running.")
+    except KeyboardInterrupt:
+        push_logger.info("Stopping scheduler...")
+        push_scheduler.shutdown()
+        push_logger.info("Scheduler shut down successfully!")
