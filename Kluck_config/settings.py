@@ -60,6 +60,7 @@ SYSTEM_APPS = [
 ]
 
 CUSTOM_APPS = [
+    'Kluck_config',
     # Rest Framework
     'rest_framework',
     # JWT Token
