@@ -244,8 +244,10 @@ EMAIL_HOST_PASSWORD = env.EMAIL_HOST_PASSWORD
 
 # Crontab Setting
 # Django 프로젝트의 루트 디렉토리 경로
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CRON_BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CRONJOBS = [
-    ('* * * * *', 'kluck_notifications.cron.push_cron_job', f'>> {os.path.join(BASE_DIR, "logs/push_cron.log")} 2>&1'), # 매 분마다 실행
-    ('0 0 * * *', 'kluck_notifications.cron.remove_inactive_tokens', f'>> {os.path.join(BASE_DIR, "logs/device_token_cron.log")} 2>&1'), # 매일 자정마다 실행
+    # ('* * * * *', 'kluck_notifications.cron.hi', f'>> {os.path.join(CRON_BASE_DIR, "logs/hi_cron.log")} 2>&1'), # 매 분마다 실행
+    ('* * * * *', 'gpt_prompts.cron.gpt_cron_job', f'>> {os.path.join(BASE_DIR, "logs/gpt_cron.log")} 2>&1'), # 매 분마다 실행 -> GPT Scheduler
+    ('* * * * *', 'kluck_notifications.cron.push_cron_job', f'>> {os.path.join(BASE_DIR, "logs/push_cron.log")} 2>&1'), # 매 분마다 실행 -> Push Scheduler
+    ('0 0 * * *', 'kluck_notifications.cron.remove_inactive_tokens', f'>> {os.path.join(BASE_DIR, "logs/device_token_cron.log")} 2>&1'), # 매일 자정마다 실행 -> Device Token Scheduler
 ]

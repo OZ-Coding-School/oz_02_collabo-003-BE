@@ -2,7 +2,7 @@ from django.utils import timezone
 from datetime import datetime, timedelta
 from .push_scheduler import send_push_notifications
 from .models import DeviceToken
-from admin_settings.models import AdminSettings
+from admin_settings.models import AdminSetting
 import logging
 import pytz
 
@@ -17,7 +17,7 @@ def push_cron_job():
 
     # DB에서 push_time 가져오기
     try:
-        push_time = AdminSettings.objects.first().push_time
+        push_time = AdminSetting.objects.first().push_time
     except AttributeError:
         push_time = "0900" # 기본값 9시
 

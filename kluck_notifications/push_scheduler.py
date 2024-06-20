@@ -5,6 +5,10 @@ from datetime import datetime, timedelta
 from .models import DeviceToken
 from luck_messages.models import LuckMessage
 import logging
+import os
+
+# Django 프로젝트의 루트 디렉토리 경로
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # 푸시 알림 로그 설정
 # logger instence 생성
@@ -12,14 +16,15 @@ push_logger = logging.getLogger('push_jobs')
 # log level 설정
 push_logger.setLevel(logging.INFO)
 # 파일 핸들러 생성
-file_handler = logging.FileHandler('logs/push_jobs.log')
+file_path = os.path.join(BASE_DIR, 'logs/push_jobs.log')
+file_handler = logging.FileHandler(file_path)
 push_logger.addHandler(file_handler)
 # 포맷 설정
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(funcName)s:%(lineno)s - %(message)s')
 file_handler.setFormatter(formatter)
 
 # firebase adminsdk 초기화
-cred_path = 'kluck_notifications/kluck-firebase.json'
+cred_path = os.path.join(BASE_DIR, 'kluck_notifications/kluck-firebase.json')
 try:
     cred = credentials.Certificate(cred_path)
     firebase_admin.initialize_app(cred) # 초기화 한번만
@@ -44,7 +49,7 @@ def send_push_notifications():
             title = '오늘의 운세'
             body = today_luck_msg.luck_msg
             
-            # 푸시 알림 메시지 생성
+            # 푸시 알림 (notification -> 백그라운드)
             message = messaging.MulticastMessage( # 여러 기기에 메시지 전송
                 notification=messaging.Notification(
                     title=title,
@@ -68,7 +73,7 @@ def send_push_notifications():
 
             # Firebase로 푸시 알림 전송
             response = messaging.send_multicast(message)
-            push_logger.info(f"푸시 알림 발송 성공. Response: {response}")
+            push_logger.info(f"푸시 알림 발송 성공. Response: 'title' = {title}, body = {body}")
         else:
             push_logger.info(f"오늘의 운세 메시지가 존재하지 않습니다. today_luck_msg: {today_luck_msg}")
             
