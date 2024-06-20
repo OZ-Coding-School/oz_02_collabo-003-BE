@@ -10,13 +10,15 @@ https://docs.djangoproject.com/en/5.0/howto/deployment/wsgi/
 import os
 
 from django.core.wsgi import get_wsgi_application
-from gpt_prompts.scheduler import initialize_term_scheduler
-from kluck_notifications.push_scheduler import initialize_push_scheduler
-import logging
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "Kluck_config.settings")
 
 application = get_wsgi_application()
+
+from gpt_prompts.scheduler import initialize_term_scheduler
+from kluck_notifications.push_scheduler import initialize_push_scheduler
+import logging
+
 logger = logging.getLogger('wsgi_scheduler.log')
 
 # 스케쥴러 초기화
