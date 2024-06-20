@@ -66,8 +66,8 @@ CUSTOM_APPS = [
     # JWT Token
     'rest_framework_simplejwt',
     # 스웨거API
-    # scheduler
     'drf_spectacular',
+    # scheduler
     'django_apscheduler',
     # 각종 설정값 테이블
     'admin_settings',
