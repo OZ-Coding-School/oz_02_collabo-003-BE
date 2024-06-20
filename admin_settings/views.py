@@ -80,8 +80,8 @@ class Pushtime(APIView):
             return Response({'Error':'오류가 있습니다.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def reschedule_push(self):
-        print('reschedule_push 시작')
         logger = logging.getLogger(__name__)
+        logger.info('reschedule_push 시작')
 
         # AdminSetting 테이블에서 push_time 가져오기
         try:
@@ -100,35 +100,29 @@ class Pushtime(APIView):
 
         job_id = 'push_scheduler'
         job = scheduler.get_job(job_id)
-        print('job',job)
 
         if job:
-            print('aa')
             # DjangoJob 모델에서 동일한 ID를 가진 작업 삭제
             django_job = DjangoJob.objects.filter(id=job_id).first()
-            print('django_job:', django_job)
             if django_job:
                 django_job.delete()
-                print(f'기존 DjangoJob({job_id}) 삭제')
+                logger.info(f'기존 DjangoJob({job_id}) 삭제')
             else:
-                print(f'{job_id}에 해당하는 DjangoJob이 존재하지 않습니다.')
-            print('jobjob')
+                logger.info(f'{job_id}에 해당하는 DjangoJob이 존재하지 않습니다.')
+
             scheduler.add_job(
                 send_push_notifications,
                 trigger=CronTrigger(hour=hour, minute=minute),
                 id=job_id
             )
             logger.info(f"Job {job_id} modified to run {hour}: {minute}.")
-            print('bb')
             # 등록된 job정보 출력
             for job in scheduler.get_jobs():
                 job_id = job.id
                 job_name = job.name
                 job_trigger = job.trigger
-                print(f"Job ID: {job_id}, Job Name: {job_name}, Job Trigger: {job_trigger}")
-            print('bb')
+                logger.info(f"Job ID: {job_id}, Job Name: {job_name}, Job Trigger: {job_trigger}")
         else:
-            print('else')
             logger.warning(f"Job '{job_id}' not found.")
 
         logger.info("Scheduler updated!")
@@ -204,6 +198,8 @@ class Terms(APIView):
 
 
     def reschedule_term(self):
+        logger = logging.getLogger(__name__)
+
         # AdminSetting 테이블에서 term_time 가져오기
         try:
             scheduler_time = AdminSetting.objects.first().term_time
@@ -213,43 +209,38 @@ class Terms(APIView):
             minute = int(scheduler_time_str[2:])  # 뒤 두 자리
         except AttributeError:
             # 예외 처리: AdminSetting 객체가 없을 경우 기본값 설정
+            logger.warning("AdminSetting 객체가 없어 기본값으로 설정합니다.")
             hour = 1
             minute = 10
 
 
-        logger = logging.getLogger(__name__)
 
         job_id = 'term_scheduler'
         job = scheduler.get_job(job_id)
-        print('job',job)
 
         if job:
-            print('aa')
             # DjangoJob 모델에서 동일한 ID를 가진 작업 삭제
             django_job = DjangoJob.objects.filter(id=job_id).first()
-            print('django_job:', django_job)
             if django_job:
                 django_job.delete()
-                print(f'기존 DjangoJob({job_id}) 삭제')
+                logger.info(f'기존 DjangoJob({job_id}) 삭제')
             else:
-                print(f'{job_id}에 해당하는 DjangoJob이 존재하지 않습니다.')
-            print('jobjob')
+                logger.info(f'{job_id}에 해당하는 DjangoJob이 존재하지 않습니다.')
+
             scheduler.add_job(
                 gpt_today_job,
                 trigger=CronTrigger(hour=hour, minute=minute),
                 id=job_id
             )
             logger.info(f"Job {job_id} modified to run {hour}: {minute}.")
-            print('bb')
+
             # 등록된 job정보 출력
             for job in scheduler.get_jobs():
                 job_id = job.id
                 job_name = job.name
                 job_trigger = job.trigger
-                print(f"Job ID: {job_id}, Job Name: {job_name}, Job Trigger: {job_trigger}")
-            print('bb')
+                logger.info(f"Job ID: {job_id}, Job Name: {job_name}, Job Trigger: {job_trigger}")
         else:
-            print('else')
             logger.warning(f"Job '{job_id}' not found.")
 
         logger.info("Scheduler updated!")
