@@ -76,6 +76,6 @@ def send_push_notifications():
             push_logger.info(f"푸시 알림 발송 성공. Response: 'title' = {title}, body = {body}")
         else:
             push_logger.info(f"오늘의 운세 메시지가 존재하지 않습니다. today_luck_msg: {today_luck_msg}")
-            
+
     except Exception as e:
         push_logger.error(f"푸시 알림 전송 중 오류 발생: {e}")

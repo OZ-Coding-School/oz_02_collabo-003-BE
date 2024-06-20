@@ -15,6 +15,14 @@ from kluck_env import env_settings as env
 from datetime import timedelta
 import os
 
+# Django 설정 초기화
+import os
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'Kluck_config.settings')
+
+import django
+django.setup()
+
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -43,6 +51,7 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 SYSTEM_APPS = [
+    'Kluck_config',
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",

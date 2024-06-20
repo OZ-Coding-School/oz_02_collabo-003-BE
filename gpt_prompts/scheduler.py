@@ -11,6 +11,7 @@ import os
 # Django 프로젝트의 루트 디렉토리 경로
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+
 # 푸시 알림 로그 설정
 # logger instence 생성
 logger = logging.getLogger('gpt_jobs')
@@ -134,7 +135,7 @@ def gpt_today_job():
         else:
             subject="Scheduler Done"
             message=f"Scheduler 동작 중 일부가 실행되었습니다. result_count = {scheduler_count}"
-        
+
     # kluck_Admin 모델을 통해 관련된 사용자 이메일 리스트 가져오기
     admin_emails = kluck_Admin.objects.values_list('user__email', flat=True)
     # 이메일 리스트를 recipient_list로 변환
