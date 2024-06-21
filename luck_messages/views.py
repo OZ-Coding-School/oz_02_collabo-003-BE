@@ -150,7 +150,7 @@ class FindTodayMbtiMessages(APIView):
         serializer = MbtiSerializer(messages, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-      
+
 ######################
 # urls_admin.py
 
@@ -255,7 +255,7 @@ class AdminDashboard(APIView):
         today_scheduler = LuckMessage.objects.filter(category='work', luck_date=scheduler_date)
 
         if not today_scheduler.exists():
-            return Response(f"{scheduler_date} 생성 오류", status=status.HTTP_204_NO_CONTENT)
+            return Response(f"{scheduler_date} 생성 오류", status=status.HTTP_404_NOT_FOUND)
         else:
             scheduler_status = LuckMessage.objects.filter(category='work', luck_date=scheduler_date, attribute2=0)
             if scheduler_status.exists():
@@ -279,7 +279,7 @@ def get_success_count(luck_msg):
     else:
         return None
 
-      
+
 #/api/v1/admin/luckdays
 class LuckDays(APIView):
     # 오늘 날짜 확인

@@ -62,7 +62,7 @@ def send_push_notifications():
                     notification=messaging.AndroidNotification(
                         icon='https://exodus-web.gcdn.ntruss.com/static/appicon_512_512.png',
                         sound='default',
-                        click_action='FLUTTER_NOTIFICATION_CLICK',
+                        # click_action='FLUTTER_NOTIFICATION_CLICK',
                     )
                 ),
                 tokens = registration_tokens, # 여러 개의 등록 토큰 리스트
